@@ -1,42 +1,64 @@
 #include <stdio.h>
 
-#define L 10 //colums
-#define M 10 //rows
+#define L 4 //colums
+#define M 3 //rows
+#define WRAPX 1
+#define WRAPY 1
 
 int main(){
 
-  int array[M][L];
+  // create Hamiltonian
+  int H[L*M][L*M]={0}; //might want to use static here to ensure 0 setting in memory
 
-  int curL=0;
-  int curM=0;
-  //fill array with Hexagon
-  while (curM<M){
-    while (curL<L){
-      array[curM][curL]=(((curL%4)==1 || (curL%4)==2)*!(curM%2)) +(!((curL%4)==1 || (curL%4)==2)*(curM%2)) ;
-      curL++;
+  int x=0;
+  int y=0;
+  int p=0;
+  
+  /* while(p<9){ */
+  /*   printf("%i:%i\n",p, p+(((p%2)-!(p%2))*((p/L)%2))+(((-1*(p%2))+!(p%2))*!((p/L)%2)) ); */
+  /*   p++; */
+  /* } */
+
+  while (y<M){
+    while(x<L){
+      p=(x+(y*L)); //maybe use macro for this
+      if ((p+L)<(M*L)){
+	H[p][(p+L)]=1;
+      }
+      else {
+	H[p][(p+L)-(M*L)]=WRAPY;
+      }
+      if ((p-L)>=0){
+	H[p][(p-L)]=1;
+      }
+      else {
+	H[p][(p-L)+(M*L)]=WRAPY;
+      }
+      //printf("p:%i -> %i\n", p, (p+((((p%L)%2)-!((p%L)%2))*((p/L)%2))+(((-1*((p%L)%2))+!((p%L)%2))*!((p/L)%2))));
+      if (((p+((((p%L)%2)-!((p%L)%2))*((p/L)%2))+(((-1*((p%L)%2))+!((p%L)%2))*!((p/L)%2)))/L) != (p/L)){
+	H[p][(((((p+((((p%L)%2)-!((p%L)%2))*((p/L)%2))+(((-1*((p%L)%2))+!((p%L)%2))*!((p/L)%2)))/L)-(p/L))<0)*((((p/L)+1)*L)-1))+(((((p+((((p%L)%2)-!((p%L)%2))*((p/L)%2))+(((-1*((p%L)%2))+!((p%L)%2))*!((p/L)%2)))/L)-(p/L))>0)*((((p/L))*L)))]=WRAPX;
+      }
+      else {
+	H[p][(p+((((p%L)%2)-!((p%L)%2))*((p/L)%2))+(((-1*((p%L)%2))+!((p%L)%2))*!((p/L)%2)))]=1;
+      }
+      x++;
     }
-    curL=0;
-    curM++;
+    y++;
+    x=0;
   }
 
-
-  //Debug print array
-  curL=0;
-  curM=0;
-  while (curM<M){
-    while (curL<L){
-      printf("%i", array[curM][curL]);
-      curL++;
+  //Print Hamiltonian
+  int i=0;
+  int j=0;
+  while (j<(L*M)){
+    while (i<(L*M)){
+      printf("%i ", H[j][i]);
+      i++;
     }
+    i=0;
+    j++;
     printf("\n");
-    curL=0;
-    curM++;
   }
-
-
-  //Generate Hamiltonian (when it is regular can use rules, with doping want to loop through array)
-  //number sites from bottom left rightwards, then upwards - how do we only count valid sites?
-  // since even with doping it is mostly regular, doing a full loop through is stupid
 
   return 0;
 }
