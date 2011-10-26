@@ -7,15 +7,15 @@
 //Complex double: zheev.f Computes all eigenvalues and, optionally, eigenvectors of a complex, Hermitian matrix.
 //
 
-#define L 11 //colums
-#define M 11 //rows
+#define L 50 //colums
+#define M 50 //rows
 #define WRAPX 1
 #define WRAPY 0
 
 int main(){
 
   // create Hamiltonian
-  double H[L*M][L*M]={0}; //might want to use static here to ensure 0 setting in memory - this segfaults for large numbers of L,M
+  static double H[L*M][L*M]={0}; //might want to use static here to ensure 0 setting in memory - this segfaults for large numbers of L,M
   //memset(H, 0, sizeof(double));
   int x=0;
   int y=0;
@@ -54,29 +54,29 @@ int main(){
     x=0;
   }
 
-  //Print Hamiltonian
-  int i=0;
-  int j=0;
-  while (j<(L*M)){
-    while (i<(L*M)){
-      printf("%.0f ", H[j][i]);
-      i++;
-    }
-    i=0;
-    j++;
-    printf("\n");
-  }
+  /* //Print Hamiltonian */
+  /* int i=0; */
+  /* int j=0; */
+  /* while (j<(L*M)){ */
+  /*   while (i<(L*M)){ */
+  /*     printf("%.0f ", H[j][i]); */
+  /*     i++; */
+  /*   } */
+  /*   i=0; */
+  /*   j++; */
+  /*   printf("\n"); */
+  /* } */
   //double data[L*M*L*M];
   gsl_matrix_view m = gsl_matrix_view_array (*H, L*M, L*M);
      
   gsl_vector *eval = gsl_vector_alloc (L*M);
-  gsl_matrix *evec = gsl_matrix_alloc (L*M, L*M);
+  //gsl_matrix *evec = gsl_matrix_alloc (L*M, L*M);
+  gsl_eigen_symm_workspace * w = gsl_eigen_symm_alloc (L*M); //Just worry about eigenvalues for now
+  //gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc (L*M);
+  gsl_eigen_symm (&m.matrix, eval, w);       
+  //gsl_eigen_symmv (&m.matrix, eval, evec, w);
      
-  gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc (L*M);
-       
-  gsl_eigen_symmv (&m.matrix, eval, evec, w);
-     
-  gsl_eigen_symmv_free (w);
+  gsl_eigen_symm_free (w);
      
   //gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC);
   int i=0;
@@ -89,6 +89,6 @@ int main(){
       //gsl_vector_fprintf (stdout, &evec_i.vector, "%g");
            }
   gsl_vector_free (eval);
-  gsl_matrix_free (evec);
+  //gsl_matrix_free (evec);
   return 0;
 }
