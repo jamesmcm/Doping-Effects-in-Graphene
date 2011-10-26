@@ -9,7 +9,7 @@
 
 #define L 50 //colums
 #define M 50 //rows
-#define WRAPX 1
+#define WRAPX 0
 #define WRAPY 0
 
 int main(){

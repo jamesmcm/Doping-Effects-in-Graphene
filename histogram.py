@@ -1,4 +1,5 @@
-f = open("./50x50wrapx.txt", "r")
+import sys
+f = open(sys.argv[1], "r")
 eigenvalues = []
 for line in f:
     #if float(line)>0:
