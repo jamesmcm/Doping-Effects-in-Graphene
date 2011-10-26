@@ -1,20 +1,18 @@
 #include <stdio.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_eigen.h>
-//#include <Accelerate/Accelerate.h> //Works on OS X ONLY
+#include <Accelerate/Accelerate.h> //Works on OS X ONLY
 
 //Complex double: zheev.f Computes all eigenvalues and, optionally, eigenvectors of a complex, Hermitian matrix.
 //
 
 #define L 4 //colums
-#define M 4 //rows
+#define M 3 //rows
 #define WRAPX 1
-#define WRAPY 0
+#define WRAPY 1
 
 int main(){
 
   // create Hamiltonian
-  double H[L*M][L*M]={0}; //might want to use static here to ensure 0 setting in memory
+  int H[L*M][L*M]={0}; //might want to use static here to ensure 0 setting in memory
 
   int x=0;
   int y=0;
@@ -58,36 +56,13 @@ int main(){
   int j=0;
   while (j<(L*M)){
     while (i<(L*M)){
-      printf("%.0f ", H[j][i]);
+      printf("%i ", H[j][i]);
       i++;
     }
     i=0;
     j++;
     printf("\n");
   }
-  //double data[L*M*L*M];
-  gsl_matrix_view m = gsl_matrix_view_array (*H, L*M, L*M);
-     
-  gsl_vector *eval = gsl_vector_alloc (L*M);
-  gsl_matrix *evec = gsl_matrix_alloc (L*M, L*M);
-     
-  gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc (L*M);
-       
-  gsl_eigen_symmv (&m.matrix, eval, evec, w);
-     
-  gsl_eigen_symmv_free (w);
-     
-  gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC);
 
-  for (i = 0; i < L*M; i++)
-    {
-      double eval_i = gsl_vector_get (eval, i);
-      gsl_vector_view evec_i = gsl_matrix_column (evec, i);
-      printf ("eigenvalue = %g\n", eval_i);
-      //printf ("eigenvector = \n");
-      //gsl_vector_fprintf (stdout, &evec_i.vector, "%g");
-           }
-  gsl_vector_free (eval);
-  gsl_matrix_free (evec);
   return 0;
 }
