@@ -4,10 +4,10 @@
 //Complex double: zheev.f Computes all eigenvalues and, optionally, eigenvectors of a complex, Hermitian matrix.
 //
 
-#define L 4 //colums
-#define M 3 //rows
+#define L 3 //colums
+#define M 4 //rows
 #define WRAPX 1
-#define WRAPY 1
+#define WRAPY 0
 
 int main(){
 
