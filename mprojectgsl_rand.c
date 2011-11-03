@@ -6,8 +6,8 @@
 
 //Note ints limit 2147483647
 
-#define L 100 //colums
-#define M 100 //rows
+#define L 60 //colums
+#define M 60 //rows
 #define WRAPX 1
 #define WRAPY 0
 
@@ -62,7 +62,7 @@ srand(time(NULL));
 		while(k<L*M){
   		   num = rand()%100;
     			if(num>=80){
-        			H[x][y]=70;
+        			H[k][k]=70;
     			}
      			++k;
  		}
@@ -74,17 +74,18 @@ srand(time(NULL));
   }
 
   /* //Print Hamiltonian */
-  /* int i=0; */
-  /* int j=0; */
-  /* while (j<(L*M)){ */
-  /*   while (i<(L*M)){ */
-  /*     printf("%.0f ", H[j][i]); */
-  /*     i++; */
-  /*   } */
-  /*   i=0; */
-  /*   j++; */
-  /*   printf("\n"); */
-  /* } */
+  /*int t=0; 
+   int r=0; 
+   while (r<(L*M)){ 
+     while (t<(L*M)){ 
+       printf("%.0f ", H[r][t]); 
+       t++; 
+     } 
+     t=0; 
+     r++; 
+     printf("\n"); 
+   } */
+
   //double data[L*M*L*M];
   gsl_matrix_view m = gsl_matrix_view_array (*H, L*M, L*M);
      
