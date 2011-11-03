@@ -6,8 +6,8 @@
 
 //Note ints limit 2147483647
 
-#define L 60 //colums
-#define M 60 //rows
+#define L 4 //colums
+#define M 4 //rows
 #define WRAPX 1
 #define WRAPY 0
 
@@ -62,7 +62,7 @@ srand(time(NULL));
 		while(k<L*M){
   		   num = rand()%100;
     			if(num>=80){
-        			H[k][k]=70;
+        			H[k][k]=99;
     			}
      			++k;
  		}
@@ -73,8 +73,8 @@ srand(time(NULL));
     x=0;
   }
 
-  /* //Print Hamiltonian */
-  /*int t=0; 
+  //Print Hamiltonian
+  int t=0; 
    int r=0; 
    while (r<(L*M)){ 
      while (t<(L*M)){ 
@@ -84,32 +84,32 @@ srand(time(NULL));
      t=0; 
      r++; 
      printf("\n"); 
-   } */
-
-  //double data[L*M*L*M];
-  gsl_matrix_view m = gsl_matrix_view_array (*H, L*M, L*M);
+   }
+  
+  /* //double data[L*M*L*M]; */
+  /* gsl_matrix_view m = gsl_matrix_view_array (*H, L*M, L*M); */
      
-  gsl_vector *eval = gsl_vector_alloc (L*M);
-  //gsl_matrix *evec = gsl_matrix_alloc (L*M, L*M);
-  gsl_eigen_symm_workspace * w = gsl_eigen_symm_alloc (L*M); //Just worry about eigenvalues for now
-  //gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc (L*M);
-  gsl_eigen_symm (&m.matrix, eval, w);
-  //gsl_eigen_symmv (&m.matrix, eval, evec, w);
-  //eigenvalues are symmetric so really only need half, don't think this can be fixed though
+  /* gsl_vector *eval = gsl_vector_alloc (L*M); */
+  /* //gsl_matrix *evec = gsl_matrix_alloc (L*M, L*M); */
+  /* gsl_eigen_symm_workspace * w = gsl_eigen_symm_alloc (L*M); //Just worry about eigenvalues for now */
+  /* //gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc (L*M); */
+  /* gsl_eigen_symm (&m.matrix, eval, w); */
+  /* //gsl_eigen_symmv (&m.matrix, eval, evec, w); */
+  /* //eigenvalues are symmetric so really only need half, don't think this can be fixed though */
      
-  gsl_eigen_symm_free (w);
+  /* gsl_eigen_symm_free (w); */
      
-  //gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC);
-  long int i=0;
-  for (i = 0; i < L*M; i++)
-    {
-      double eval_i = gsl_vector_get (eval, i);
-      //gsl_vector_view evec_i = gsl_matrix_column (evec, i);
-      printf ("%g\n", eval_i); //eigenvalue
-      //printf ("eigenvector = \n");
-      //gsl_vector_fprintf (stdout, &evec_i.vector, "%g");
-           }
-  gsl_vector_free (eval);
-  //gsl_matrix_free (evec);
+  /* //gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC); */
+  /* long int i=0; */
+  /* for (i = 0; i < L*M; i++) */
+  /*   { */
+  /*     double eval_i = gsl_vector_get (eval, i); */
+  /*     //gsl_vector_view evec_i = gsl_matrix_column (evec, i); */
+  /*     printf ("%g\n", eval_i); //eigenvalue */
+  /*     //printf ("eigenvector = \n"); */
+  /*     //gsl_vector_fprintf (stdout, &evec_i.vector, "%g"); */
+  /*          } */
+  /* gsl_vector_free (eval); */
+  /* //gsl_matrix_free (evec); */
   return 0;
 }

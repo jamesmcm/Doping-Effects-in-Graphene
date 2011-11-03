@@ -58,43 +58,50 @@ int main(){
     y++;
     x=0;
   }
+  int k;
+  for(k=0; k<L*M; k++){
+  int num = rand()%100;
+  if(num>=80){
+    H[k][k]=99;
+  }
+}
 
-  /* //Print Hamiltonian */
-  /* int i=0; */
-  /* int j=0; */
-  /* while (j<(L*M)){ */
-  /*   while (i<(L*M)){ */
-  /*     printf("%.0f ", H[j][i]); */
-  /*     i++; */
-  /*   } */
-  /*   i=0; */
-  /*   j++; */
-  /*   printf("\n"); */
-  /* } */
+  //Print Hamiltonian
+  int i=0;
+  int j=0;
+  while (j<(L*M)){
+    while (i<(L*M)){
+      printf("%.0f ", H[j][i]);
+      i++;
+    }
+    i=0;
+    j++;
+    printf("\n");
+  }
   //double data[L*M*L*M];
-  gsl_matrix_view m = gsl_matrix_view_array (*H, L*M, L*M);
+  /* gsl_matrix_view m = gsl_matrix_view_array (*H, L*M, L*M); */
      
-  gsl_vector *eval = gsl_vector_alloc (L*M);
-  //gsl_matrix *evec = gsl_matrix_alloc (L*M, L*M);
-  gsl_eigen_symm_workspace * w = gsl_eigen_symm_alloc (L*M); //Just worry about eigenvalues for now
-  //gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc (L*M);
-  gsl_eigen_symm (&m.matrix, eval, w);
-  //gsl_eigen_symmv (&m.matrix, eval, evec, w);
-  //eigenvalues are symmetric so really only need half, don't think this can be fixed though
+  /* gsl_vector *eval = gsl_vector_alloc (L*M); */
+  /* //gsl_matrix *evec = gsl_matrix_alloc (L*M, L*M); */
+  /* gsl_eigen_symm_workspace * w = gsl_eigen_symm_alloc (L*M); //Just worry about eigenvalues for now */
+  /* //gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc (L*M); */
+  /* gsl_eigen_symm (&m.matrix, eval, w); */
+  /* //gsl_eigen_symmv (&m.matrix, eval, evec, w); */
+  /* //eigenvalues are symmetric so really only need half, don't think this can be fixed though */
      
-  gsl_eigen_symm_free (w);
+  /* gsl_eigen_symm_free (w); */
      
-  //gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC);
-  long int i=0;
-  for (i = 0; i < L*M; i++)
-    {
-      double eval_i = gsl_vector_get (eval, i);
-      //gsl_vector_view evec_i = gsl_matrix_column (evec, i);
-      printf ("%g\n", eval_i); //eigenvalue
-      //printf ("eigenvector = \n");
-      //gsl_vector_fprintf (stdout, &evec_i.vector, "%g");
-           }
-  gsl_vector_free (eval);
-  //gsl_matrix_free (evec);
+  /* //gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC); */
+  /* long int i=0; */
+  /* for (i = 0; i < L*M; i++) */
+  /*   { */
+  /*     double eval_i = gsl_vector_get (eval, i); */
+  /*     //gsl_vector_view evec_i = gsl_matrix_column (evec, i); */
+  /*     printf ("%g\n", eval_i); //eigenvalue */
+  /*     //printf ("eigenvector = \n"); */
+  /*     //gsl_vector_fprintf (stdout, &evec_i.vector, "%g"); */
+  /*          } */
+  /* gsl_vector_free (eval); */
+  /* //gsl_matrix_free (evec); */
   return 0;
 }
