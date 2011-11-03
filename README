@@ -1,0 +1,5 @@
+Compiling GSL linked program:
+First create object file:
+gcc -Wall -I/usr/local/include -c example.c
+Then compile from object file:
+gcc -L/usr/local/lib example.o -lgsl -lgslcblas -lm
