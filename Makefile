@@ -1,10 +1,10 @@
 CC = gcc
 LD = gcc
-GSLDIR = /opt/local
+GSLDIR = /usr/local
 GSLINC = $(GSLDIR)/include
 GSLLIB = $(GSLDIR)/lib
 CFLAGS = -I$(GSLINC) -c
-LDFLAGS = -L$(GSLLIB) -lgsl
+LDFLAGS = -L$(GSLLIB) -lgsl -lm
 TARGET = mprojectgsl
 
 
