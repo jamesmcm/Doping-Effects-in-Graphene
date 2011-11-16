@@ -13,11 +13,59 @@
                                                                  // Note: does not work when x < -L
 #define SITE(x, y, L, M) (RESTRICT((x), (L)) + RESTRICT ((y), (M)) * (L) )  // Site index 
 
+#define P 500
+#define bins 35
+
 int fillH(double H[L*M][L*M]); //Generates the Hamiltonian
-int setvacancies(double H[L*M][L*M]); //Sets some diagonal values to high potentials to add vacancies
+int setvacancies(double H[L*M][L*M], double percent, double value); //Sets some diagonal values to high potentials to add vacancies
 int printH(double H[L*M][L*M]); //Prints the Hamiltonian matrix
 gsl_vector* geteigen(double H[L*M][L*M]); //Gets eigenvalues of H, could be modified to get eigenvectors if necessary
 int printeigenvalues(gsl_vector* eval); //Prints the eigenvalues obtained
+int genhistogram (double minval, double maxval, double input[P], int output[bins]);
+int avhistogram (int output[bins], double avhist[bins], int n);
+
+int genhistogram (double minval, double maxval, double input[P], int output[bins])
+{
+	double binsize = 0.0;
+	int j, k, m;
+
+	binsize = (maxval - minval) / bins;
+	
+	for (j=0; j<P; ++j)
+	{
+		k = floor((input[j]-minval) * (binsize));
+		if (k>=0 && k<bins)
+			++output[k];
+	}
+	for (m=0; m<bins; ++m)			/* just prints out the number of elements in each bin */
+	{
+		printf("%d ",output[m]);
+	}
+	printf("\n");
+
+	return 0;
+}
+
+int avhistogram (int output[bins], double avhist[bins], int n)
+{
+	int j;
+	
+	for (j=0; j<bins; ++j)
+	{
+		avhist[j] *= n-1;
+		avhist[j] += output[j];
+		avhist[j] /= n;
+		output[j] = 0;
+	}
+	
+	for (j=0; j<bins; ++j)			/* prints out the values in the histogram average array */
+	{
+		printf("%f ",avhist[j]);
+	}
+	printf("\n");
+	
+	return 0;
+}
 
 int fillH(double H[L*M][L*M]){
   int x=0;
@@ -53,12 +101,12 @@ int fillH(double H[L*M][L*M]){
 }
 
 
-int setvacancies(double H[L*M][L*M]){
+int setvacancies(double H[L*M][L*M], double percent, double value){
   int k;
   for(k=0; k<L*M; k++){
   int num = rand()%100;
-  if(num>=80){
-    H[k][k]=99;
+  if(num>=percent){
+    H[k][k]=value;
   }
   }
   return 0;
@@ -118,14 +166,27 @@ int printeigenvalues(gsl_vector* eval){
 }
 
 int main(){
+
+  int output[bins] = {0};			/* this is the single output array */
+  double avhist[bins] = {0.0};	/* this is the average of the histograms */
   // create Hamiltonian
   static double H[L*M][L*M]={0}; //static used to stop segfaults
   fillH(H);
   //printH(H);
-  //setvacancies(H);
+  //setvacancies(H, 80, 99);
   gsl_vector *eval=geteigen(H);
   printeigenvalues(eval);
+  //Before we can use Will's histogram code must convert gsl_vector to normal array, will do this later
+  /* n = 0; */
 
+  /* for (j=0; j<20; ++j) */
+  /*   { */
+
+  /* 	  genhistogram(30, 70, input, output); */
+  /* 	  ++n; */
+  /* 	  avhistogram(output, avhist, n); */
+  /*   } */
+	
 
   return 0;
 }
