@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-//#include <gsl/gsl_math.h>
-//#include <gsl/gsl_eigen.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_eigen.h>
 
 //Note ints limit 2147483647
 #define L 3 //colums
@@ -19,10 +19,16 @@
 int fillH(double H[L*M][L*M]); //Generates the Hamiltonian
 int setvacancies(double H[L*M][L*M], double percent_a, double percent_b, double value); //Sets some diagonal values to high potentials to add vacancies
 int printH(double H[L*M][L*M]); //Prints the Hamiltonian matrix
-//gsl_vector* geteigen(double H[L*M][L*M]); //Gets eigenvalues of H, could be modified to get eigenvectors if necessary
-//int printeigenvalues(gsl_vector* eval); //Prints the eigenvalues obtained
+gsl_vector* geteigen(double H[L*M][L*M]); //Gets eigenvalues of H, could be modified to get eigenvectors if necessary
+int printeigenvalues(gsl_vector* eval); //Prints the eigenvalues obtained
 int genhistogram (double minval, double maxval, double input[P], int output[bins]);
 int avhistogram (int output[bins], double avhist[bins], int n);
+double myrand();
+
+double myrand(){
+  return (double) (rand()/((double) RAND_MAX));
+}
+
 
 int genhistogram (double minval, double maxval, double input[P], int output[bins])
 {
@@ -102,49 +108,43 @@ int fillH(double H[L*M][L*M]){
 
 
 int setvacancies(double H[L*M][L*M], double percent_a, double percent_b, double value){
-
-int ab_stagger =0;
-
-    int x=0;
-    int y=0;
-
-
-for(y=0;y<M*L;y++){
-    for(x=0;x<M*L;x++){
-
-        int col_stagger = (x % 2) ? 1 : -1;
-        int row_stagger = (y % 2) ? 1 : -1;
-        int ab_stagger  = col_stagger * row_stagger;  // This gives a simple way to distingish a,b sublattice: a=1 b=-1
-
-int num= rand()%100;
-   //   printf("num%d ab %d x %d y%d\n  ",num,ab_stagger,x,y);
-
-
-if(x==y){
-if(ab_stagger>0){
-    if(num<=percent_a){
-    H[x][x]=value;
-  }
-}
-
-if(ab_stagger<0){
-  if(num<=percent_b){
-    H[x][x]=value;
+  int x=0;
+  int y=0;
+  int p=0;
+  
+  for(p=0;p<M*L;p++){
+    x=p%L;
+    y=p/L;
+    int col_stagger = (x % 2) ? 1 : -1;
+    int row_stagger = (y % 2) ? 1 : -1;
+    int ab_stagger  = col_stagger * row_stagger;  // This gives a simple way to distingish a,b sublattice: a=1 b=-1
+    
+    double num= myrand();
+    //printf("num%.3f ab %d x %d y%d\n  ",num,ab_stagger,x,y);
+    
+    
+    if(ab_stagger==1){
+      if(num<=percent_a){
+	H[p][p]=value;
+      }
     }
+    
+    else if(ab_stagger==-1){
+      if(num<=percent_b){
+	H[p][p]=value;
+      }
     }
- }
-}
-
-}
-
-/*  int k;
-  for(k=0; k<L*M; k++){
-  int num = rand()%100;
-  if(num>=percent){
-    H[k][k]=value;
   }
-  }
-
+  
+  
+  /*  int k;
+      for(k=0; k<L*M; k++){
+      int num = rand()%100;
+      if(num>=percent){
+      H[k][k]=value;
+      }
+      }
+      
   */
 
   return 0;
@@ -166,42 +166,41 @@ int printH(double H[L*M][L*M]){
   return 0;
 }
 
-// gsl_vector* geteigen(double H[L*M][L*M]){                  comment
-//  gsl_matrix_view m = gsl_matrix_view_array (*H, L*M, L*M); comment
-
- // gsl_vector *eval = gsl_vector_alloc (L*M);              comment
-  //gsl_matrix *evec = gsl_matrix_alloc (L*M, L*M);         comment
-//  gsl_eigen_symm_workspace * w = gsl_eigen_symm_alloc (L*M); //Just worry about eigenvalues for now
+gsl_vector* geteigen(double H[L*M][L*M]){
+  gsl_matrix_view m = gsl_matrix_view_array (*H, L*M, L*M);
+  gsl_vector *eval = gsl_vector_alloc (L*M); 
+  //gsl_matrix *evec = gsl_matrix_alloc (L*M, L*M);
+  gsl_eigen_symm_workspace * w = gsl_eigen_symm_alloc (L*M); //Just worry about eigenvalues for now
   //gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc (L*M);
-//  gsl_eigen_symm (&m.matrix, eval, w);          comment
+  gsl_eigen_symm (&m.matrix, eval, w);
   //gsl_eigen_symmv (&m.matrix, eval, evec, w);
   //eigenvalues are symmetric so really only need half, don't think this can be fixed though
 
-//  gsl_eigen_symm_free (w);  coment
+  gsl_eigen_symm_free (w);
 
- //coment return eval;
+  return eval;
 
   //Can modify this to get eigenvectors too, but will need to return an array of a gsl_vector and a gsl_matrix
-//}
+}
 
-/*int printeigenvalues(gsl_vector* eval){
+int printeigenvalues(gsl_vector* eval){
   //gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC);
   int i=0;
 
-
+  
   for (i = 0; i < L*M; i++)
-  {
-  double eval_i = gsl_vector_get (eval, i);
-  //gsl_vector_view evec_i = gsl_matrix_column (evec, i);
-  printf ("%g\n", eval_i); //eigenvalue
-  //printf ("eigenvector = \n");
-  //gsl_vector_fprintf (stdout, &evec_i.vector, "%g");
-  }
+    {
+    double eval_i = gsl_vector_get (eval, i);
+    //gsl_vector_view evec_i = gsl_matrix_column (evec, i);
+    printf ("%g\n", eval_i); //eigenvalue
+    //printf ("eigenvector = \n");
+    //gsl_vector_fprintf (stdout, &evec_i.vector, "%g");
+    }
   gsl_vector_free (eval);
   //gsl_matrix_free (evec);
   return 0;
 }
-*/
+
 int main(){
 
   int output[bins] = {0};			/* this is the single output array */
@@ -209,11 +208,10 @@ int main(){
   // create Hamiltonian
   static double H[L*M][L*M]={0}; //static used to stop segfaults
   fillH(H);
-
-  setvacancies(H, 20,20, 99);
+  setvacancies(H, 0.1,0.1, 99);
   printH(H);
-//  gsl_vector *eval=geteigen(H); comment
-//  printeigenvalues(eval); coment
+  gsl_vector *eval=geteigen(H);
+  printeigenvalues(eval);
   //Before we can use Will's histogram code must convert gsl_vector to normal array, will do this later
   /* n = 0; */
 
