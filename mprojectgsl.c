@@ -33,6 +33,7 @@ double myrand(){
 
 double genhistogram (double minval, double maxval, double input[], int output[bins], int P) //P is length of input
 {
+  memset (output, 0, sizeof (output[0]) * bins);
   double binsize = 0.0;
   int j, k, m;
   printf("P=%i\n", P);
@@ -40,7 +41,7 @@ double genhistogram (double minval, double maxval, double input[], int output[bi
   
   for (j=0; j<P; j++)
     {
-      k = floor((input[j]-minval) * (binsize));
+      k = floor((input[j]-minval) / (binsize)); // was: ... * binsize!
       if (k>=0 && k<bins)
 	output[k]++;
     }
