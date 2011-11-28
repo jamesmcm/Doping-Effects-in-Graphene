@@ -1,6 +1,6 @@
       PROGRAM GRAPHENE
       INTEGER ,PARAMETER :: LIMX=3, LIMY=3, HSIZE=LIMX*LIMY*LIMX*LIMY,
-     +     LSIZE=LIMX*LIMY
+     +     LSIZE=LIMX*LIMY, WRAPY=0, WRAPX=1
       INTEGER*4 I/1/, J/1/,L/1/, M/1/, P
 
       REAL HAMIL(LSIZE, LSIZE)
@@ -16,11 +16,23 @@ C$$$         I=1
 C$$$  Let M be Y, L be X
       DO M = 1, LIMY
          DO L = 1, LIMX
-            P=L+(L*M)
-            IF (P+L .LE. LIMX*LIMY) THEN
-               HAMIL(P, P+L)=1
-C$$$  Link upwards - need to add wrapping
+            P=L+(LIMX*(M-1))
+C$$$  BEGIN Y Link upwards
+            IF (P+LIMX .LE. LIMX*LIMY) THEN
+               HAMIL(P, P+LIMX)=1
             ENDIF
+            IF (P+LIMX .GT. LIMX*LIMY) THEN
+               HAMIL(P,(P+LIMX)-(LIMX*LIMY))=WRAPY
+            ENDIF
+c$$$  BEGIN Y Link downwards
+            IF (P-LIMX .GE. 1) THEN
+               HAMIL(P, P-LIMX)=1
+            ENDIF
+            IF (P-LIMX .LT. 1) THEN
+               HAMIL(P, (LIMX*LIMY)+(P-LIMX))=WRAPY
+            ENDIF
+c$$$  BEGIN X Linking
+            
          ENDDO
       ENDDO
 
@@ -29,7 +41,7 @@ C$$$  PRINT HAMILTONIAN
          WRITE (*,20) (HAMIL(J,I), I = 1, LIMX*LIMY)
       END DO	
       
- 20   FORMAT (9F6.2)
+ 20   FORMAT (9F6.0)
       END
       
 
