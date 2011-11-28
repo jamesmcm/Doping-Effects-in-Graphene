@@ -1,3 +1,7 @@
+/* TODO: */
+/* Averaging doesn't seem to work, either as percentage or sum, what was it meant to do? Will fix ASAP */
+/*  Write resetvacancies function to reset diagonals so setvacancies can be used again without regenerating H */
+/*  Include function to calculate maximum number of bins (so least filled bin is 1 item filled) from trial run of the histogram generator, then use this minus an error margin due to randomness for future runs, saves doing it manually - already written in python kind of */
 #include <stdio.h>
 #include <string.h>
 #include <gsl/gsl_math.h>
@@ -23,7 +27,7 @@ gsl_vector* geteigen(double H[L*M][L*M]); //Gets eigenvalues of H, could be modi
 int printeigenvalues(gsl_vector* eval); //Prints the eigenvalues obtained
 int sprinteigenvalues(gsl_vector* eval, double output[]);
 double genhistogram (double minval, double maxval, double input[], int output[bins], int P);
-int avhistogram (int output[bins], double avhist[bins], int n);
+int avhistogram (int input[bins], double avhist[bins], int n);
 double myrand();
 
 double myrand(){
@@ -35,8 +39,8 @@ double genhistogram (double minval, double maxval, double input[], int output[bi
 {
   memset (output, 0, sizeof (output[0]) * bins);
   double binsize = 0.0;
-  int j, k, m;
-  printf("P=%i\n", P);
+  int j, k;
+  //printf("P=%i\n", P);
   binsize = (maxval - minval) / bins;
   
   for (j=0; j<P; j++)
@@ -45,32 +49,32 @@ double genhistogram (double minval, double maxval, double input[], int output[bi
       if (k>=0 && k<bins)
 	output[k]++;
     }
-  for (m=0; m<bins; m++)			/* just prints out the number of elements in each bin */
-    {
-      printf("%d ",output[m]);
-    }
-  printf("\n");
+  /* for (m=0; m<bins; m++)			/\* just prints out the number of elements in each bin *\/ */
+  /*   { */
+  /*     printf("%d ",output[m]); */
+  /*   } */
+  /* printf("\n"); */
   
   return binsize;
 }
 
-int avhistogram (int output[bins], double avhist[bins], int n)
+int avhistogram (int input[bins], double avhist[bins], int n)
 {
 	int j;
 
 	for (j=0; j<bins; j++)
 	{
 		avhist[j] *= n-1;
-		avhist[j] += output[j];
+		avhist[j] += input[j];
 		avhist[j] /= n;
-		output[j] = 0;
+		input[j] = 0;
 	}
 
-	for (j=0; j<bins; ++j)			/* prints out the values in the histogram average array */
-	{
-		printf("%f ",avhist[j]);
-	}
-	printf("\n");
+	/* for (j=0; j<bins; ++j)			/\* prints out the values in the histogram average array *\/ */
+	/* { */
+	/* 	printf("%f ",avhist[j]); */
+	/* } */
+	/* printf("\n"); */
 
 	return 0;
 }
@@ -204,31 +208,41 @@ int sprinteigenvalues(gsl_vector* eval, double output[]){
 }
 
 int main(){
-
-  int output[bins] = {0};			/* this is the single output array */
-  double avhist[bins] = {0.0};	/* this is the average of the histograms */
   // create Hamiltonian
   static double H[L*M][L*M]={0}; //static used to stop segfaults
   fillH(H);
-  //setvacancies(H, 0.1,0.1, 99);
-  printH(H);
-  gsl_vector *eval=geteigen(H);
+  int curhistogram[bins]={0};
+  double avghistogram[bins]={0.0};
+  double binsize;  
   double eigenvalues[L*M];
-  //printeigenvalues(eval);
-  //printf("\n---\n");
+  int i,n;
+
+  gsl_vector *eval=geteigen(H);
   sprinteigenvalues(eval, eigenvalues);
-  int i;
-  /* for (i=0;i<L*M;i++){ */
-  /*   printf("%.3f\n", eigenvalues[i]); */
-  /* } */
-  int histogram[bins];
-  double binsize;
-  binsize = genhistogram(-3.0, 3.0, eigenvalues, histogram, L*M);
-  printf("binsize = %.4f\n", binsize);
-  for (i=0;i<bins;i++){
-    printf("%i\n", histogram[i]);
+  binsize = genhistogram(-3.0, 3.0, eigenvalues, curhistogram, L*M);
+  for(n=0;n<L*M;n++){
+    avghistogram[n]=(double) curhistogram[n];
+  }
+  for(n=2;n<=10;n++){
+    //setvacancies(H, 0.1,0.1, 99);
+    //printH(H);
+    gsl_vector *eval=geteigen(H);
+    //printeigenvalues(eval);
+    //printf("\n---\n");
+    sprinteigenvalues(eval, eigenvalues);
+    /* for (i=0;i<L*M;i++){ */
+    /*   printf("%.3f\n", eigenvalues[i]); */
+    /* } */
+    binsize = genhistogram(-3.0, 3.0, eigenvalues, curhistogram, L*M);
+    avhistogram(curhistogram, avghistogram, n);
   }  
 
+  printf("binsize = %.4f, n=%i\n", binsize, n);
+  for (i=0;i<bins;i++){
+    printf("%.4f\t", avghistogram[i]);
+
+  }
+  printf("\n");
   //Before we can use Will's histogram code must convert gsl_vector to normal array, will do this later
   /* n = 0; */
 
