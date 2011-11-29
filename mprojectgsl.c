@@ -1,5 +1,4 @@
 /* TODO: */
-/* Averaging doesn't seem to work, either as percentage or sum, what was it meant to do? Will fix ASAP */
 /* Write resetvacancies function to reset diagonals so setvacancies can be used again without regenerating H */
 /* Include function to calculate maximum number of bins (so least filled bin is 1 item filled) from trial run of the histogram generator, then use this minus an error margin due to randomness for future runs, saves doing it manually - already written in python kind of */
 #include <stdio.h>
