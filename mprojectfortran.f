@@ -1,7 +1,7 @@
       PROGRAM GRAPHENE
       INTEGER ,PARAMETER :: LIMX=3, LIMY=3, HSIZE=LIMX*LIMY*LIMX*LIMY,
      +     LSIZE=LIMX*LIMY, WRAPY=0, WRAPX=1
-      INTEGER*4 I/1/, J/1/,L/1/, M/1/, P
+      INTEGER*4 I/1/, J/1/,L/1/, M/1/, P, COLSTAG, ROWSTAG, ABSTAG
 
       REAL HAMIL(LSIZE, LSIZE)
       DATA HAMIL/HSIZE*0.0/
@@ -32,7 +32,30 @@ c$$$  BEGIN Y Link downwards
                HAMIL(P, (LIMX*LIMY)+(P-LIMX))=WRAPY
             ENDIF
 c$$$  BEGIN X Linking
-            
+c$$$      int col_stagger = (x % 2) ? 1 : -1; 
+c$$$  FORTRAN counts from 1!
+c$$$      int row_stagger = (y % 2) ? 1 : -1;
+c$$$      int ab_stagger  = col_stagger * row_stagger;
+            IF (MOD(L,2) .EQ. 0) THEN
+               COLSTAG=-1
+            ENDIF
+            IF (MOD(L,2) .EQ. 1) THEN
+               COLSTAG=1
+            ENDIF
+            IF (MOD(M,2) .EQ. 0) THEN
+               ROWSTAG=-1
+            ENDIF
+            IF (MOD(M,2) .EQ. 1) THEN
+               ROWSTAG=1
+            ENDIF
+            ABSTAG = COLSTAG * ROWSTAG
+            IF (ABSTAG .GT. 0) THEN
+               IF (P + ABSTAG .LT. LIMX*LIMY) THEN
+                  HAMIL(P, P+ABSTAG)=1
+               ENDIF
+               IF (P + ABSTAG .GT. LIMX*LIMY) THEN
+                  HAMIL(P, P-(LIMX*LIMY))=WRAPX
+c$$$  THIS DOES NOT WORK, NEED BETTER WRAPPING DO LATER
          ENDDO
       ENDDO
 
