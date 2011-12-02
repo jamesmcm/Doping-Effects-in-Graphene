@@ -48,14 +48,24 @@ c$$$      int ab_stagger  = col_stagger * row_stagger;
             IF (MOD(M,2) .EQ. 1) THEN
                ROWSTAG=1
             ENDIF
-            ABSTAG = COLSTAG * ROWSTAG
             IF (ABSTAG .GT. 0) THEN
-               IF (P + ABSTAG .LT. LIMX*LIMY) THEN
+               IF (((P-1) + ABSTAG)/LIMX .EQ. M-1) THEN
                   HAMIL(P, P+ABSTAG)=1
                ENDIF
-               IF (P + ABSTAG .GT. LIMX*LIMY) THEN
-                  HAMIL(P, P-(LIMX*LIMY))=WRAPX
-c$$$  THIS DOES NOT WORK, NEED BETTER WRAPPING DO LATER
+               IF (((P-1) + ABSTAG)/LIMX .GT. M-1) THEN
+                  HAMIL(P, ((M-1)*LIMX)+((P+ABSTAG)-((M)*LIMX)))=WRAPX
+               ENDIF
+            ENDIF
+            IF (ABSTAG .LT. 0) THEN
+               IF (((P-1) + ABSTAG)/LIMX .EQ. M-1) THEN
+                  HAMIL(P, P+ABSTAG)=1
+               ENDIF
+               IF (((P-1) + ABSTAG)/LIMX .LT. M-1) THEN
+                  HAMIL(P, ((M-1)*LIMX)+((LIMX+ABSTAG))+1)=WRAPX
+               ENDIF
+            ENDIF
+
+
          ENDDO
       ENDDO
 
@@ -64,7 +74,7 @@ C$$$  PRINT HAMILTONIAN
          WRITE (*,20) (HAMIL(J,I), I = 1, LIMX*LIMY)
       END DO	
       
- 20   FORMAT (9F6.0)
+ 20   FORMAT (9F2.0)
       END
       
 

@@ -7,8 +7,8 @@
 #include <gsl/gsl_eigen.h>
 
 //Note ints limit 2147483647
-#define L 30 //colums
-#define M 40 //rows
+#define L 3 //colums
+#define M 3 //rows
 #define WRAPX 1
 #define WRAPY 0
 #define RESTRICT(x, L) (((x) >= 0) ? ((x) % (L)) : ((x) + (L))) // Restrict x to the interval [0:L-1]
@@ -218,50 +218,50 @@ int main(){
   // create Hamiltonian
   static double H[L*M][L*M]={0}; //static used to stop segfaults
   memset (H, 0, sizeof (H)); 
-  //fillH(H);
+  fillH(H);
   int curhistogram[bins]={0};
   double avghistogram[bins]={0.0};
   double binsize;
   double eigenvalues[L*M];
   int i, n, b;
-
+  printH(H);
   //gsl_vector *eval=geteigen(H);
   //sprinteigenvalues(eval, eigenvalues);
   //binsize = genhistogram(-3.0, 3.0, eigenvalues, curhistogram, L*M);
-  for( b=0; b < bins; b++ ){
-    avghistogram[b] = 0; //(double) curhistogram[n];
-  }
-  for( n=1; n<=100; n++ ){
-    //setvacancies(H, 0.1,0.1, 99);
-    //printH(H);
-    memset (H, 0, sizeof (H)); 
-    fillH(H); 
-    setvacancies(H, 0.03, 0.03, 99); 
-    gsl_vector *eval=geteigen(H);
-    //printeigenvalues(eval);
-    //printf("\n---\n");
-    sprinteigenvalues(eval, eigenvalues);
-    /* for (i=0;i<L*M;i++){ */
-    /* printf("%.3f\n", eigenvalues[i]); */
-    /* } */
-    binsize = genhistogram(-3, 3, eigenvalues, curhistogram, L*M);
-    printf ("n = %d cur = %d\n", n, curhistogram[0]); 
-    avhistogram(curhistogram, avghistogram, n);
-    printf ("av = %g\n", avghistogram[0]); 
+  /* for( b=0; b < bins; b++ ){ */
+  /*   avghistogram[b] = 0; //(double) curhistogram[n]; */
+  /* } */
+  /* for( n=1; n<=100; n++ ){ */
+  /*   //setvacancies(H, 0.1,0.1, 99); */
+  /*   //printH(H); */
+  /*   memset (H, 0, sizeof (H));  */
+  /*   fillH(H);  */
+  /*   setvacancies(H, 0.03, 0.03, 99);  */
+  /*   gsl_vector *eval=geteigen(H); */
+  /*   //printeigenvalues(eval); */
+  /*   //printf("\n---\n"); */
+  /*   sprinteigenvalues(eval, eigenvalues); */
+  /*   /\* for (i=0;i<L*M;i++){ *\/ */
+  /*   /\* printf("%.3f\n", eigenvalues[i]); *\/ */
+  /*   /\* } *\/ */
+  /*   binsize = genhistogram(-3, 3, eigenvalues, curhistogram, L*M); */
+  /*   printf ("n = %d cur = %d\n", n, curhistogram[0]);  */
+  /*   avhistogram(curhistogram, avghistogram, n); */
+  /*   printf ("av = %g\n", avghistogram[0]);  */
      
-  }
+  /* } */
 
-  FILE * fp = fopen ("curhist.dat", "w");
-  for (i = 0; i < bins; i ++) {
-      fprintf (fp, "%g\n", avghistogram[i]); 
-  }
-  fclose (fp); 
-  printf("binsize = %.4f, n=%i\n", binsize, n);
-  for (i=0;i<bins;i++){
-    printf("%.4f\t", avghistogram[i]);
+  /* FILE * fp = fopen ("curhist.dat", "w"); */
+  /* for (i = 0; i < bins; i ++) { */
+  /*     fprintf (fp, "%g\n", avghistogram[i]);  */
+  /* } */
+  /* fclose (fp);  */
+  /* printf("binsize = %.4f, n=%i\n", binsize, n); */
+  /* for (i=0;i<bins;i++){ */
+  /*   printf("%.4f\t", avghistogram[i]); */
 
-  }
-  printf("\n");
+  /* } */
+  /* printf("\n"); */
   //Before we can use Will's histogram code must convert gsl_vector to normal array, will do this later
   /* n = 0; */
 
