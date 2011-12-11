@@ -5,7 +5,8 @@
 
       REAL MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX), 
      +     MULT(2*LIMX, 2*LIMX)
-      DATA MODD/MSIZE*0.0/, MEVEN/MSIZE*0.0/
+      DOUBLE COMPLEX O(2*LIMX, 2*LIMX)
+      DATA MODD/MSIZE*0.0/, MEVEN/MSIZE*0.0/, O/MSIZE*0.0/
 
 
 c$$$  First row is even - WRAPX makes no diff, second row not, etc.
@@ -55,9 +56,26 @@ c$$$  Only the ends matter with regards to the  WRAPX effect
          END IF
       END DO      
 
+c$$$      DO J = 1, 2*LIMX
+c$$$         WRITE (*,20) (MULT(J,I), I = 1, 2*LIMX)
+c$$$      END DO
+
+c$$$  Generate O-matrix	
+c$$$  O is block matrix of 1/sqrt(2) (1,1;i,-i)
+      DO I = 1, LIMX
+         O(I, I)=1/SQRT(2.0)
+         O(I, LIMX+I)=1/SQRT(2.0)
+         O(I+LIMX, I)=DCMPLX(0, 1/SQRT(2.0))
+         O(I+LIMX, I+LIMX)=DCMPLX(0 ,-1/SQRT(2.0))
+      ENDDO
+
       DO J = 1, 2*LIMX
-         WRITE (*,20) (MULT(J,I), I = 1, 2*LIMX)
-      END DO	
-      
+         DO I=1, 2*LIMX
+            WRITE (*,30) REAL(O(J,I)), ' + ', DIMAG(O(J,I)), 'I'
+         END DO
+      END DO
+
  20   FORMAT (8F3.0)
+ 30   FORMAT (F6.4, A, F6.4, A)
+
       END
