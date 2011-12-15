@@ -1,5 +1,5 @@
       PROGRAM TRANSFERM
-      INTEGER, PARAMETER :: LIMX=2, LIMY=2, WRAPY=0, WRAPX=1,
+      INTEGER, PARAMETER :: LIMX=2, LIMY=4, WRAPY=0, WRAPX=1,
      +     MSIZE=4*LIMX*LIMX
       INTEGER PIVOT(2*LIMX, 2*LIMX)
       INTEGER*4 I/1/, J/1/, E/2/, S/9/
@@ -7,6 +7,7 @@
       REAL MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX), 
      +     MULT(2*LIMX, 2*LIMX)
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
+      COMPLEX WORK(2*LIMX)
       DATA MODD/MSIZE*0.0/, MEVEN/MSIZE*0.0/, O/MSIZE*0.0/,
      +     IO/MSIZE*0.0/, PIVOT/MSIZE*0/
 
@@ -73,16 +74,29 @@ c$$$  O is block matrix of 1/sqrt(2) (1,1;i,-i)
 
       IO=O
       CALL CGETRF(2*LIMX, 2*LIMX, IO, 2*LIMX, PIVOT, S)
+      CALL CGETRI(2*LIMX, IO, 2*LIMX, PIVOT, WORK, 2*LIMX, S)
       IF (S .EQ. 0) THEN
          PRINT *, 'GREAT SUCCESS'
       ELSE
          PRINT *, 'TERRIBLE FAILURE'
       END IF
 
+      PRINT *, 'O matrix:'
+
       DO J = 1, 2*LIMX
          DO I=1, 2*LIMX
             WRITE (*,30) REAL(O(J,I)), ' + ', DIMAG(O(J,I)), 'I'
          END DO
+         PRINT *, '----'
+      END DO
+
+      PRINT *, 'IO matrix:'
+
+      DO J = 1, 2*LIMX
+         DO I=1, 2*LIMX
+            WRITE (*,30) REAL(IO(J,I)), ' + ', DIMAG(IO(J,I)), 'I'
+         END DO
+         PRINT *, '----'
       END DO
 
  20   FORMAT (8F3.0)
