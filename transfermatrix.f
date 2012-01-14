@@ -1,15 +1,16 @@
       PROGRAM TRANSFERM
-      INTEGER, PARAMETER :: LIMX=2, LIMY=4, WRAPY=0, WRAPX=1,
+      INTEGER, PARAMETER :: LIMX=2, LIMY=2, WRAPY=0, WRAPX=1,
      +     MSIZE=4*LIMX*LIMX
       INTEGER PIVOT(2*LIMX, 2*LIMX)
-      INTEGER*4 I/1/, J/1/, E/2/, S/9/
+      INTEGER*4 I/1/, J/1/, E/2/, S/9/, K/1/
 
-      REAL MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX), 
-     +     MULT(2*LIMX, 2*LIMX)
+      DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX), 
+     +     MULT(2*LIMX, 2*LIMX), OUT(2*LIMX, 2*LIMX), ALPHA, BETA
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
-      COMPLEX WORK(2*LIMX)
+      DOUBLE COMPLEX WORK(4*LIMX*LIMX)
       DATA MODD/MSIZE*0.0/, MEVEN/MSIZE*0.0/, O/MSIZE*0.0/,
-     +     IO/MSIZE*0.0/, PIVOT/MSIZE*0/
+     +     IO/MSIZE*0.0/, PIVOT/MSIZE*0/, ALPHA/1.0/,
+     +     BETA/0.0/
 
 
 c$$$  First row is even - WRAPX makes no diff, second row not, etc.
@@ -46,60 +47,75 @@ c$$$  Only the ends matter with regards to the  WRAPX effect
       DO I = 1, LIMY-1
          IF (MOD(LIMY,2) .EQ. 1) THEN
             IF (MOD(I,2) .EQ. 1) THEN
-               MULT = MATMUL(MULT,MEVEN)
+c$$$               MULT = MATMUL(MULT,MEVEN)
+               CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, MULT, 
+     +              2*LIMX, MEVEN, 2*LIMX, BETA, OUT, 2*LIMX)
+               MULT=OUT
             ELSE
-               MULT = MATMUL(MULT,MODD)
+c$$$               MULT = MATMUL(MULT,MODD)
+               CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, MULT, 
+     +              2*LIMX, MODD, 2*LIMX, BETA, OUT, 2*LIMX)
+               MULT=OUT
             END IF
          ELSE
             IF (MOD(I,2) .EQ. 1) THEN
-               MULT = MATMUL(MULT,MODD)
+c$$$               MULT = MATMUL(MULT,MODD)
+               CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, MULT, 
+     +              2*LIMX, MODD, 2*LIMX, BETA, OUT, 2*LIMX)
+               MULT=OUT
             ELSE
-               MULT = MATMUL(MULT, MEVEN)
+c$$$               MULT = MATMUL(MULT, MEVEN)
+               CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, MULT, 
+     +              2*LIMX, MEVEN, 2*LIMX, BETA, OUT, 2*LIMX)
+               MULT=OUT
             END IF
          END IF
       END DO      
 
-c$$$      DO J = 1, 2*LIMX
-c$$$         WRITE (*,20) (MULT(J,I), I = 1, 2*LIMX)
-c$$$      END DO
+c$$$      CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, MODD, 
+c$$$     +     2*LIMX, MEVEN, 2*LIMX, BETA, OUT, 2*LIMX)
+
+      DO J = 1, 2*LIMX
+         WRITE (*,20) (REAL(OUT(J,I)), I = 1, 2*LIMX)
+      END DO
 
 c$$$  Generate O-matrix	
 c$$$  O is block matrix of 1/sqrt(2) (1,1;i,-i)
-      DO I = 1, LIMX
-         O(I, I)=1/SQRT(2.0)
-         O(I, LIMX+I)=1/SQRT(2.0)
-         O(I+LIMX, I)=DCMPLX(0, 1/SQRT(2.0))
-         O(I+LIMX, I+LIMX)=DCMPLX(0 ,-1/SQRT(2.0))
-      ENDDO
+c$$$      DO I = 1, LIMX
+c$$$         O(I, I)=1/SQRT(2.0)
+c$$$         O(I, LIMX+I)=1/SQRT(2.0)
+c$$$         O(I+LIMX, I)=DCMPLX(0, 1/SQRT(2.0))
+c$$$         O(I+LIMX, I+LIMX)=DCMPLX(0 ,-1/SQRT(2.0))
+c$$$      ENDDO
+c$$$
+c$$$      IO=O
+c$$$      CALL ZGETRF(2*LIMX, 2*LIMX, IO, 2*LIMX, PIVOT, S)
+c$$$      CALL ZGETRI(2*LIMX, IO, 2*LIMX, PIVOT, WORK, 4*LIMX*LIMX, S)
+c$$$      IF (S .EQ. 0) THEN
+c$$$         PRINT *, 'GREAT SUCCESS'
+c$$$      ELSE
+c$$$         PRINT *, 'TERRIBLE FAILURE'
+c$$$      END IF
+c$$$
+c$$$      PRINT *, 'O matrix:'
+c$$$
+c$$$      DO J = 1, 2*LIMX
+c$$$         DO I=1, 2*LIMX
+c$$$            WRITE (*,30) REAL(O(J,I)), ' + ', DIMAG(O(J,I)), 'I'
+c$$$         END DO
+c$$$         PRINT *, '----'
+c$$$      END DO
+c$$$
+c$$$      PRINT *, 'IO matrix:'
+c$$$
+c$$$      DO J = 1, 2*LIMX
+c$$$         DO I=1, 2*LIMX
+c$$$            WRITE (*,30) REAL(IO(J,I)), ' + ', DIMAG(IO(J,I)), 'I'
+c$$$         END DO
+c$$$         PRINT *, '----'
+c$$$      END DO
 
-      IO=O
-      CALL CGETRF(2*LIMX, 2*LIMX, IO, 2*LIMX, PIVOT, S)
-      CALL CGETRI(2*LIMX, IO, 2*LIMX, PIVOT, WORK, 2*LIMX, S)
-      IF (S .EQ. 0) THEN
-         PRINT *, 'GREAT SUCCESS'
-      ELSE
-         PRINT *, 'TERRIBLE FAILURE'
-      END IF
-
-      PRINT *, 'O matrix:'
-
-      DO J = 1, 2*LIMX
-         DO I=1, 2*LIMX
-            WRITE (*,30) REAL(O(J,I)), ' + ', DIMAG(O(J,I)), 'I'
-         END DO
-         PRINT *, '----'
-      END DO
-
-      PRINT *, 'IO matrix:'
-
-      DO J = 1, 2*LIMX
-         DO I=1, 2*LIMX
-            WRITE (*,30) REAL(IO(J,I)), ' + ', DIMAG(IO(J,I)), 'I'
-         END DO
-         PRINT *, '----'
-      END DO
-
- 20   FORMAT (8F3.0)
+ 20   FORMAT (4F4.0)
  30   FORMAT (F6.4, A, F6.4, A)
 
 
