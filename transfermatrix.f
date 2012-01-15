@@ -6,11 +6,12 @@
 
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX), 
      +     MULT(2*LIMX, 2*LIMX), OUT(2*LIMX, 2*LIMX), ALPHA, BETA
-      DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
+      DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX),
+     +     TEMP(2*LIMX, 2*LIMX), ABCD(2*LIMX, 2*LIMX)
       DOUBLE COMPLEX WORK(4*LIMX*LIMX)
       DATA MODD/MSIZE*0.0/, MEVEN/MSIZE*0.0/, O/MSIZE*0.0/,
      +     IO/MSIZE*0.0/, PIVOT/MSIZE*0/, ALPHA/1.0/,
-     +     BETA/0.0/
+     +     BETA/0.0/, TEMP/MSIZE*0.0/
 
 
 c$$$  First row is even - WRAPX makes no diff, second row not, etc.
@@ -72,25 +73,37 @@ c$$$               MULT = MATMUL(MULT, MEVEN)
          END IF
       END DO      
 
-c$$$      CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, MODD, 
-c$$$     +     2*LIMX, MEVEN, 2*LIMX, BETA, OUT, 2*LIMX)
-
-      DO J = 1, 2*LIMX
-         WRITE (*,20) (REAL(OUT(J,I)), I = 1, 2*LIMX)
-      END DO
+c$$$  MULT now holds the net transfer matrix for moving down vertically
+c$$$      DO J = 1, 2*LIMX
+c$$$         WRITE (*,20) (REAL(MULT(J,I)), I = 1, 2*LIMX)
+c$$$      END DO
 
 c$$$  Generate O-matrix	
 c$$$  O is block matrix of 1/sqrt(2) (1,1;i,-i)
-c$$$      DO I = 1, LIMX
-c$$$         O(I, I)=1/SQRT(2.0)
-c$$$         O(I, LIMX+I)=1/SQRT(2.0)
-c$$$         O(I+LIMX, I)=DCMPLX(0, 1/SQRT(2.0))
-c$$$         O(I+LIMX, I+LIMX)=DCMPLX(0 ,-1/SQRT(2.0))
-c$$$      ENDDO
-c$$$
-c$$$      IO=O
-c$$$      CALL ZGETRF(2*LIMX, 2*LIMX, IO, 2*LIMX, PIVOT, S)
-c$$$      CALL ZGETRI(2*LIMX, IO, 2*LIMX, PIVOT, WORK, 4*LIMX*LIMX, S)
+      DO I = 1, LIMX
+         O(I, I)=1/SQRT(2.0)
+         O(I, LIMX+I)=1/SQRT(2.0)
+         O(I+LIMX, I)=DCMPLX(0, 1/SQRT(2.0))
+         O(I+LIMX, I+LIMX)=DCMPLX(0 ,-1/SQRT(2.0))
+      ENDDO
+
+      IO=O
+      CALL ZGETRF(2*LIMX, 2*LIMX, IO, 2*LIMX, PIVOT, S)
+      CALL ZGETRI(2*LIMX, IO, 2*LIMX, PIVOT, WORK, 4*LIMX*LIMX, S)
+      CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, MULT, 
+     +     2*LIMX, O, 2*LIMX, BETA, TEMP, 2*LIMX)
+      CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, IO, 
+     +     2*LIMX, TEMP, 2*LIMX, BETA, ABCD, 2*LIMX)
+
+      PRINT *, 'ABCD matrix:'
+
+      DO J = 1, 2*LIMX
+         DO I=1, 2*LIMX
+            WRITE (*,30) REAL(ABCD(J,I)), ' + ', DIMAG(ABCD(J,I)), 'I'
+         END DO
+         PRINT *, '----'
+      END DO
+
 c$$$      IF (S .EQ. 0) THEN
 c$$$         PRINT *, 'GREAT SUCCESS'
 c$$$      ELSE
@@ -115,8 +128,10 @@ c$$$         END DO
 c$$$         PRINT *, '----'
 c$$$      END DO
 
+
+
  20   FORMAT (4F4.0)
- 30   FORMAT (F6.4, A, F6.4, A)
+ 30   FORMAT (F8.4, A, F8.4, A)
 
 
       END
