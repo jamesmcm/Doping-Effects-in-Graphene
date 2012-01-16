@@ -1,17 +1,21 @@
       PROGRAM TRANSFERM
       INTEGER, PARAMETER :: LIMX=2, LIMY=2, WRAPY=0, WRAPX=1,
-     +     MSIZE=4*LIMX*LIMX
-      INTEGER PIVOT(2*LIMX, 2*LIMX)
+     +     MSIZE=4*LIMX*LIMX, M2SIZE=LIMX*LIMX
+      INTEGER PIVOT(2*LIMX, 2*LIMX), PIVOT2(LIMX, LIMX)
       INTEGER*4 I/1/, J/1/, E/2/, S/9/, K/1/
-
+      DOUBLE PRECISION SVALS(LIMX), RWORK(5*LIMX)
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX), 
-     +     MULT(2*LIMX, 2*LIMX), OUT(2*LIMX, 2*LIMX), ALPHA, BETA
-      DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX),
-     +     TEMP(2*LIMX, 2*LIMX), ABCD(2*LIMX, 2*LIMX)
-      DOUBLE COMPLEX WORK(4*LIMX*LIMX)
+     +     MULT(2*LIMX, 2*LIMX), OUT(2*LIMX, 2*LIMX), ALPHA, BETA,
+     +     O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX),
+     +     TEMP(2*LIMX, 2*LIMX), ABCD(2*LIMX, 2*LIMX), A(LIMX, LIMX),
+     +     B(LIMX, LIMX), C(LIMX, LIMX), D(LIMX, LIMX),
+     +     WORK(MSIZE), TEMP2(LIMX, LIMX), T(LIMX, LIMX),
+     +     TTILDE(LIMX, LIMX), R(LIMX, LIMX), RTILDE(LIMX, LIMX),
+     +     WORK2(LIMX*LIMX), TEMP3(LIMX, LIMX), SVCPY(LIMX, LIMX)
+
       DATA MODD/MSIZE*0.0/, MEVEN/MSIZE*0.0/, O/MSIZE*0.0/,
      +     IO/MSIZE*0.0/, PIVOT/MSIZE*0/, ALPHA/1.0/,
-     +     BETA/0.0/, TEMP/MSIZE*0.0/
+     +     BETA/0.0/, TEMP/MSIZE*0.0/, PIVOT2/M2SIZE*0.0/
 
 
 c$$$  First row is even - WRAPX makes no diff, second row not, etc.
@@ -53,19 +57,16 @@ c$$$               MULT = MATMUL(MULT,MEVEN)
      +              2*LIMX, MEVEN, 2*LIMX, BETA, OUT, 2*LIMX)
                MULT=OUT
             ELSE
-c$$$               MULT = MATMUL(MULT,MODD)
                CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, MULT, 
      +              2*LIMX, MODD, 2*LIMX, BETA, OUT, 2*LIMX)
                MULT=OUT
             END IF
          ELSE
             IF (MOD(I,2) .EQ. 1) THEN
-c$$$               MULT = MATMUL(MULT,MODD)
                CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, MULT, 
      +              2*LIMX, MODD, 2*LIMX, BETA, OUT, 2*LIMX)
                MULT=OUT
             ELSE
-c$$$               MULT = MATMUL(MULT, MEVEN)
                CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, MULT, 
      +              2*LIMX, MEVEN, 2*LIMX, BETA, OUT, 2*LIMX)
                MULT=OUT
@@ -94,44 +95,61 @@ c$$$  O is block matrix of 1/sqrt(2) (1,1;i,-i)
      +     2*LIMX, O, 2*LIMX, BETA, TEMP, 2*LIMX)
       CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, IO, 
      +     2*LIMX, TEMP, 2*LIMX, BETA, ABCD, 2*LIMX)
+c$$$
+c$$$      PRINT *, 'ABCD matrix:'
+c$$$
+c$$$      DO J = 1, 2*LIMX
+c$$$         DO I=1, 2*LIMX
+c$$$            WRITE (*,30) REAL(ABCD(J,I)), ' + ', DIMAG(ABCD(J,I)), 'I'
+c$$$         END DO
+c$$$         PRINT *, '----'
+c$$$      END DO
+c$$$  This is Fortran 90 syntax, remove in future revision when BLAS/LAPACK subroutine is found
+      A=ABCD(1:LIMX, 1:LIMX)
+      B=ABCD(LIMX+1:2*LIMX, 1:LIMX)
+      C=ABCD(1:LIMX, LIMX+1:2*LIMX)
+      D=ABCD(LIMX+1:2*LIMX, LIMX+1:2*LIMX)
+c$$$  I have verified that AD-BC=1 (identity matrix) as expected
+c$$$  T~ = D^-1
+      TTILDE=D
+      CALL ZGETRF(LIMX, LIMX, TTILDE, LIMX, PIVOT2, S)
+      CALL ZGETRI(LIMX, TTILDE, LIMX, PIVOT2, WORK2, LIMX*LIMX, S)
+c$$$  R~ = BD^-1
+      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, ALPHA, B, 
+     +     LIMX, TTILDE, LIMX, BETA, RTILDE, LIMX)      
+c$$$  R = -D^-1 C
+      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, ALPHA, TTILDE, 
+     +     LIMX, C, LIMX, BETA, R, LIMX)      
+c$$$  R=-R
+c$$$  T=(A-)? BD^-1 C      
+      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, ALPHA, TTILDE, 
+     +     LIMX, C, LIMX, BETA, TEMP2, LIMX)
+      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, ALPHA, B, 
+     +     LIMX, TEMP2, LIMX, BETA, T, LIMX)      
+      T=A-T
+c$$$  make copy of matrix for SVD since it is destroyed
+      SVCPY=T
+      CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, TEMP2, LIMX,
+     +     TEMP2, LIMX , WORK, MSIZE, RWORK, S)
 
-      PRINT *, 'ABCD matrix:'
-
-      DO J = 1, 2*LIMX
-         DO I=1, 2*LIMX
-            WRITE (*,30) REAL(ABCD(J,I)), ' + ', DIMAG(ABCD(J,I)), 'I'
-         END DO
-         PRINT *, '----'
+      PRINT *, 'T matrix SVD values squared:'
+      DO J=1, LIMX
+         WRITE (*,40) (SVALS(J)*SVALS(J))
       END DO
 
-c$$$      IF (S .EQ. 0) THEN
-c$$$         PRINT *, 'GREAT SUCCESS'
-c$$$      ELSE
-c$$$         PRINT *, 'TERRIBLE FAILURE'
-c$$$      END IF
-c$$$
-c$$$      PRINT *, 'O matrix:'
-c$$$
-c$$$      DO J = 1, 2*LIMX
-c$$$         DO I=1, 2*LIMX
-c$$$            WRITE (*,30) REAL(O(J,I)), ' + ', DIMAG(O(J,I)), 'I'
-c$$$         END DO
-c$$$         PRINT *, '----'
-c$$$      END DO
-c$$$
-c$$$      PRINT *, 'IO matrix:'
-c$$$
-c$$$      DO J = 1, 2*LIMX
-c$$$         DO I=1, 2*LIMX
-c$$$            WRITE (*,30) REAL(IO(J,I)), ' + ', DIMAG(IO(J,I)), 'I'
-c$$$         END DO
-c$$$         PRINT *, '----'
-c$$$      END DO
-
-
+      SVCPY=R
+      CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, TEMP2, LIMX,
+     +     TEMP2, LIMX , WORK, MSIZE, RWORK, S)
+      print *,S
+      PRINT *, 'R matrix SVD values squared:'
+      DO J=1, LIMX
+         WRITE (*,40) (SVALS(J)*SVALS(J))
+      END DO
+         
+c$$$  so T^2 + R^2 =1 for SVD values, also verified with R~ and T~
 
  20   FORMAT (4F4.0)
  30   FORMAT (F8.4, A, F8.4, A)
-
+ 40   FORMAT (F8.4)
 
       END
