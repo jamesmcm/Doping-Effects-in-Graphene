@@ -1,6 +1,7 @@
 c$$$  Want to loop over different energies and produce T^2 coefficients, check they match with analytical results
 
       PROGRAM TRANSFERM
+      IMPLICIT NONE
       INTEGER, PARAMETER :: LIMX=2,WRAPY=0, WRAPX=1,
      +     MSIZE=4*LIMX*LIMX, M2SIZE=LIMX*LIMX
       INTEGER PIVOT(2*LIMX, 2*LIMX), PIVOT2(LIMX, LIMX)
