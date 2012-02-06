@@ -108,7 +108,7 @@ c$$$  O is block matrix of 1/sqrt(2) (1,1;i,-i)
          E=E+0.01
       END DO
 
- 10   FORMAT (3F10.6)
+ 10   FORMAT (3E10.6)
       END
 
       SUBROUTINE INVERSAS(X, LDM)
