@@ -25,91 +25,12 @@ c$$$ Want to loop over different energies and produce T^2 coefficients, check th
 c$$$ WRITE (*,70) "LIMX:", LIMX, " LIMY:", LIMY
       DO F = 1, 1001
 c$$$ WRITE (*,50) "E value:", E
-c$$$ First row is even - WRAPX makes no diff, second row not, etc.
-c$$$ - what matters is which row it is centred on
-c$$$ There are 2 transfer matrices to generate
-c$$$ There are 4 block submatrices to fill
-c$$$ MODD doesn't depend on xwrapping, MEVEN does.
-c$$$         DO I = 1, LIMX
-c$$$ Fill top-right submatrix
-c$$$            MODD(I, LIMX+I)=1
-c$$$            MEVEN(I, LIMX+I)=1
-c$$$ Fill bottom-left submatrix
-c$$$            MODD(I+LIMX, I)=-1
-c$$$            MEVEN(I+LIMX, I)=-1
-c$$$ Fill bottom-right submatrix
-c$$$            MODD(LIMX+I,LIMX+I)=E
-c$$$            MEVEN(LIMX+I,LIMX+I)=E
-c$$$ Smart trick to set alternating adjacent value to -1
-c$$$            MODD(LIMX+I,LIMX+I+(2*MOD(I,2)-1))=-1
-c$$$ Trick to set end values dependent on WRAPX
-c$$$ Only the ends matter with regards to the WRAPX effect
-c$$$            MEVEN(LIMX+I, 2*LIMX+1-I)=-1*((-1*(I/(I*I)))+1)*((-1*
-c$$$     +       (((LIMX-I)+1)/(((LIMX-I)+1)*((LIMX-I)+1))))+1) + (I/(I
-c$$$     +       *I))*(-1*WRAPX) +(((LIMX-I)+1)/(((LIMX-I)+1)*((LIMX-I)
-c$$$     +       +1)))*(-1*WRAPX)
-c$$$         END DO
-c$$$         IF (MOD(LIMY,2) .EQ. 1) THEN
-c$$$            MULT = MODD
-c$$$         ELSE
-c$$$            MULT = MEVEN
-c$$$         END IF
-c$$$         DO I = 1, LIMY-1
-c$$$            IF (MOD(LIMY,2) .EQ. 1) THEN
-c$$$               IF (MOD(I,2) .EQ. 1) THEN
-c$$$              MULT = MATMUL(MULT,MEVEN)
-c$$$                  CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA,
-c$$$     +                  MULT, 2*LIMX, MEVEN, 2*LIMX, BETA, OUT, 2*LIMX)
-c$$$                  MULT=OUT
-c$$$               ELSE
-c$$$                  CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA,
-c$$$     +                  MULT,2*LIMX, MODD, 2*LIMX, BETA, OUT, 2*LIMX)
-c$$$                  MULT=OUT
-c$$$               END IF
-c$$$            ELSE
-c$$$               IF (MOD(I,2) .EQ. 1) THEN
-c$$$                  CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA,
-c$$$     +                  MULT,2*LIMX, MODD, 2*LIMX, BETA, OUT, 2*LIMX)
-c$$$                  MULT=OUT
-c$$$               ELSE
-c$$$                  CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA,
-c$$$     +                  MULT,2*LIMX, MEVEN, 2*LIMX, BETA, OUT, 2*LIMX)
-c$$$                 MULT=OUT
-c$$$               END IF
-c$$$            END IF
-c$$$         END DO
 
-c$$$         CALL FILLMULT(MULT, LIMX, LIMY, WRAPX, MODD, MEVEN, E)
+         CALL CALCMULT(MULT, LIMX, LIMY, WRAPX, MODD, MEVEN, E)
 
-c$$$         Above function does not work and I can't see why
-c$$$ ################################################################
-c$$$ ################################################################
 c$$$ ################################################################
 
-         DO I = 1, LIMX
-c$$$ Fill top-right submatrix
-            MODD(I, LIMX+I)=1
-            MEVEN(I, LIMX+I)=1
-c$$$ Fill bottom-left submatrix
-            MODD(I+LIMX, I)=-1
-            MEVEN(I+LIMX, I)=-1
-c$$$ Fill bottom-right submatrix
-            MODD(LIMX+I,LIMX+I)=E
-            MEVEN(LIMX+I,LIMX+I)=E
-c$$$ Smart trick to set alternating adjacent value to -1
-            MODD(LIMX+I,LIMX+I+(2*MOD(I,2)-1))=-1
-c$$$ Trick to set end values dependent on WRAPX
-c$$$ Only the ends matter with regards to the WRAPX effect
-            MEVEN(LIMX+I, 2*LIMX+1-I)=-1*((-1*(I/(I*I)))+1)*((-1*
-     +       (((LIMX-I)+1)/(((LIMX-I)+1)*((LIMX-I)+1))))+1) + (I/(I
-     +       *I))*(-1*WRAPX) +(((LIMX-I)+1)/(((LIMX-I)+1)*((LIMX-I)
-     +       +1)))*(-1*WRAPX)
-         END DO
-         IF (MOD(LIMY,2) .EQ. 1) THEN
-            CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
-         ELSE
-            CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
-         END IF
+
          DO I = 1, LIMY-1
             IF (MOD(LIMY,2) .EQ. 1) THEN
                IF (MOD(I,2) .EQ. 1) THEN
@@ -140,24 +61,7 @@ c$$$               MULT=OUTM
          END DO
 
 c$$$ ################################################################
-c$$$ ################################################################
-c$$$ ################################################################
 
-c$$$ MULT now holds the net transfer matrix for moving down vertically
-c$$$ DO J = 1, 2*LIMX
-c$$$ WRITE (*,20) (REAL(MULT(J,I)), I = 1, 2*LIMX)
-c$$$ END DO
-c$$$ Generate O-matrix
-c$$$ O is block matrix of 1/sqrt(2) (1,1;i,-i)
-c$$$         DO I = 1, LIMX
-c$$$            O(I, I)=1/SQRT(2.0)
-c$$$            O(I, LIMX+I)=1/SQRT(2.0)
-c$$$            O(I+LIMX, I)=DCMPLX(0, 1/SQRT(2.0))
-c$$$            O(I+LIMX, I+LIMX)=DCMPLX(0 ,-1/SQRT(2.0))
-c$$$         ENDDO
-c$$$         IO=O
-c$$$         CALL ZGETRF(2*LIMX, 2*LIMX, IO, 2*LIMX, PIVOT, S)
-c$$$         CALL ZGETRI(2*LIMX, IO, 2*LIMX, PIVOT, WORK, 4*LIMX*LIMX, S)
 
          CALL FILLOANDINVERT(O, IO, LIMX)
 		 
@@ -184,16 +88,8 @@ c$$$         END IF
 c$$$      END DO
 
 		 
-c$$$ make copy of matrix for SVD since it is destroyed
-         SVCPY=TINC
-         CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, TEMP2,
-     +         LIMX,TEMP2, LIMX , WORK, MSIZE, RWORK, S)
-
-         TVALS=SVALS
-         SVCPY=R
-         CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, TEMP2,
-     +         LIMX,TEMP2, LIMX , WORK, MSIZE, RWORK, S)
-         RVALS=SVALS
+         CALL SV_DECOMP(LIMX, TINC, TVALS)
+         CALL SV_DECOMP(LIMX, RINC, RVALS)
 
 c$$$ DO J=1, LIMX
 c$$$ WRITE (*,60) "T^2 value: ", TVALS(J)*TVALS(J),
@@ -201,7 +97,7 @@ c$$$ + " R^2 value: ", RVALS(1+LIMX-J)*RVALS(1+LIMX-J)
 c$$$ END DO
 
 
-         WRITE (*,80) E,(TVALS(I)*TVALS(I), I = 1, LIMX)
+         WRITE (*,80) E, (TVALS(I)*TVALS(I), I = 1, LIMX)
 c$$$ WRITE (*,80) "R^2 values: ",(RVALS(LIMX-I+1)*RVALS(LIMX-I+1),
 c$$$ + I = 1, LIMX)
 
@@ -217,10 +113,11 @@ c$$$ so T^2 + R^2 =1 for SVD values, also verified with R~ and T~
  50   FORMAT (A, F6.2)
  60   FORMAT (A, F8.4, A, F8.4)
  70   FORMAT (A, I6, A, I6)
- 80   FORMAT (F8.4, F8.4, F8.4)
+ 80   FORMAT (F8.4, ES15.5E2, ES15.5E2)
  
       STOP
       END
+	  
  
       SUBROUTINE GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
 	 
@@ -281,6 +178,7 @@ c$$$ I have verified that AD-BC=1 (identity matrix) as expected
       RETURN
       END
 	  
+	  
       SUBROUTINE GENTANDRINC(LIMX, TTILDEINC, D, PIVOT2, B, RTILDEINC,
      + C, RINC, TINC, A)
 	 
@@ -331,6 +229,7 @@ c$$$         write (*, 985)
 		 
       RETURN
       END
+	  
 
       SUBROUTINE UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
      + RTILDE, LIMX)
@@ -416,6 +315,7 @@ c$$$ RTILDE = RTILDE2 + T2.BRACKET12.RTILDE1.TTILDE2
       RETURN
       END
 	  
+	  
       SUBROUTINE FILLOANDINVERT(O, IO, LIMX)
 	  
       INTEGER LIMX, I
@@ -435,6 +335,7 @@ c$$$ O is block matrix of 1/sqrt(2) (1,1;i,-i)
       RETURN
       END
 	  
+	  
       SUBROUTINE INVERTMATRIX(MATRIX, LIMX)
 	  
       INTEGER*4 S/9/
@@ -447,17 +348,15 @@ c$$$ O is block matrix of 1/sqrt(2) (1,1;i,-i)
       RETURN
       END
 	  
-c$$$ THIS FUNCTION DOES NOT WORK FOR NO APPARENT REASON I CAN SEE - WS
-      SUBROUTINE FILLMULT(MULT, LIMX, LIMY, WRAPX, MODD, MEVEN, E)
+	  
+      SUBROUTINE CALCMULT(MULT, LIMX, LIMY, WRAPX, MODD, MEVEN, E)
 	  
       INTEGER LIMX, LIMY, WRAPX
       INTEGER*4 I/1/
       DOUBLE PRECISION E
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
-     + MULT(2*LIMX, 2*LIMX), OUTM(2*LIMX, 2*LIMX), UNITY, ZERO
+     + MULT(2*LIMX, 2*LIMX)
 
-      UNITY = 1.0
-      ZERO = 0.0	 
 
 c$$$ First row is even - WRAPX makes no diff, second row not, etc.
 c$$$ - what matters is which row it is centred on
@@ -490,34 +389,46 @@ c$$$         MULT=MODD
 c$$$         MULT=MEVEN
          CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
       END IF
-      DO I = 1, LIMY-1
-         IF (MOD(LIMY,2) .EQ. 1) THEN
-            IF (MOD(I,2) .EQ. 1) THEN
-c$$$           MULT = MATMUL(MULT,MEVEN)
-               CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, UNITY,
-     +               MULT, 2*LIMX, MEVEN, 2*LIMX, ZERO, OUTM, 2*LIMX)
-c$$$               MULT=OUTM
-               CALL ZCOPY(4*LIMX*LIMX, OUTM, 1, MULT, 1)
-            ELSE
-               CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, UNITY,
-     +               MULT,2*LIMX, MODD, 2*LIMX, ZERO, OUTM, 2*LIMX)
-c$$$               MULT=OUTM
-               CALL ZCOPY(4*LIMX*LIMX, OUTM, 1, MULT, 1)
-            END IF
-         ELSE
-            IF (MOD(I,2) .EQ. 1) THEN
-               CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, UNITY,
-     +               MULT,2*LIMX, MODD, 2*LIMX, ZERO, OUTM, 2*LIMX)
-c$$$               MULT=OUTM
-               CALL ZCOPY(4*LIMX*LIMX, OUTM, 1, MULT, 1)				  
-            ELSE
-               CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, UNITY,
-     +               MULT,2*LIMX, MEVEN, 2*LIMX, ZERO, OUTM, 2*LIMX)
-c$$$               MULT=OUTM
-               CALL ZCOPY(4*LIMX*LIMX, OUTM, 1, MULT, 1)				  
-            END IF
-         END IF
-      END DO	  
 	  
       RETURN
       END
+	  
+
+      SUBROUTINE SV_DECOMP(LIMX, MATRIX, OUTPUTS)
+	  
+      INTEGER LIMX, MSIZE
+      DOUBLE PRECISION SVALS(LIMX), OUTPUTS(LIMX), RWORK(5*LIMX)
+      DOUBLE COMPLEX MATRIX(LIMX, LIMX), TEMP2(LIMX, LIMX),
+     + SVCPY(LIMX, LIMX), WORK(4*LIMX*LIMX)
+	  
+      MSIZE=4*LIMX*LIMX
+
+c$$$ make copy of matrix for SVD since it is destroyed
+c$$$      SVCPY=MATRIX
+      CALL ZCOPY(LIMX*LIMX, MATRIX, 1, SVCPY, 1)
+      CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, TEMP2,
+     + LIMX, TEMP2, LIMX , WORK, MSIZE, RWORK, S)
+
+c$$$      OUTPUTS=SVALS
+      CALL ZCOPY(LIMX*LIMX, SVALS, 1, OUTPUTS, 1)
+	  
+      RETURN
+      END
+
+	  
+      SUBROUTINE PRINTMATRIX(MATRIX, LIMX, MNAME)
+	  
+      INTEGER LIMX, I
+      DOUBLE PRECISION OUTPUTS(LIMX)
+      DOUBLE COMPLEX MATRIX(LIMX, LIMX)
+      CHARACTER*1 MNAME
+	  
+      CALL SV_DECOMP(LIMX, MATRIX, OUTPUTS)
+	  
+      WRITE (*,200) MNAME, (OUTPUTS(I)*OUTPUTS(I), I = 1, LIMX)
+ 200  FORMAT (A, '= ', ES15.5E4, ES15.5E4)
+	  
+      RETURN
+      END
+	  
+	  
