@@ -6,7 +6,7 @@ c$$$ Want to loop over different energies and produce T^2 coefficients, check th
       INTEGER PIVOT(2*LIMX, 2*LIMX), PIVOT2(LIMX, LIMX)
       INTEGER*4 I/1/, J/1/, S/9/, K/1/, F/1/
       DOUBLE PRECISION SVALS(LIMX), RWORK(5*LIMX), RVALS(LIMX),
-     + TVALS(LIMX), E/-5/
+     + TVALS(LIMX), E/-5/, TTVALS(LIMX), RTVALS(LIMX)
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
      + MULT(2*LIMX, 2*LIMX), OUTM(2*LIMX, 2*LIMX), ALPHA, BETA,
      + O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX),
@@ -23,7 +23,8 @@ c$$$ Want to loop over different energies and produce T^2 coefficients, check th
      + BETA/0.0/, TEMP/MSIZE*0.0/, PIVOT2/M2SIZE*0.0/
 
 c$$$ WRITE (*,70) "LIMX:", LIMX, " LIMY:", LIMY
-      DO F = 1, 1001
+c$$$      DO F = 1, 1001
+      E=0.0
 c$$$ WRITE (*,50) "E value:", E
 
          CALL CALCMULT(MULT, LIMX, LIMY, WRAPX, MODD, MEVEN, E)
@@ -31,6 +32,16 @@ c$$$ WRITE (*,50) "E value:", E
          CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
          CALL GENTANDRINC(LIMX, TTILDE, D, PIVOT2, B, RTILDE, C,
      +    R, T, A)
+
+         CALL SV_DECOMP(LIMX, T, TVALS)
+         CALL SV_DECOMP(LIMX, R, RVALS)
+         CALL SV_DECOMP(LIMX, TTILDE, TTVALS)
+         CALL SV_DECOMP(LIMX, RTILDE, RTVALS)
+	 
+         CALL PRINTVECTOR(TVALS, LIMX, 'T ')
+         CALL PRINTVECTOR(RVALS, LIMX, 'R ')
+         CALL PRINTVECTOR(TTVALS, LIMX, 'T~')
+         CALL PRINTVECTOR(RTVALS, LIMX, 'R~')
 		 
 c$$$ ################################################################
 
@@ -55,17 +66,42 @@ c$$$ ################################################################
      +    RINC, TINC, A)		
 	 
 	 
-c$$$   CAUSES A SEGFAULT - WS
-c$$$         CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
-c$$$     +    RTILDE, LIMX)	 
+         CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
+     +    RTILDE, LIMX)	 
+	 
+         CALL SV_DECOMP(LIMX, T, TVALS)
+         CALL SV_DECOMP(LIMX, R, RVALS)
+         CALL SV_DECOMP(LIMX, TTILDE, TTVALS)
+         CALL SV_DECOMP(LIMX, RTILDE, RTVALS)
+		 
+         WRITE (*,*) ' '	 
+         CALL PRINTVECTOR(TVALS, LIMX, 'T ')
+         CALL PRINTVECTOR(RVALS, LIMX, 'R ')
+         CALL PRINTVECTOR(TTVALS, LIMX, 'T~')
+         CALL PRINTVECTOR(RTVALS, LIMX, 'R~')
 			
          END DO
 
 c$$$ ################################################################
 
-
-
-		 
+      WRITE (*,*) ' '
+      DO I=1, LIMX
+         DO J=1, LIMX
+            T(I,J) = 1.0
+            TINC(I,J) = 1.0
+            TTILDE(I,J) = 1.0
+            TTILDEINC(I,J) = 1.0
+            R(I,J) = 0.0
+            RINC(I,J) = 0.0
+            RTILDE(I,J) = 0.0
+            RTILDEINC(I,J) = 0.0
+         END DO
+      END DO
+      CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
+     + RTILDE, LIMX)
+      CALL SV_DECOMP(LIMX, T, TVALS)
+      CALL PRINTVECTOR(TVALS, LIMX, 'T ')
+      CALL PRINTT(T, LIMX, 'T  ')
 
 
 c$$$      DO I = 1, LIMY-1
@@ -87,8 +123,8 @@ c$$$         END IF
 c$$$      END DO
 
 		 
-         CALL SV_DECOMP(LIMX, TINC, TVALS)
-         CALL SV_DECOMP(LIMX, RINC, RVALS)
+c$$$         CALL SV_DECOMP(LIMX, TINC, TVALS)
+c$$$         CALL SV_DECOMP(LIMX, RINC, RVALS)
 
 c$$$ DO J=1, LIMX
 c$$$ WRITE (*,60) "T^2 value: ", TVALS(J)*TVALS(J),
@@ -96,14 +132,14 @@ c$$$ + " R^2 value: ", RVALS(1+LIMX-J)*RVALS(1+LIMX-J)
 c$$$ END DO
 
 
-         WRITE (*,80) E, (TVALS(I)*TVALS(I), I = 1, LIMX)
+c$$$         WRITE (*,80) E, (TVALS(I)*TVALS(I), I = 1, LIMX)
 c$$$ WRITE (*,80) "R^2 values: ",(RVALS(LIMX-I+1)*RVALS(LIMX-I+1),
 c$$$ + I = 1, LIMX)
 
 
 
-         E=E+0.01
-      END DO
+c$$$         E=E+0.01
+c$$$      END DO
 c$$$ so T^2 + R^2 =1 for SVD values, also verified with R~ and T~
 
  20   FORMAT (4F4.0)
@@ -241,7 +277,7 @@ c$$$         write (*, 985)
 c$$$ Temporary local variables
       DOUBLE COMPLEX T1TEMP(LIMX, LIMX), TTILDE1TEMP(LIMX, LIMX),
      + R1TEMP(LIMX, LIMX), RTILDE1TEMP(LIMX, LIMX), T2TEMP(LIMX, LIMX),
-     + TTILDE2TEMP(LIMX, LIMX),R2TEMP(LIMX, LIMX), UNITY, ZERO
+     + TTILDE2TEMP(LIMX, LIMX),R2TEMP(LIMX, LIMX), UNITY, ZERO,
      + RTILDE2TEMP(LIMX, LIMX), BRACKET12(LIMX, LIMX),
      + BRACKET21(LIMX, LIMX), TRTEMP(LIMX, LIMX), ALLONE(LIMX, LIMX),
      + UNITMATRIX(LIMX, LIMX)
@@ -271,9 +307,12 @@ c$$$  Use lapack functions, such as zcopy --- AVS
 c$$$ BRACKET12 = (1 - RTILDE1.R2)^-1
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, RTILDE1TEMP, LIMX,
      + R2TEMP, LIMX, ZERO, BRACKET12, LIMX)
+      CALL PRINTT(BRACKET12, LIMX, 'b12')
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, UNITMATRIX, LIMX,
      + ALLONE, LIMX, -1*UNITY, BRACKET12, LIMX)
+      CALL PRINTT(BRACKET12, LIMX, 'b12')
       CALL INVERTMATRIX(BRACKET12, LIMX)
+      CALL PRINTT(BRACKET12, LIMX, 'B12')
 c$$$ BRACKET21 = (1 - R2.RTILDE1)^-1
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, R2TEMP, LIMX,
      + RTILDE1TEMP, LIMX, ZERO, BRACKET21, LIMX)
@@ -281,10 +320,14 @@ c$$$ BRACKET21 = (1 - R2.RTILDE1)^-1
      + ALLONE, LIMX, -1*UNITY, BRACKET21, LIMX)
       CALL INVERTMATRIX(BRACKET21, LIMX)
 c$$$ T = T2.BRACKET12.T1
+      CALL PRINTT(T1TEMP, LIMX, 'T1t')
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, BRACKET12, LIMX,
      + T1TEMP, LIMX, ZERO, TRTEMP, LIMX)
+      CALL PRINTT(T2TEMP, LIMX, 'T2t')
+      CALL PRINTT(TRTEMP, LIMX, 'TRt')
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, T2TEMP, LIMX,
      + TRTEMP, LIMX, ZERO, T, LIMX)
+      CALL PRINTT(T, LIMX, 'T  ')
 c$$$ TTILDE = TTILDE1.BRACKET21.TTILDE2
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, BRACKET21, LIMX,
      + TTILDE2TEMP, LIMX, ZERO, TRTEMP, LIMX)
@@ -337,7 +380,7 @@ c$$$ O is block matrix of 1/sqrt(2) (1,1;i,-i)
 	  
       SUBROUTINE INVERTMATRIX(MATRIX, LIMX)
 	  
-      INTEGER*4 S/9/
+      INTEGER*4 S
       INTEGER LIMX, PIVOT(LIMX, LIMX)
       DOUBLE COMPLEX MATRIX(LIMX, LIMX), WORK(LIMX*LIMX)
 	  
@@ -427,4 +470,15 @@ c$$$      OUTPUTS=SVALS
       RETURN
       END
 	  
-	  
+      SUBROUTINE PRINTT(T, LIMX, MNAME)
+
+      INTEGER LIMX
+      DOUBLE COMPLEX T(LIMX, LIMX)
+      CHARACTER*3 MNAME
+
+      WRITE(*,*) MNAME, REAL(T(1, 1)), REAL(T(1, 2)), REAL(T(2,1)),
+     + REAL(T(2, 2)), ',', AIMAG(T(1, 1)), AIMAG(T(1, 2)),
+     + AIMAG(T(2,1)), AIMAG(T(2, 2))
+
+      RETURN
+      END
