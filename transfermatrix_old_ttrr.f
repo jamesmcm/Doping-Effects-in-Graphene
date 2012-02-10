@@ -48,7 +48,6 @@ c$$$ ################################################################
 
 
       DO I = 1, LIMY-1
-         WRITE (*,*) I
          IF (MOD(LIMY,2) .EQ. 1) THEN
             IF (MOD(I,2) .EQ. 1) THEN
 c$$$ MULT = MATMUL(MULT,MEVEN)
@@ -90,7 +89,8 @@ c$$$ ################################################################
          CALL SV_DECOMP(LIMX, RINC, RVALS)
          CALL SV_DECOMP(LIMX, TTILDEINC, TTVALS)
          CALL SV_DECOMP(LIMX, RTILDEINC, RTVALS)
-	 
+		 
+         WRITE (*,*) ' '
          CALL PRINTVECTOR(TVALS, LIMX, 'T ')
          CALL PRINTVECTOR(RVALS, LIMX, 'R ')
          CALL PRINTVECTOR(TTVALS, LIMX, 'T~')
