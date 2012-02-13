@@ -6,7 +6,7 @@ c$$$ Want to loop over different energies and produce T^2 coefficients, check th
       INTEGER PIVOT(2*LIMX, 2*LIMX), PIVOT2(LIMX, LIMX)
       INTEGER*4 I/1/, J/1/, S/9/, K/1/, F/1/
       DOUBLE PRECISION SVALS(LIMX), RWORK(5*LIMX), RVALS(LIMX),
-     + TVALS(LIMX), E/-5/, TTVALS(LIMX), RTVALS(LIMX)
+     + TVALS(LIMX), E/-5/, TTVALS(LIMX), RTVALS(LIMX), SQUARE
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
      + MULT(2*LIMX, 2*LIMX), OUTM(2*LIMX, 2*LIMX), ALPHA, BETA,
      + O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX),
@@ -27,47 +27,66 @@ c$$$      DO F = 1, 1001
       E=0.0
 c$$$ WRITE (*,50) "E value:", E
 
-         CALL CALCMULT(MULT, LIMX, LIMY, WRAPX, MODD, MEVEN, E)
-         CALL FILLOANDINVERT(O, IO, LIMX)
-         CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-         CALL GENTANDRINC(LIMX, TTILDE, D, PIVOT2, B, RTILDE, C,
-     +    R, T, A)
+      CALL CALCMULT(MULT, LIMX, LIMY, WRAPX, MODD, MEVEN, E)
 
-         CALL SV_DECOMP(LIMX, T, TVALS)
-         CALL SV_DECOMP(LIMX, R, RVALS)
-         CALL SV_DECOMP(LIMX, TTILDE, TTVALS)
-         CALL SV_DECOMP(LIMX, RTILDE, RTVALS)
+      CALL FILLOANDINVERT(O, IO, LIMX)
+      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
+      CALL GENTANDRINC(LIMX, TTILDE, D, PIVOT2, B, RTILDE, C,
+     + R, T, A)
+
+      CALL SV_DECOMP(LIMX, T, TVALS)
+      CALL SV_DECOMP(LIMX, R, RVALS)
+      CALL SV_DECOMP(LIMX, TTILDE, TTVALS)
+      CALL SV_DECOMP(LIMX, RTILDE, RTVALS)
 	 
-         CALL PRINTVECTOR(TVALS, LIMX, 'T ')
-         CALL PRINTVECTOR(RVALS, LIMX, 'R ')
-         CALL PRINTVECTOR(TTVALS, LIMX, 'T~')
-         CALL PRINTVECTOR(RTVALS, LIMX, 'R~')
+      CALL PRINTVECTOR(TVALS, LIMX, 'T ')
+      CALL PRINTVECTOR(RVALS, LIMX, 'R ')
+      CALL PRINTVECTOR(TTVALS, LIMX, 'T~')
+      CALL PRINTVECTOR(RTVALS, LIMX, 'R~')
 		 
 c$$$ ################################################################
 
 
-         DO I = 1, LIMY-1
-            IF (MOD(LIMY,2) .EQ. 1) THEN
-               IF (MOD(I,2) .EQ. 1) THEN
-                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)		
-               ELSE
-                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)		
-               END IF
+      DO I = 1, LIMY-1
+         IF (MOD(LIMY,2) .EQ. 1) THEN
+            IF (MOD(I,2) .EQ. 1) THEN
+               CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)		
             ELSE
-               IF (MOD(I,2) .EQ. 1) THEN
-                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)		
-               ELSE
-                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)		
-               END IF
+               CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)		
             END IF
+         ELSE
+            IF (MOD(I,2) .EQ. 1) THEN
+               CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)		
+            ELSE
+               CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)		
+            END IF
+         END IF
+
+c$$$         WRITE(*, 888) 'Mult', REAL(MULT(1, 1)), REAL(MULT(2, 1)),
+c$$$     +    REAL(MULT(3,1)), REAL(MULT(4, 1))
+c$$$         WRITE(*, 888) 'Mult', REAL(MULT(1, 2)), REAL(MULT(2, 2)),
+c$$$     +    REAL(MULT(3,2)), REAL(MULT(4, 2))
+c$$$         WRITE(*, 888) 'Mult', REAL(MULT(1, 3)), REAL(MULT(2, 3)),
+c$$$     +    REAL(MULT(3,3)), REAL(MULT(4, 3))
+c$$$         WRITE(*, 888) 'Mult', REAL(MULT(1, 4)), REAL(MULT(2, 4)),
+c$$$     +    REAL(MULT(3,4)), REAL(MULT(4, 4))
+
+ 888  FORMAT (A, F8.4, F8.4, F8.4, F8.4)
+
 			
          CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
          CALL GENTANDRINC(LIMX, TTILDEINC, D, PIVOT2, B, RTILDEINC, C,
-     +    RINC, TINC, A)		
-	 
+     +    RINC, TINC, A)
+
+         IF (I .EQ. LIMY) THEN
+            CALL PRINTT(T, LIMX, 'T  ')
+            CALL PRINTT(TTILDE, LIMX, 'Tt ')
+            CALL PRINTT(R, LIMX, 'R  ')
+            CALL PRINTT(RTILDE, LIMX, 'Rt ')
+         END IF
 	 
          CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
-     +    RTILDE, LIMX)	 
+     +    RTILDE, LIMX, RINC)
 	 
          CALL SV_DECOMP(LIMX, T, TVALS)
          CALL SV_DECOMP(LIMX, R, RVALS)
@@ -80,25 +99,34 @@ c$$$ ################################################################
          CALL PRINTVECTOR(TTVALS, LIMX, 'T~')
          CALL PRINTVECTOR(RTVALS, LIMX, 'R~')
 			
-         END DO
+      END DO
 
 c$$$ ################################################################
 
       WRITE (*,*) ' '
+      SQUARE=SQRT(0.5)
       DO I=1, LIMX
          DO J=1, LIMX
-            T(I,J) = 1.0
-            TINC(I,J) = 1.0
-            TTILDE(I,J) = 1.0
-            TTILDEINC(I,J) = 1.0
+            T(I,J) = 0.0
+            TINC(I,J) = 0.0
+            TTILDE(I,J) = 0.0
+            TTILDEINC(I,J) = 0.0
             R(I,J) = 0.0
             RINC(I,J) = 0.0
             RTILDE(I,J) = 0.0
             RTILDEINC(I,J) = 0.0
          END DO
+         T(I,I) = SQUARE
+         TINC(I,I) = SQUARE
+         TTILDE(I,I) = SQUARE
+         TTILDEINC(I,I) = SQUARE
+         R(I,I) = SQUARE
+         RINC(I,I) = SQUARE
+         RTILDE(I,I) = SQUARE
+         RTILDEINC(I,I) = SQUARE
       END DO
       CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
-     + RTILDE, LIMX)
+     + RTILDE, LIMX, RINC)
       CALL SV_DECOMP(LIMX, T, TVALS)
       CALL PRINTVECTOR(TVALS, LIMX, 'T ')
       CALL PRINTT(T, LIMX, 'T  ')
@@ -229,21 +257,21 @@ c$$$ I have verified that AD-BC=1 (identity matrix) as expected
       ZERO = 0.0
 	 
 c$$$ T~ = D^-1
-         TTILDEINC=D
-         CALL ZGETRF(LIMX, LIMX, TTILDEINC, LIMX, PIVOT2, S)
-         CALL ZGETRI(LIMX, TTILDEINC, LIMX, PIVOT2, WORK2, LIMX*LIMX, S)
+      CALL ZCOPY(LIMX*LIMX, D, 1, TTILDEINC, 1)
+      CALL ZGETRF(LIMX, LIMX, TTILDEINC, LIMX, PIVOT2, S)
+      CALL ZGETRI(LIMX, TTILDEINC, LIMX, PIVOT2, WORK2, LIMX*LIMX, S)
 c$$$ R~ = BD^-1
-         CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, B,
-     +         LIMX, TTILDEINC, LIMX, ZERO, RTILDEINC, LIMX)
+      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, B,
+     +      LIMX, TTILDEINC, LIMX, ZERO, RTILDEINC, LIMX)
 c$$$ R = -D^-1 C
-         CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, TTILDEINC,
-     +         LIMX, C, LIMX, ZERO, RINC, LIMX)
+      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, TTILDEINC,
+     +      LIMX, C, LIMX, ZERO, RINC, LIMX)
 c$$$ R=-R
 c$$$ T=(A-)? BD^-1 C
-         CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, TTILDEINC,
-     +         LIMX, C, LIMX, ZERO, TEMP2, LIMX)
-         CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, B,
-     +         LIMX, TEMP2, LIMX, ZERO, TINC, LIMX)
+      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, TTILDEINC,
+     +      LIMX, C, LIMX, ZERO, TEMP2, LIMX)
+      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, B,
+     +      LIMX, TEMP2, LIMX, ZERO, TINC, LIMX)
          TINC=A-TINC
 c$$$         write (*, 981) REAL(TINC(1, 1)), REAL(TINC(1, 2)), REAL(TINC(2, 1)), REAL(TINC(2, 2))
 c$$$         write (*, 981) AIMAG(TINC(1, 1)), AIMAG(TINC(1, 2)), AIMAG(TINC(2, 1)), AIMAG(TINC(2, 2))
@@ -267,7 +295,7 @@ c$$$         write (*, 985)
 	  
 
       SUBROUTINE UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
-     + RTILDE, LIMX)
+     + RTILDE, LIMX, RINC)
 	  
       INTEGER LIMX
       DOUBLE COMPLEX T(LIMX, LIMX), TTILDE(LIMX, LIMX), R(LIMX, LIMX),
@@ -305,14 +333,16 @@ c$$$  Use lapack functions, such as zcopy --- AVS
       END DO
 
 c$$$ BRACKET12 = (1 - RTILDE1.R2)^-1
+c$$$      CALL PRINTT(RTILDE1TEMP, LIMX, 'Rt1')
+c$$$      CALL PRINTT(R2TEMP, LIMX, 'R2 ')
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, RTILDE1TEMP, LIMX,
      + R2TEMP, LIMX, ZERO, BRACKET12, LIMX)
-      CALL PRINTT(BRACKET12, LIMX, 'b12')
+c$$$      CALL PRINTT(BRACKET12, LIMX, 'b12')
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, UNITMATRIX, LIMX,
      + ALLONE, LIMX, -1*UNITY, BRACKET12, LIMX)
-      CALL PRINTT(BRACKET12, LIMX, 'b12')
+c$$$      CALL PRINTT(BRACKET12, LIMX, 'b12')
       CALL INVERTMATRIX(BRACKET12, LIMX)
-      CALL PRINTT(BRACKET12, LIMX, 'B12')
+c$$$      CALL PRINTT(BRACKET12, LIMX, 'B12')
 c$$$ BRACKET21 = (1 - R2.RTILDE1)^-1
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, R2TEMP, LIMX,
      + RTILDE1TEMP, LIMX, ZERO, BRACKET21, LIMX)
@@ -320,14 +350,14 @@ c$$$ BRACKET21 = (1 - R2.RTILDE1)^-1
      + ALLONE, LIMX, -1*UNITY, BRACKET21, LIMX)
       CALL INVERTMATRIX(BRACKET21, LIMX)
 c$$$ T = T2.BRACKET12.T1
-      CALL PRINTT(T1TEMP, LIMX, 'T1t')
+c$$$      CALL PRINTT(T1TEMP, LIMX, 'T1t')
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, BRACKET12, LIMX,
      + T1TEMP, LIMX, ZERO, TRTEMP, LIMX)
-      CALL PRINTT(T2TEMP, LIMX, 'T2t')
-      CALL PRINTT(TRTEMP, LIMX, 'TRt')
+c$$$      CALL PRINTT(T2TEMP, LIMX, 'T2t')
+c$$$      CALL PRINTT(TRTEMP, LIMX, 'TRt')
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, T2TEMP, LIMX,
      + TRTEMP, LIMX, ZERO, T, LIMX)
-      CALL PRINTT(T, LIMX, 'T  ')
+c$$$      CALL PRINTT(T, LIMX, 'T  ')
 c$$$ TTILDE = TTILDE1.BRACKET21.TTILDE2
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, BRACKET21, LIMX,
      + TTILDE2TEMP, LIMX, ZERO, TRTEMP, LIMX)
@@ -384,8 +414,12 @@ c$$$ O is block matrix of 1/sqrt(2) (1,1;i,-i)
       INTEGER LIMX, PIVOT(LIMX, LIMX)
       DOUBLE COMPLEX MATRIX(LIMX, LIMX), WORK(LIMX*LIMX)
 	  
-         CALL ZGETRF(LIMX, LIMX, MATRIX, LIMX, PIVOT, S)
-         CALL ZGETRI(LIMX, MATRIX, LIMX, PIVOT, WORK, LIMX*LIMX, S)	  
+      CALL ZGETRF(LIMX, LIMX, MATRIX, LIMX, PIVOT, S)
+      CALL ZGETRI(LIMX, MATRIX, LIMX, PIVOT, WORK, LIMX*LIMX, S)
+      IF (S .NE. 0) THEN
+         WRITE (*,*) 'Non-invertable matrix'
+         STOP
+      END IF
 	  
       RETURN
       END
@@ -476,9 +510,10 @@ c$$$      OUTPUTS=SVALS
       DOUBLE COMPLEX T(LIMX, LIMX)
       CHARACTER*3 MNAME
 
-      WRITE(*,*) MNAME, REAL(T(1, 1)), REAL(T(1, 2)), REAL(T(2,1)),
-     + REAL(T(2, 2)), ',', AIMAG(T(1, 1)), AIMAG(T(1, 2)),
-     + AIMAG(T(2,1)), AIMAG(T(2, 2))
+      WRITE (*,*) MNAME, REAL(T(1, 1)), REAL(T(1, 2))
+      WRITE (*,*) MNAME, REAL(T(2,1)), REAL(T(2, 2))
+      WRITE (*,*) MNAME, 'i', AIMAG(T(1, 1)), AIMAG(T(1, 2))
+      WRITE (*,*) MNAME, 'i', AIMAG(T(2,1)), AIMAG(T(2, 2))
 
       RETURN
       END
