@@ -107,29 +107,68 @@ c$$$ ################################################################
       SQUARE=SQRT(0.5)
       DO I=1, LIMX
          DO J=1, LIMX
-            T(I,J) = 0.0
-            TINC(I,J) = 0.0
-            TTILDE(I,J) = 0.0
-            TTILDEINC(I,J) = 0.0
-            R(I,J) = 0.0
-            RINC(I,J) = 0.0
-            RTILDE(I,J) = 0.0
-            RTILDEINC(I,J) = 0.0
+            T(I,J) = (0.0, 0.0)
+            TINC(I,J) = (0.0, 0.0)
+            TTILDE(I,J) = (0.0, 0.0)
+            TTILDEINC(I,J) = (0.0, 0.0)
+            R(I,J) = (0.0, 0.0)
+            RINC(I,J) = (0.0, 0.0)
+            RTILDE(I,J) = (0.0, 0.0)
+            RTILDEINC(I,J) = (0.0, 0.0)
          END DO
          T(I,I) = SQUARE
          TINC(I,I) = SQUARE
          TTILDE(I,I) = SQUARE
          TTILDEINC(I,I) = SQUARE
-         R(I,I) = SQUARE
-         RINC(I,I) = SQUARE
-         RTILDE(I,I) = -1*SQUARE
-         RTILDEINC(I,I) = -1*SQUARE
+         R(I,I) = -1*SQUARE
+         RINC(I,I) = -1*SQUARE
+         RTILDE(I,I) = SQUARE
+         RTILDEINC(I,I) = SQUARE
       END DO
       CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
      + RTILDE, LIMX, RINC)
       CALL SV_DECOMP(LIMX, T, TVALS)
       CALL PRINTVECTOR(TVALS, LIMX, 'T ')
+      WRITE (*,*) ' '
       CALL PRINTT(T, LIMX, 'T  ')
+      CALL SV_DECOMP(LIMX, TTILDE, TTVALS)
+      WRITE (*,*) ' '
+      CALL PRINTVECTOR(TTVALS, LIMX, 'T~')
+      WRITE (*,*) ' '
+      CALL PRINTT(TTILDE, LIMX, 'T~ ')
+
+      WRITE (*,*) ' '
+      DO I=1, LIMX
+         DO J=1, LIMX
+            T(I,J) = (0.0, 0.0)
+            TINC(I,J) = (0.0, 0.0)
+            TTILDE(I,J) = (0.0, 0.0)
+            TTILDEINC(I,J) = (0.0, 0.0)
+            R(I,J) = (0.0, 0.0)
+            RINC(I,J) = (0.0, 0.0)
+            RTILDE(I,J) = (0.0, 0.0)
+            RTILDEINC(I,J) = (0.0, 0.0)
+         END DO
+         T(I,I) = SQRT(0.75)
+         TINC(I,I) = SQRT(0.75)
+         TTILDE(I,I) = SQRT(0.75)
+         TTILDEINC(I,I) = SQRT(0.75)
+         R(I,I) = -1*SQRT(0.25)
+         RINC(I,I) = -1*SQRT(0.25)
+         RTILDE(I,I) = SQRT(0.25)
+         RTILDEINC(I,I) = SQRT(0.25)
+      END DO
+      CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
+     + RTILDE, LIMX, RINC)
+      CALL SV_DECOMP(LIMX, T, TVALS)
+      CALL PRINTVECTOR(TVALS, LIMX, 'T ')
+      WRITE (*,*) ' '
+      CALL PRINTT(T, LIMX, 'T  ')
+      CALL SV_DECOMP(LIMX, R, RVALS)
+      WRITE (*,*) ' '
+      CALL PRINTVECTOR(RVALS, LIMX, 'R ')
+      WRITE (*,*) ' '
+      CALL PRINTT(R, LIMX, 'R  ')
 
 
 c$$$      DO I = 1, LIMY-1
@@ -442,7 +481,7 @@ c$$$ O is block matrix of 1/sqrt(2) (1,1;i,-i)
       CALL ZGETRF(LIMX, LIMX, MATRIX, LIMX, PIVOT, S)
       CALL ZGETRI(LIMX, MATRIX, LIMX, PIVOT, WORK, LIMX*LIMX, S)
       IF (S .NE. 0) THEN
-         WRITE (*,*) 'Non-invertable matrix'
+         WRITE (*,*) 'Non-invertable matrix with S=', S
          STOP
       END IF
 	  
@@ -494,21 +533,35 @@ c$$$         MULT=MEVEN
       RETURN
       END
 	  
-
+c$$$ Not sure that this is working correctly, does not give same output
+c$$$ for |-4/5   0 |
+c$$$     |  0  -4/5| as wolfram alpha does (not sure which is at fault
+c$$$ here though).
       SUBROUTINE SV_DECOMP(LIMX, MATRIX, OUTPUTS)
 	  
-      INTEGER LIMX, MSIZE
+      INTEGER LIMX, MSIZE, S
       DOUBLE PRECISION SVALS(LIMX), OUTPUTS(LIMX), RWORK(5*LIMX)
       DOUBLE COMPLEX MATRIX(LIMX, LIMX), TEMP2(LIMX, LIMX),
-     + SVCPY(LIMX, LIMX), WORK(4*LIMX*LIMX)
+     + SVCPY(LIMX, LIMX), WORK(4*LIMX*LIMX), U(LIMX, LIMX),
+     + V(LIMX, LIMX)
 	  
       MSIZE=4*LIMX*LIMX
 
 c$$$ make copy of matrix for SVD since it is destroyed
 c$$$      SVCPY=MATRIX
       CALL ZCOPY(LIMX*LIMX, MATRIX, 1, SVCPY, 1)
-      CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, TEMP2,
-     + LIMX, TEMP2, LIMX , WORK, MSIZE, RWORK, S)
+c$$$      CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, TEMP2,
+c$$$     + LIMX, TEMP2, LIMX , WORK, MSIZE, RWORK, S)
+      CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, U,
+     + LIMX, V, LIMX , WORK, MSIZE, RWORK, S)
+      WRITE (*,*) ' '
+      CALL PRINTT(U, LIMX, 'U  ')
+      CALL PRINTT(V, LIMX, 'V^H')
+      WRITE (*,*) ' '
+      IF (S .NE. 0) THEN
+         WRITE (*,*) 'SVD failed with S=', S
+         STOP
+      END IF
 
 c$$$      OUTPUTS=SVALS
       CALL ZCOPY(LIMX, SVALS, 1, OUTPUTS, 1)
