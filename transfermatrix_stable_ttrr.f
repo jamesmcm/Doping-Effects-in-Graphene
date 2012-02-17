@@ -31,8 +31,7 @@ c$$$ WRITE (*,50) "E value:", E
 
       CALL FILLOANDINVERT(O, IO, LIMX)
       CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-      CALL GENTANDRINC(LIMX, TTILDE, D, PIVOT2, B, RTILDE, C,
-     + R, T, A)
+      CALL GENTANDRINC(LIMX, TTILDE, D, B, RTILDE, C, R, T, A)
 
       CALL SV_DECOMP(LIMX, T, TVALS)
       CALL SV_DECOMP(LIMX, R, RVALS)
@@ -75,7 +74,7 @@ c$$$     +    REAL(MULT(3,4)), REAL(MULT(4, 4))
 
 			
          CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-         CALL GENTANDRINC(LIMX, TTILDEINC, D, PIVOT2, B, RTILDEINC, C,
+         CALL GENTANDRINC(LIMX, TTILDEINC, D, B, RTILDEINC, C,
      +    RINC, TINC, A)
 
          IF (I .EQ. LIMY) THEN
@@ -103,6 +102,7 @@ c$$$     +    REAL(MULT(3,4)), REAL(MULT(4, 4))
 
 c$$$ ################################################################
 
+      WRITE (*,*) '________________________________________Tests:'
       WRITE (*,*) ' '
       SQUARE=SQRT(0.5)
       DO I=1, LIMX
@@ -242,37 +242,42 @@ c$$$ I have verified that AD-BC=1 (identity matrix) as expected
       END
 	  
 	  
-      SUBROUTINE GENTANDRINC(LIMX, TTILDEINC, D, PIVOT2, B, RTILDEINC,
+      SUBROUTINE GENTANDRINC(LIMX, TTILDEINC, D, B, RTILDEINC,
      + C, RINC, TINC, A)
 	 
-      INTEGER LIMX
-      INTEGER PIVOT2(LIMX, LIMX)
+      INTEGER LIMX, X
       DOUBLE COMPLEX UNITY, ZERO, A(LIMX, LIMX),
      + C(LIMX, LIMX), D(LIMX, LIMX), TEMP2(LIMX, LIMX),
      + TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX), RINC(LIMX, LIMX),
-     + RTILDEINC(LIMX, LIMX), WORK2(LIMX*LIMX), B(LIMX, LIMX)
-      INTEGER*4 S/9/
+     + RTILDEINC(LIMX, LIMX), B(LIMX, LIMX), UNITMATRIX(LIMX, LIMX)
 
       UNITY = 1.0
       ZERO = 0.0
+      DO X = 1, LIMX
+         UNITMATRIX(X, X) = 1.0
+      END DO
 	 
 c$$$ T~ = D^-1
       CALL ZCOPY(LIMX*LIMX, D, 1, TTILDEINC, 1)
-      CALL ZGETRF(LIMX, LIMX, TTILDEINC, LIMX, PIVOT2, S)
-      CALL ZGETRI(LIMX, TTILDEINC, LIMX, PIVOT2, WORK2, LIMX*LIMX, S)
+      CALL INVERTMATRIX(TTILDEINC, LIMX)
 c$$$ R~ = BD^-1
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, B,
      +      LIMX, TTILDEINC, LIMX, ZERO, RTILDEINC, LIMX)
 c$$$ R = -D^-1 C
-      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, TTILDEINC,
+      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, -1*UNITY, TTILDEINC,
+     +      LIMX, UNITMATRIX, LIMX, ZERO, TEMP2, LIMX)
+      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, TEMP2,
      +      LIMX, C, LIMX, ZERO, RINC, LIMX)
 c$$$ R=-R
+      RINC = -1*RINC
 c$$$ T=(A-)? BD^-1 C
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, TTILDEINC,
      +      LIMX, C, LIMX, ZERO, TEMP2, LIMX)
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, B,
      +      LIMX, TEMP2, LIMX, ZERO, TINC, LIMX)
-         TINC=A-TINC
+c$$$         TINC=A-TINC
+      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, A, LIMX,
+     +      UNNITMATRIX, LIMX, -1*UNITY, TINC, LIMX)
 c$$$         write (*, 981) REAL(TINC(1, 1)), REAL(TINC(1, 2)), REAL(TINC(2, 1)), REAL(TINC(2, 2))
 c$$$         write (*, 981) AIMAG(TINC(1, 1)), AIMAG(TINC(1, 2)), AIMAG(TINC(2, 1)), AIMAG(TINC(2, 2))
 c$$$         write (*, 982) REAL(TTILDEINC(1, 1)), REAL(TTILDEINC(1, 2)), REAL(TTILDEINC(2, 1)), REAL(TTILDEINC(2, 2))
@@ -506,7 +511,7 @@ c$$$      SVCPY=MATRIX
      + LIMX, TEMP2, LIMX , WORK, MSIZE, RWORK, S)
 
 c$$$      OUTPUTS=SVALS
-      CALL ZCOPY(LIMX*LIMX, SVALS, 1, OUTPUTS, 1)
+      CALL ZCOPY(LIMX, SVALS, 1, OUTPUTS, 1)
 	  
       RETURN
       END
