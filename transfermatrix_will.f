@@ -182,7 +182,7 @@ c$$$ I have verified that AD-BC=1 (identity matrix) as expected
       SUBROUTINE GENTANDRINC(LIMX, TTILDEINC, D, B, RTILDEINC,
      + C, RINC, TINC, A)
 	 
-      INTEGER LIMX, X
+      INTEGER LIMX, X, Y
       DOUBLE COMPLEX UNITY, ZERO, A(LIMX, LIMX),
      + C(LIMX, LIMX), D(LIMX, LIMX), TEMP2(LIMX, LIMX),
      + TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX), RINC(LIMX, LIMX),
@@ -191,6 +191,9 @@ c$$$ I have verified that AD-BC=1 (identity matrix) as expected
       UNITY = 1.0
       ZERO = 0.0
       DO X = 1, LIMX
+         DO Y=1, LIMX
+            UNITMATRIX(X, Y) = (0.0, 0.0)
+         END DO
          UNITMATRIX(X, X) = 1.0
       END DO
 	 
@@ -202,8 +205,6 @@ c$$$ R~ = BD^-1
      +      LIMX, TTILDEINC, LIMX, ZERO, RTILDEINC, LIMX)
 c$$$ R = -D^-1 C
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, -1*UNITY, TTILDEINC,
-     +      LIMX, UNITMATRIX, LIMX, ZERO, TEMP2, LIMX)
-      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, TEMP2,
      +      LIMX, C, LIMX, ZERO, RINC, LIMX)
 c$$$ R=-R
       RINC = -1*RINC
@@ -214,7 +215,7 @@ c$$$ T=(A-)? BD^-1 C
      +      LIMX, TEMP2, LIMX, ZERO, TINC, LIMX)
 c$$$         TINC=A-TINC
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, A, LIMX,
-     +      UNNITMATRIX, LIMX, -1*UNITY, TINC, LIMX)
+     +      UNITMATRIX, LIMX, -1*UNITY, TINC, LIMX)
 c$$$         write (*, 981) REAL(TINC(1, 1)), REAL(TINC(1, 2)), REAL(TINC(2, 1)), REAL(TINC(2, 2))
 c$$$         write (*, 981) AIMAG(TINC(1, 1)), AIMAG(TINC(1, 2)), AIMAG(TINC(2, 1)), AIMAG(TINC(2, 2))
 c$$$         write (*, 982) REAL(TTILDEINC(1, 1)), REAL(TTILDEINC(1, 2)), REAL(TTILDEINC(2, 1)), REAL(TTILDEINC(2, 2))

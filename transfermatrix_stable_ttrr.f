@@ -1,9 +1,9 @@
 c$$$ Want to loop over different energies and produce T^2 coefficients, check they match with analytical results
 
       PROGRAM TRANSFERMATIXTWO
-      INTEGER, PARAMETER :: LIMX=2, LIMY=10, WRAPY=0, WRAPX=1,
+      INTEGER*4, PARAMETER :: LIMX=2, LIMY=10, WRAPY=0, WRAPX=1,
      + MSIZE=4*LIMX*LIMX, M2SIZE=LIMX*LIMX
-      INTEGER PIVOT(2*LIMX, 2*LIMX), PIVOT2(LIMX, LIMX)
+      INTEGER*4 PIVOT(2*LIMX, 2*LIMX), PIVOT2(LIMX, LIMX)
       INTEGER*4 I/1/, J/1/, S/9/, K/1/, F/1/
       DOUBLE PRECISION SVALS(LIMX), RWORK(5*LIMX), RVALS(LIMX),
      + TVALS(LIMX), E/-5/, TTVALS(LIMX), RTVALS(LIMX), SQUARE
@@ -223,7 +223,7 @@ c$$$ so T^2 + R^2 =1 for SVD values, also verified with R~ and T~
  
       SUBROUTINE GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
 	 
-      INTEGER LIMX
+      INTEGER*4 LIMX
       DOUBLE COMPLEX UNITY, ZERO, A(LIMX, LIMX), B(LIMX, LIMX),
      + C(LIMX, LIMX), D(LIMX, LIMX), MULT(2*LIMX, 2*LIMX),
      + O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX), TEMP(2*LIMX, 2*LIMX),
@@ -284,7 +284,7 @@ c$$$ I have verified that AD-BC=1 (identity matrix) as expected
       SUBROUTINE GENTANDRINC(LIMX, TTILDEINC, D, B, RTILDEINC,
      + C, RINC, TINC, A)
 	 
-      INTEGER LIMX, X
+      INTEGER*4 LIMX, X, Y
       DOUBLE COMPLEX UNITY, ZERO, A(LIMX, LIMX),
      + C(LIMX, LIMX), D(LIMX, LIMX), TEMP2(LIMX, LIMX),
      + TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX), RINC(LIMX, LIMX),
@@ -293,6 +293,9 @@ c$$$ I have verified that AD-BC=1 (identity matrix) as expected
       UNITY = 1.0
       ZERO = 0.0
       DO X = 1, LIMX
+         DO Y=1, LIMX
+            UNITMATRIX(X, Y) = (0.0, 0.0)
+         END DO
          UNITMATRIX(X, X) = 1.0
       END DO
 	 
@@ -304,8 +307,6 @@ c$$$ R~ = BD^-1
      +      LIMX, TTILDEINC, LIMX, ZERO, RTILDEINC, LIMX)
 c$$$ R = -D^-1 C
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, -1*UNITY, TTILDEINC,
-     +      LIMX, UNITMATRIX, LIMX, ZERO, TEMP2, LIMX)
-      CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, TEMP2,
      +      LIMX, C, LIMX, ZERO, RINC, LIMX)
 c$$$ R=-R
       RINC = -1*RINC
@@ -316,7 +317,7 @@ c$$$ T=(A-)? BD^-1 C
      +      LIMX, TEMP2, LIMX, ZERO, TINC, LIMX)
 c$$$         TINC=A-TINC
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, A, LIMX,
-     +      UNNITMATRIX, LIMX, -1*UNITY, TINC, LIMX)
+     +      UNITMATRIX, LIMX, -1*UNITY, TINC, LIMX)
 c$$$         write (*, 981) REAL(TINC(1, 1)), REAL(TINC(1, 2)), REAL(TINC(2, 1)), REAL(TINC(2, 2))
 c$$$         write (*, 981) AIMAG(TINC(1, 1)), AIMAG(TINC(1, 2)), AIMAG(TINC(2, 1)), AIMAG(TINC(2, 2))
 c$$$         write (*, 982) REAL(TTILDEINC(1, 1)), REAL(TTILDEINC(1, 2)), REAL(TTILDEINC(2, 1)), REAL(TTILDEINC(2, 2))
@@ -341,7 +342,7 @@ c$$$         write (*, 985)
       SUBROUTINE UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
      + RTILDE, LIMX, RINC)
 	  
-      INTEGER LIMX
+      INTEGER*4 LIMX
       DOUBLE COMPLEX T(LIMX, LIMX), TTILDE(LIMX, LIMX), R(LIMX, LIMX),
      + RTILDE(LIMX, LIMX), TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
      + RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
@@ -353,7 +354,7 @@ c$$$ Temporary local variables
      + RTILDE2TEMP(LIMX, LIMX), BRACKET12(LIMX, LIMX),
      + BRACKET21(LIMX, LIMX), TRTEMP(LIMX, LIMX), TRTEMP2(LIMX, LIMX),
      + UNITMATRIX(LIMX, LIMX), ALLZERO(LIMX, LIMX)
-      INTEGER X, Y
+      INTEGER*4 X, Y
 	  
       UNITY = 1.0
       ZERO = 0.0
@@ -371,7 +372,8 @@ c$$$  Use lapack functions, such as zcopy --- AVS
 	  
       DO X = 1, LIMX
          DO Y = 1, LIMX
-            ALLZERO(X, Y) = 1.0
+            ALLZERO(X, Y) = (0.0, 0.0)
+            UNITMATRIX(X, Y) = (0.0, 0.0)
          END DO
          UNITMATRIX(X, X) = 1.0
       END DO
@@ -454,7 +456,7 @@ c$$$ RTILDE = RTILDE2 + T2.BRACKET12.RTILDE1.TTILDE2
 	  
       SUBROUTINE FILLOANDINVERT(O, IO, LIMX)
 	  
-      INTEGER LIMX, I
+      INTEGER*4 LIMX, I
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
 	  
 c$$$ Generate O-matrix
@@ -475,7 +477,7 @@ c$$$ O is block matrix of 1/sqrt(2) (1,1;i,-i)
       SUBROUTINE INVERTMATRIX(MATRIX, LIMX)
 	  
       INTEGER*4 S
-      INTEGER LIMX, PIVOT(LIMX, LIMX)
+      INTEGER*4 LIMX, PIVOT(LIMX, LIMX)
       DOUBLE COMPLEX MATRIX(LIMX, LIMX), WORK(LIMX*LIMX)
 	  
       CALL ZGETRF(LIMX, LIMX, MATRIX, LIMX, PIVOT, S)
@@ -491,7 +493,7 @@ c$$$ O is block matrix of 1/sqrt(2) (1,1;i,-i)
 	  
       SUBROUTINE CALCMULT(MULT, LIMX, LIMY, WRAPX, MODD, MEVEN, E)
 	  
-      INTEGER LIMX, LIMY, WRAPX
+      INTEGER*4 LIMX, LIMY, WRAPX
       INTEGER*4 I/1/
       DOUBLE PRECISION E
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
@@ -533,31 +535,21 @@ c$$$         MULT=MEVEN
       RETURN
       END
 	  
-c$$$ Not sure that this is working correctly, does not give same output
-c$$$ for |-4/5   0 |
-c$$$     |  0  -4/5| as wolfram alpha does (not sure which is at fault
-c$$$ here though).
+
       SUBROUTINE SV_DECOMP(LIMX, MATRIX, OUTPUTS)
 	  
-      INTEGER LIMX, MSIZE, S
+      INTEGER*4 LIMX, MSIZE, S
       DOUBLE PRECISION SVALS(LIMX), OUTPUTS(LIMX), RWORK(5*LIMX)
       DOUBLE COMPLEX MATRIX(LIMX, LIMX), TEMP2(LIMX, LIMX),
-     + SVCPY(LIMX, LIMX), WORK(4*LIMX*LIMX), U(LIMX, LIMX),
-     + V(LIMX, LIMX)
+     + SVCPY(LIMX, LIMX), WORK(4*LIMX*LIMX)
 	  
       MSIZE=4*LIMX*LIMX
 
 c$$$ make copy of matrix for SVD since it is destroyed
 c$$$      SVCPY=MATRIX
       CALL ZCOPY(LIMX*LIMX, MATRIX, 1, SVCPY, 1)
-c$$$      CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, TEMP2,
-c$$$     + LIMX, TEMP2, LIMX , WORK, MSIZE, RWORK, S)
-      CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, U,
-     + LIMX, V, LIMX , WORK, MSIZE, RWORK, S)
-      WRITE (*,*) ' '
-      CALL PRINTT(U, LIMX, 'U  ')
-      CALL PRINTT(V, LIMX, 'V^H')
-      WRITE (*,*) ' '
+      CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, TEMP2,
+     + LIMX, TEMP2, LIMX , WORK, MSIZE, RWORK, S)
       IF (S .NE. 0) THEN
          WRITE (*,*) 'SVD failed with S=', S
          STOP
@@ -572,7 +564,7 @@ c$$$      OUTPUTS=SVALS
 	  
       SUBROUTINE PRINTVECTOR(INPUT, LIMX, MNAME)
 	  
-      INTEGER LIMX, I
+      INTEGER*4 LIMX, I
       DOUBLE PRECISION INPUT(LIMX)
       CHARACTER*2 MNAME
 	  
@@ -584,7 +576,7 @@ c$$$      OUTPUTS=SVALS
 	  
       SUBROUTINE PRINTT(T, LIMX, MNAME)
 
-      INTEGER LIMX
+      INTEGER*4 LIMX
       DOUBLE COMPLEX T(LIMX, LIMX)
       CHARACTER*3 MNAME
 
