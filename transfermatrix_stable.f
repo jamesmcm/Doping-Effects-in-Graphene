@@ -221,7 +221,7 @@ c$$$ R = -D^-1 C
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, -1*UNITY, TTILDEINC,
      +      LIMX, C, LIMX, ZERO, RINC, LIMX)
 c$$$ R=-R
-      RINC = -1*RINC
+c$$$      RINC = -1*RINC
 c$$$ T=(A-)? BD^-1 C
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, TTILDEINC,
      +      LIMX, C, LIMX, ZERO, TEMP2, LIMX)
