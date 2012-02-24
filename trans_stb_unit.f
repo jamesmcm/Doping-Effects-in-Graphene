@@ -1,13 +1,15 @@
 c$$$ Want to loop over different energies and produce T^2 coefficients, check they match with analytical results
 
       PROGRAM TRANSFERMATIXTWO
-      INTEGER, PARAMETER :: LIMX=2, LIMY=10, WRAPY=0, WRAPX=1,
+      INTEGER, PARAMETER :: LIMX=2, WRAPY=0, WRAPX=1,
      + MSIZE=4*LIMX*LIMX, M2SIZE=LIMX*LIMX
       INTEGER PIVOT(2*LIMX, 2*LIMX), PIVOT2(LIMX, LIMX)
-      INTEGER I/1/, J/1/, S/9/, K/1/, F/1/, X/1/, Y/1/ 
+      INTEGER I/1/, J/1/, S/9/, K/1/, F/1/, X/1/, Y/1/,LIMY/10/       
+      CHARACTER*3 VALUE
       DOUBLE PRECISION SVALS(LIMX), RWORK(5*LIMX), RVALS(LIMX),
-     + TVALS(LIMX), E/-5/, TTVALS(LIMX), RTVALS(LIMX), SQUARE
-     + 
+     + TVALS(LIMX), E/-5/, TTVALS(LIMX), RTVALS(LIMX),SQUARE,COND/-1/, 
+     + CHECKUNI
+      
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
      + MULT(2*LIMX, 2*LIMX), OUTM(2*LIMX, 2*LIMX), ALPHA, BETA,
      + O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX),
@@ -17,11 +19,15 @@ c$$$ Want to loop over different energies and produce T^2 coefficients, check th
      + TTILDE(LIMX, LIMX), R(LIMX, LIMX), RTILDE(LIMX, LIMX),
      + TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX), RINC(LIMX, LIMX),
      + RTILDEINC(LIMX, LIMX), WORK2(LIMX*LIMX), TEMP3(LIMX, LIMX),
-     + SVCPY(LIMX, LIMX), COND/-1/
+     + SVCPY(LIMX, LIMX)
 
       DATA MODD/MSIZE*0.0/, MEVEN/MSIZE*0.0/, O/MSIZE*0.0/,
      + IO/MSIZE*0.0/, PIVOT/MSIZE*0/, ALPHA/1.0/,
      + BETA/0.0/, TEMP/MSIZE*0.0/, PIVOT2/M2SIZE*0.0/
+
+c$$$  reads command line argument as LIMY
+      CALL GETARG(1, VALUE)
+      READ(UNIT=VALUE, FMT=*) LIMY
 
       DO F = 1, 1001
 
@@ -76,34 +82,34 @@ c$$$ ################################################################
 c$$$ Output of main function-commented out while checking for unitarity
          		 
 
-c$$$         CALL VECTOR(TVALS, LIMX, 'T ')
+c$$$         CALL PRINTVECTOR(TVALS, LIMX, 'T ')
 c$$$         CALL PRINTVECTOR(RVALS, LIMX, 'R ')
 c$$$         CALL PRINTVECTOR(TTVALS, LIMX, 'T~')
 c$$$         CALL PRINTVECTOR(RTVALS, LIMX, 'R~')
 
 	 
           
-C      DO X = 1, LIMX*LIMX
-C         DO Y = 1, LIMX*LIMX
-C            T(X, Y) = (0.0, 0.0)
-C            R(X, Y) = (0.0, 0.0)
-C           TTILDE(X, Y) = (0.0, 0.0)
-C            RTILDE(X, Y) = (0.0, 0.0)
-C         END DO
-C        T(X, X) = 1.0
-C        TTILDE(X, Y) = 1.0
-C      END DO
+c      DO X = 1, LIMX*LIMX
+c         DO Y = 1, LIMX*LIMX
+c            T(X, Y) = (0.0, 0.0)
+c            R(X, Y) = (0.0, 0.0)
+c           TTILDE(X, Y) = (0.0, 0.0)
+c            RTILDE(X, Y) = (0.0, 0.0)
+c         END DO
+c        T(X, X) = 1.0
+c        TTILDE(X, Y) = 1.0
+c      END DO
     
-      
+c$$$  Error return type mismatch of function checkuni real(4)/real(8)      
       COND = CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
      
-      WRITE(*,50) 'E=',E,COND
+      WRITE(*,50) E,COND,(TVALS(I)*TVALS(I), I = 1, LIMX)
          E=E+0.01
       END DO
 c$$$ so T^2 + R^2 =1 for SVD values, also verified with R~ and T~
 
       
- 50   FORMAT (A, F6.2,ES15.5E2)      
+ 50   FORMAT (F6.2,3ES15.5E2)      
 
       
 
@@ -171,7 +177,7 @@ c$$$ R = -D^-1 C
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, -1*UNITY, TTILDEINC,
      +      LIMX, C, LIMX, ZERO, RINC, LIMX)
 c$$$ R=-R
-c$$$      RINC = -1*RINC
+c$$$      RINC = -1*RINC   Produces non unitary matrix ? 
 c$$$ T=(A-)? BD^-1 C
       CALL ZGEMM('N', 'N', LIMX, LIMX, LIMX, UNITY, TTILDEINC,
      +      LIMX, C, LIMX, ZERO, TEMP2, LIMX)
@@ -441,13 +447,14 @@ c$$$ Routine to print output to the screen
 
 c$$$  Routine to check for unitary matrices
     
-      DOUBLE COMPLEX FUNCTION CHECKUNI(LIMX, T,R,TTILDE,RTILDE)
+      DOUBLE PRECISION FUNCTION CHECKUNI(LIMX, T,R,TTILDE,RTILDE)
       IMPLICIT NONE
 
       INTEGER LIMX, X/1/, Y/1/
-      DOUBLE COMPLEX T(LIMX,LIMX), BETA/-1/,ALPHA/-1/,
+      DOUBLE PRECISION ZLANGE
+      DOUBLE COMPLEX T(LIMX,LIMX), BETA/-1/,ALPHA/1/,
      + R(LIMX,LIMX),TTILDE(LIMX,LIMX),RTILDE(LIMX,LIMX),
-     + U(LIMX*LIMX,LIMX*LIMX), CHECK(LIMX*LIMX,LIMX*LIMX),ZLANGE
+     + U(LIMX*LIMX,LIMX*LIMX), CHECK(LIMX*LIMX,LIMX*LIMX)
  
 
 c$$$ test cases of t,r,t~ r~
@@ -458,31 +465,19 @@ c$$$ Fills a unit matrix
          DO Y = 1, 2*LIMX
             CHECK(X, Y) = (0.0, 0.0)
          END DO
-        CHECK(X, X) = 1.0
+       CHECK(X, X) = 1.0
       END DO
-c$$$ Top left      
+     
       DO X=1, LIMX
        DO Y=1, LIMX
-      	U(X,Y)=T(X,Y)
-       END DO
-      END DO
+c$$$ Top left 
+       U(X,Y)=T(X,Y)      
 c$$$  Bottom left
-   
-      DO X=1, LIMX
-       DO Y=LIMX+1, 2*LIMX
-	 U(X,Y)=R(X,Y)
-       END DO
-      END DO
-c$$$ Top right
-      DO X=LIMX+1, 2*LIMX
-       DO Y=1, LIMX
-       U(X,Y)=RTILDE(X,Y)
-       END DO
-      END DO
-      
-      DO X=LIMX+1, 2*LIMX
-        DO Y=LIMX+1, 2*LIMX
-	  U(X,Y)=TTILDE(X,Y)
+	 U(X+LIMX,Y)=R(X,Y)     
+c$$$ Top right    
+        U(X,Y+LIMX)=RTILDE(X,Y)
+c$$$ Bottom right
+	  U(X+LIMX,Y+LIMX)=TTILDE(X,Y)
         END DO
       END DO
 
