@@ -2,7 +2,7 @@ c$$$Calculate xi for both lambda values (may be complex)
 c$$$Calculate coefficients for lambda values and xi values - note lambda must match xi
 c$$$Sub coefficients in to T formula
 c$$$Take modulus and square
-c$$$
+c$$$ REMEMBER THAT THE REAL N OF BLOCKS IS TWICE WHAT IS USED
 
       PROGRAM PLOTNOWRAP
       IMPLICIT NONE
@@ -19,7 +19,7 @@ c$$$      set N to command line argument
       
       IM=CMPLX(0,1)
 
-      DO F = 1, 1001    
+      DO F = 1, 2002    
          LAMBDAP=E+1
          SQRTARG=((((E**2)*(LAMBDAP**2)) - 4*E*LAMBDAP))
          IF (SQRTARG .GE. 0) THEN
@@ -78,8 +78,8 @@ c$$$         XIP=(0.5*((E*LAMBDAP) -2), 0.5*SQRT(DABS(SQRTARG)))
 
 
 
-         E=E+0.01
+         E=E+0.005
       END DO
 
- 10   FORMAT (3F15.6)
+ 10   FORMAT (3ES15.5E4)
       END
