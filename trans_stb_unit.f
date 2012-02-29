@@ -129,17 +129,10 @@ C$$$ SO T^2 + R^2 =1 FOR SVD VALUES, ALSO VERIFIED WITH R~ AND T~
       
  50   FORMAT (F6.3,15ES15.5E3)      
 
-C$$$ OUTPUT TO COMPARE ANALYTICAL VS ITTERATION
-      WRITE (*,10) E,(TVALS(I)*TVALS(I), I = 1, LIMX)
-
-C$$$ SAME SIZE STEPS AS RUN.C
-         E=E+0.0001
-      END DO
-
- 10   FORMAT (3ES15.5E2)
-C$$$  END OF OUTPUT FOR COMPARE
       STOP
       END
+C$$$ END OF MAIN PROGRAM ###############################################
+C$$$                     ###############################################
 
       DOUBLE PRECISION FUNCTION CONDUCTANCE (TVALS, LIMX)
       INTEGER LIMX
@@ -149,8 +142,7 @@ C$$$  END OF OUTPUT FOR COMPARE
       RETURN
       END
 
-C$$$ END OF MAIN PROGRAM ###############################################
-C$$$                     ###############################################
+
  
 C$$$ ROUTINE TO GENERATE A,B,C,D. 
       SUBROUTINE GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
@@ -430,7 +422,7 @@ C$$$ SINGLE VALUE DECOMPOSITION OF MATRIX
 
 C$$$ MAKE COPY OF MATRIX FOR SVD SINCE IT IS DESTROYED
 C$$$      SVCPY=MATRIX
-      CALL DCOPY(LIMX*LIMX, MATRIX, 1, SVCPY, 1)
+      CALL ZCOPY(LIMX*LIMX, MATRIX, 1, SVCPY, 1)
       CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, TEMP2,
      + LIMX, TEMP2, LIMX , WORK, MSIZE, RWORK, S)
       IF (S .NE. 0) THEN
