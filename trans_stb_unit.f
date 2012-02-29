@@ -7,8 +7,8 @@ C$$$ WANT TO LOOP OVER DIFFERENT ENERGIES AND PRODUCE T^2 COEFFICIENTS, CHECK TH
       DOUBLE PRECISION CHECKUNI2
       DOUBLE PRECISION CHECKUNI3
       DOUBLE PRECISION CONDUCTANCE
-      
-      INTEGER, PARAMETER :: LIMX=200, WRAPY=0, WRAPX=1,
+c$$   NB LIMX CHANGED TO 2       
+      INTEGER, PARAMETER :: LIMX=2, WRAPY=0, WRAPX=1,
      + MSIZE=4*LIMX*LIMX, M2SIZE=LIMX*LIMX
       INTEGER I/1/, K/1/, F/1/, LIMY/10/       
       CHARACTER*3 VALUE
@@ -40,7 +40,7 @@ C$$$  READS COMMAND LINE ARGUMENT AS LIMY
       CALL GETARG(1, VALUE)
       READ(UNIT=VALUE, FMT=*) LIMY
 
-      DO F = 1, 2
+      DO F = 1, 10000
 
 
          CALL CALCMULT(MULT, LIMX, LIMY, WRAPX, MODD, MEVEN, E)
@@ -88,7 +88,7 @@ C           WRITE (*, *) '2: I=', I, ' ', COND
          END DO
 
 C$$$ ################################################################
-
+            
          CALL SV_DECOMP(LIMX, T, TVALS)
 c         CALL SV_DECOMP(LIMX, R, RVALS)
 c         CALL SV_DECOMP(LIMX, TTILDE, TTVALS)
@@ -116,21 +116,33 @@ C      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDE, LIMX)
        
     
 C$$$  ERROR RETURN TYPE MISMATCH OF FUNCTION CHECKUNI REAL(4)/REAL(8)      
-      COND = CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
-      G    = CONDUCTANCE (TVALS, LIMX)
+C      COND = CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
+C      G    = CONDUCTANCE (TVALS, LIMX)
 
 c$$$  WRITES THE VALUE OF THE CONDUCTANCE AND THE 
-      WRITE(*,50) E, G, COND
-CCCC  ,(TVALS(I)*TVALS(I), I = 1, LIMX)
+c$$$      WRITE(*,50) E, G, COND
+  
+      WRITE(*,60) E,(TVALS(I)*TVALS(I), I = 1, LIMX)
+
+c$$$ 'E' STEPS CONSISTANT WITH ANALYTICAL.C
       E=E+0.01
       END DO
+      
+         
+
+
 C$$$ SO T^2 + R^2 =1 FOR SVD VALUES, ALSO VERIFIED WITH R~ AND T~
 
+
       
- 50   FORMAT (F6.3,15ES15.5E3)      
+
+ 50   FORMAT (F8.5,15ES15.5E3)      
+ 60   FORMAT (F8.6,15ES15.5E3)
+     
 
       STOP
       END
+
 C$$$ END OF MAIN PROGRAM ###############################################
 C$$$                     ###############################################
 

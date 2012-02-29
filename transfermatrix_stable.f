@@ -1,10 +1,11 @@
 c$$$ Want to loop over different energies and produce T^2 coefficients, check they match with analytical results
 
       PROGRAM TRANSFERMATIXTWO
-      INTEGER*4, PARAMETER :: LIMX=2, LIMY=10, WRAPY=0, WRAPX=1,
+      INTEGER*4, PARAMETER :: LIMX=2, WRAPY=0, WRAPX=1,
      + MSIZE=4*LIMX*LIMX, M2SIZE=LIMX*LIMX
       INTEGER*4 PIVOT(2*LIMX, 2*LIMX), PIVOT2(LIMX, LIMX)
-      INTEGER*4 I/1/, J/1/, F/1/
+      INTEGER*4 I/1/, J/1/, F/1/,LIMY/10/
+      CHARACTER*3 VALUE
       DOUBLE PRECISION RVALS(LIMX),
      + TVALS(LIMX), E/-5/, TTVALS(LIMX), RTVALS(LIMX)
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
@@ -21,9 +22,12 @@ c$$$ Want to loop over different energies and produce T^2 coefficients, check th
      + IO/MSIZE*0.0/, PIVOT/MSIZE*0/, ALPHA/1.0/,
      + BETA/0.0/, TEMP/MSIZE*0.0/, PIVOT2/M2SIZE*0/
 
-c$$$ WRITE (*,70) "LIMX:", LIMX, " LIMY:", LIMY
-      DO F = 1, 1001
-c$$$ WRITE (*,50) "E value:", E
+c$$$ GET ARGUMENT FROM COMMAND LINE
+      CALL GETARG(1, VALUE)
+      READ(UNIT=VALUE, FMT=*) LIMY           
+
+      DO F = 1, 100001
+
 
          CALL CALCMULT(MULT, LIMX, LIMY, WRAPX, MODD, MEVEN, E)
 
@@ -98,35 +102,33 @@ c$$$      END DO
          CALL SV_DECOMP(LIMX, TTILDE, TTVALS)
          CALL SV_DECOMP(LIMX, RTILDE, RTVALS)
 
-         WRITE (*,50) 'E=', E
-         CALL PRINTVECTOR(TVALS, LIMX, 'T ')
-         CALL PRINTVECTOR(RVALS, LIMX, 'R ')
-         CALL PRINTVECTOR(TTVALS, LIMX, 'T~')
-         CALL PRINTVECTOR(RTVALS, LIMX, 'R~')
+c         WRITE (*,50) 'E=', E
+c         CALL PRINTVECTOR(TVALS, LIMX, 'T ')
+c         CALL PRINTVECTOR(RVALS, LIMX, 'R ')
+c         CALL PRINTVECTOR(TTVALS, LIMX, 'T~')
+c         CALL PRINTVECTOR(RTVALS, LIMX, 'R~')
 
-c$$$ DO J=1, LIMX
-c$$$ WRITE (*,60) "T^2 value: ", TVALS(J)*TVALS(J),
+,
 c$$$ + " R^2 value: ", RVALS(1+LIMX-J)*RVALS(1+LIMX-J)
 c$$$ END DO
 
-
-c$$$         WRITE (*,80) E, (TVALS(I)*TVALS(I), I = 1, LIMX)
+      
+      WRITE (*,80) E, (TVALS(I)*TVALS(I), I = 1, LIMX)
 c$$$ WRITE (*,80) "R^2 values: ",(RVALS(LIMX-I+1)*RVALS(LIMX-I+1),
 c$$$ + I = 1, LIMX)
 
 
-
-         E=E+0.01
+c     'E' STEP AS ANALYTIC.C
+         E=E+0.0001
       END DO
 c$$$ so T^2 + R^2 =1 for SVD values, also verified with R~ and T~
 
  20   FORMAT (4F4.0)
  30   FORMAT (F8.4, A, F8.4, A)
  40   FORMAT (F8.4)
- 50   FORMAT (A, F6.2)
- 60   FORMAT (A, F8.4, A, F8.4)
  70   FORMAT (A, I6, A, I6)
- 80   FORMAT (F8.4, ES15.5E2, ES15.5E2)
+
+ 80   FORMAT (F8.7, ES15.5E2, ES15.5E2)
  
       STOP
       END

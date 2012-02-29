@@ -28,7 +28,7 @@ c$$$  reads command line argument as LIMY
       CALL GETARG(1, VALUE)
       READ(UNIT=VALUE, FMT=*) LIMY
 
-      DO F = 1, 1001
+      DO F = 1, 100001
 c$$$  First row is even - WRAPX makes no diff, second row not, etc.
 c$$$  - what matters is which row it is centred on
 c$$$  There are 2 transfer matrices to generate
@@ -105,7 +105,8 @@ c$$$  O is block matrix of 1/sqrt(2) (1,1;i,-i)
 
          WRITE (*,10) E,(TVALS(I)*TVALS(I), I = 1, LIMX)
 
-         E=E+0.01
+c$$   'E' STEP OF ANALYTICAL.C
+         E=E+0.0001
       END DO
 
  10   FORMAT (3ES15.5E2)
