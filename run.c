@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <complex.h>
 
-//#define N 7    //Program is specific to a given N value
 
 double comp(double lam,int n);
 double real(double lam,int n);
@@ -21,7 +20,7 @@ int n=0;
 eps=0;
 lam=0;
 lam_neg=0;
-      scanf("%d",&n);
+      scanf("%d",&n);  //Program is specific to a given N value - reads in from command line
   for(i=0;i<100000;i++){
 	eps=((i/10000)-5.001); //Forces range over -5<x<5
 	lam = (eps+1);
