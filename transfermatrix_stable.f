@@ -108,7 +108,7 @@ c         CALL PRINTVECTOR(RVALS, LIMX, 'R ')
 c         CALL PRINTVECTOR(TTVALS, LIMX, 'T~')
 c         CALL PRINTVECTOR(RTVALS, LIMX, 'R~')
 
-,
+
 c$$$ + " R^2 value: ", RVALS(1+LIMX-J)*RVALS(1+LIMX-J)
 c$$$ END DO
 
