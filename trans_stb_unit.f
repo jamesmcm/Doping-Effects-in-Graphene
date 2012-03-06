@@ -8,7 +8,7 @@ C$$$ WANT TO LOOP OVER DIFFERENT ENERGIES AND PRODUCE T^2 COEFFICIENTS, CHECK TH
       DOUBLE PRECISION CHECKUNI3
       DOUBLE PRECISION CONDUCTANCE
 c$$   NB LIMX CHANGED TO 2       
-      INTEGER, PARAMETER :: LIMX=300, WRAPY=0, WRAPX=1,
+      INTEGER, PARAMETER :: LIMX=2, WRAPY=0, WRAPX=0,
      + MSIZE=4*LIMX*LIMX, M2SIZE=LIMX*LIMX
       INTEGER I/1/, K/1/, F/1/,LIMY/520/
       CHARACTER*3 VALUE
@@ -36,16 +36,40 @@ c$$   NB LIMX CHANGED TO 2
       DATA MODD/MSIZE*0.0/, MEVEN/MSIZE*0.0/, O/MSIZE*0.0/,
      +     IO/MSIZE*0.0/,   TEMP/MSIZE*0.0/
 
+      DOUBLE COMPLEX CNUM
+      DOUBLE PRECISION FLUX/0.00/
 C$$$  READS COMMAND LINE ARGUMENT AS LIMY
 
 c      CALL GETARG(1, VALUE)
 c      READ(UNIT=VALUE, FMT=*) LIMY
-      DO F = 1, 2
-      
+      CALL FILLOANDINVERT(O, IO, LIMX, FLUX)
+c$$$      CALL ZPRINTM (O,  LIMX, 'O ')	  
+      DO F = 1, 1001
+c$$$         ARG=5.0
+c$$$         CNUM = DCMPLX(0,0)
+c$$$         CALL ZPOLAR(ARG, CNUM)
+c$$$         PRINT *, CNUM
 
-         CALL CALCMULT(MULT, LIMX, LIMY, WRAPX, MODD, MEVEN, E)
+         CALL CALCMULT(MULT, LIMX, WRAPX, MODD, MEVEN, E, FLUX)
+c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
+c$$$  Must decide whether we want zig-zag or armchair edges
+C     For now I have left it as before so I can compare results
+c$$$         CALL ZPRINTM (MODD,  LIMX, 'MO ')	  
+c$$$         CALL ZPRINTM (MEVEN,  LIMX, 'ME ')	  
 
-         CALL FILLOANDINVERT(O, IO, LIMX)
+         IF (MOD(LIMY,2) .EQ. 1) THEN
+C$$$  MULT=MODD
+            CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
+         ELSE
+C$$$  MULT=MEVEN
+            CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
+         END IF
+c$$$         CALL PRINTM (MODD,  LIMX, 'MO ')	  
+c$$$         CALL PRINTM (MEVEN, LIMX, 'ME ')
+
+c$$$         CALL FILLOANDINVERT(O, IO, LIMX)
+c$$$  This was moved outside the loop as it is unnecessary here, at the moment
+
          CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
          CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D) 
 C         CALL PRINTT (T, LIMX, 'T  ')
@@ -119,13 +143,13 @@ C$$$  ERROR RETURN TYPE MISMATCH OF FUNCTION CHECKUNI REAL(4)/REAL(8)
       COND = CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
       G    = CONDUCTANCE (TVALS, LIMX)
 
-c$$$  WRITES THE VALUE OF THE CONDUCTANCE AND THE 
+c$$$  WRITES ENERGY, CONDUCTANCE, UNITARITY
       WRITE(*,50) E, G, COND
   
 c      WRITE(*,60) E,(TVALS(I)*TVALS(I), I = 1, LIMX)
 
 c$$$ 'E' STEPS CONSISTANT WITH ANALYTICAL.C
-      E=E+0.1
+      E=E+0.01
       END DO
       
          
@@ -302,23 +326,25 @@ C$$$ R = R1 + TTILDE1.BRACKET21.R2.T1. Note: TRTEMP from above is reused here
       END
 	  
 C$$$ CREATE THE 'O' MATRIX AND INVERT IT	  
-      SUBROUTINE FILLOANDINVERT(O, IO, LIMX)
+      SUBROUTINE FILLOANDINVERT(O, IO, LIMX, FLUX)
       IMPLICIT NONE
       INTEGER LIMX, I
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
-      DOUBLE PRECISION SQRT05
-      DOUBLE COMPLEX ZISQRT05
+      DOUBLE PRECISION SQRT05, FLUX
+      DOUBLE COMPLEX ZISQRT05, CNUM
 	  
-c     It is slightly more efficient to calculat square root once 
+c     It is slightly more efficient to calculate square root once 
       SQRT05 = SQRT(0.5)
       ZISQRT05 = DCMPLX(0, SQRT05)
 C$$$ GENERATE O-MATRIX
 C$$$ O IS BLOCK MATRIX OF 1/SQRT(2) (1,1;I,-I)
          DO I = 1, LIMX
-           O(I, I)=SQRT05
-           O(I, LIMX+I)=SQRT05
-           O(I+LIMX, I)=ZISQRT05
-           O(I+LIMX, I+LIMX)=-ZISQRT05
+            CALL ZPOLAR(FLUX*I, CNUM)
+            O(I, I)=SQRT05*CNUM
+            O(I, LIMX+I)=SQRT05*CNUM
+            O(I+LIMX, I)=ZISQRT05*CNUM
+            O(I+LIMX, I+LIMX)=-ZISQRT05*CNUM
+c$$$  Hopefully this is correct - test analytically later
          ENDDO
          CALL ZCOPY(4*LIMX*LIMX, O, 1, IO, 1)
          CALL INVERTMATRIX(IO, 2*LIMX)  
@@ -344,12 +370,14 @@ C$$$ ROUTINE TO INVERT A MATRIX USING LAPACK FUNCTIONS WITH A CHECK
       END
 	  
 C$$$ FUNCTION THAT CREATES A MATRIX 	  
-      SUBROUTINE CALCMULT(MULT, LIMX, LIMY, WRAPX, MODD, MEVEN, E)
+      SUBROUTINE CALCMULT(MULT, LIMX, WRAPX, MODD, MEVEN, E, FLUX)
 	  
-      INTEGER LIMX, LIMY, WRAPX, SZ/1/
+      INTEGER LIMX, WRAPX, SZ/1/
       INTEGER I/1/, NEIGH/1/
       DOUBLE PRECISION E
       DOUBLE COMPLEX ZEROC / 0.0 / 
+      DOUBLE COMPLEX CNUM, FLUX
+c$$$  May need to move this
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
      + MULT(2*LIMX, 2*LIMX)
 
@@ -363,6 +391,8 @@ c$$$  HAMMERTIME! Program terminates here if LIMX is odd
       
       CALL ZLASET ('A', SZ, SZ, ZEROC, ZEROC, MODD, SZ)
       CALL ZLASET ('A', SZ, SZ, ZEROC, ZEROC, MEVEN, SZ)
+
+
 C$$$ FIRST ROW IS EVEN - WRAPX MAKES NO DIFF, SECOND ROW NOT, ETC.
 C$$$ - WHAT MATTERS IS WHICH ROW IT IS CENTRED ON
 C$$$ THERE ARE 2 TRANSFER MATRICES TO GENERATE
@@ -373,11 +403,14 @@ C$$$ FILL TOP-RIGHT SUBMATRIX
          MODD(I, LIMX+I)=1
          MEVEN(I, LIMX+I)=1
 C$$$ FILL BOTTOM-LEFT SUBMATRIX
-         MODD(I+LIMX, I)=-1
-         MEVEN(I+LIMX, I)=-1
+         CALL ZPOLAR(FLUX*I, CNUM)
+         MODD(I+LIMX, I)=-1*CNUM
+         MEVEN(I+LIMX, I)=-1*CNUM
 C$$$ FILL BOTTOM-RIGHT SUBMATRIX
-         MODD(LIMX+I,LIMX+I)=E
-         MEVEN(LIMX+I,LIMX+I)=E
+         MODD(LIMX+I,LIMX+I)=E*CNUM
+         MEVEN(LIMX+I,LIMX+I)=E*CNUM
+
+c$$$  Double-check this multiplication analytically at some stage
 
 C$$$  THE FOLLOWING CODE WAS MODIFIED --- AVS
 C$$$  NEIGHBOURING SITE FOR ODD ROW, ON THE LEFT/RIGHT, DEPENDING ON I
@@ -393,7 +426,7 @@ C$$$  WHAT IS MOD(-1, N) IN FORTRAN.
                NEIGH = MOD (NEIGH - 1, LIMX) + 1
              ENDIF
 C$$$         WRITE (*, *) 'PUT: I = ', I, ' NEIGH = ', NEIGH
-             MODD(LIMX + I, LIMX + NEIGH) = -1
+             MODD(LIMX + I, LIMX + NEIGH) = -1*CNUM
          END IF
 C$$$     NOW REPEAT THE SAME FOR EVEN ROWS, SWAPPING LEFT AND RIGHT
 C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
@@ -406,18 +439,10 @@ C$$$     WRITE (*, *) '? I = ', I, ' NEIGH = ', NEIGH
              NEIGH = MOD (NEIGH - 1, LIMX) + 1
            END IF
 C$$$       WRITE (*, *) 'PUT: I = ', I, ' NEIGH = ', NEIGH
-           MEVEN(LIMX + I, LIMX + NEIGH) = -1
+           MEVEN(LIMX + I, LIMX + NEIGH) = -1*CNUM
          END IF
       END DO
-      IF (MOD(LIMY,2) .EQ. 1) THEN
-C$$$         MULT=MODD
-         CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
-      ELSE
-C$$$         MULT=MEVEN
-         CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
-      END IF
-c$$$      CALL PRINTM (MODD,  LIMX, 'MO ')	  
-c$$$      CALL PRINTM (MEVEN, LIMX, 'ME ')	  
+c$$$  Originally the first M matrix was set here	  
       RETURN
       END
 	  
@@ -495,6 +520,34 @@ C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
  500  FORMAT (A, 100F6.2)
  501  FORMAT (A, A, 100ES15.5E3, ES15.5E3)
 
+      RETURN
+      END
+
+      SUBROUTINE ZPRINTM(M, LIMX, MNAME)
+
+      INTEGER LIMX, J, K
+      DOUBLE COMPLEX M(2*LIMX, 2*LIMX)
+      CHARACTER*3 MNAME
+      DO J=1, 2*LIMX
+         WRITE (*,600) MNAME,(REAL(M(J, K)), '+', DIMAG(M(J, K)), 'I', 
+     +        K=1,2*LIMX)
+      END DO
+C      WRITE (*,400) MNAME, REAL(T(2,1)), REAL(T(2, 2))
+C      WRITE (*,401) MNAME, 'I', AIMAG(T(1, 1)), AIMAG(T(1, 2))
+C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
+
+ 600  FORMAT (A, 100(F8.4, A, F6.4, A))
+
+      RETURN
+      END
+
+      SUBROUTINE ZPOLAR(ARG, ZCOMPLEX)
+c$$$  Subroutine to change e^i*arg in to a complex number in sin and cos, stored in zcomplex
+      
+      DOUBLE PRECISION ARG
+      DOUBLE COMPLEX ZCOMPLEX
+      
+      ZCOMPLEX = DCMPLX(COS(ARG), SIN(ARG))
       RETURN
       END
 
