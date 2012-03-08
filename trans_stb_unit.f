@@ -37,7 +37,7 @@ c$$   NB LIMX CHANGED TO 2
      +     IO/MSIZE*0.0/,   TEMP/MSIZE*0.0/
 
       DOUBLE COMPLEX CNUM
-      DOUBLE PRECISION FLUX/0.001/
+      DOUBLE PRECISION FLUX/0.1/
 C$$$  READS COMMAND LINE ARGUMENT AS LIMY
 
 c      CALL GETARG(1, VALUE)
@@ -54,8 +54,12 @@ c$$$         PRINT *, CNUM
 c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
 C     For now I have left it as before so I can compare results
-c$$$         CALL ZPRINTM (MODD,  LIMX, 'MO ')	  
-c$$$         CALL ZPRINTM (MEVEN,  LIMX, 'ME ')	  
+c$$$         PRINT *, '-----'
+c$$$         CALL ZPRINTM (O,  LIMX, 'OO ')
+c$$$         PRINT *, '-----'
+c$$$         CALL ZPRINTM (IO,  LIMX, 'IO ')	  
+c$$$
+c$$$         STOP
 
          IF (MOD(LIMY,2) .EQ. 1) THEN
 C$$$  MULT=MODD
@@ -340,8 +344,8 @@ C$$$ GENERATE O-MATRIX
 C$$$ O IS BLOCK MATRIX OF 1/SQRT(2) (1,1;I,-I)
          DO I = 1, LIMX
             CALL ZPOLAR(FLUX*I, CNUM)
-            O(I, I)=SQRT05*CNUM
-            O(I, LIMX+I)=SQRT05*CNUM
+            O(I, I)=SQRT05
+            O(I, LIMX+I)=SQRT05
             O(I+LIMX, I)=ZISQRT05*CNUM
             O(I+LIMX, I+LIMX)=-ZISQRT05*CNUM
 c$$$  Hopefully this is correct - test analytically later
@@ -531,14 +535,14 @@ C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
       DOUBLE COMPLEX M(2*LIMX, 2*LIMX)
       CHARACTER*3 MNAME
       DO J=1, 2*LIMX
-         WRITE (*,600) MNAME,(REAL(M(J, K)), '+', DIMAG(M(J, K)), 'I', 
-     +        K=1,2*LIMX)
+         WRITE (*,600) MNAME,(REAL(M(J, K)), '+', DIMAG(M(J, K)),  
+     +       'I | ', K=1,2*LIMX)
       END DO
 C      WRITE (*,400) MNAME, REAL(T(2,1)), REAL(T(2, 2))
 C      WRITE (*,401) MNAME, 'I', AIMAG(T(1, 1)), AIMAG(T(1, 2))
 C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
 
- 600  FORMAT (A, 100(F8.4, A, F6.4, A))
+ 600  FORMAT (A, 100(F8.4, A, F7.4, A))
 
       RETURN
       END
