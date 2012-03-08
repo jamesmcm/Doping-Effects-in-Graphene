@@ -7,7 +7,7 @@ c$$$ REMEMBER THAT THE REAL N OF BLOCKS IS TWICE WHAT IS USED
       PROGRAM PLOTNOWRAP
       IMPLICIT NONE
       DOUBLE COMPLEX IM
-      DOUBLE PRECISION E/-5.0/, LAMBDAP, LAMBDAN, SQRTARG
+      DOUBLE PRECISION E/-3.0/, LAMBDAP, LAMBDAN, SQRTARG
       INTEGER F/1/, N/1/
       CHARACTER*3 VALUE 
       DOUBLE COMPLEX XIP, XIN, AC1, AC2, BC1, BC2, CC1, CC2, DC1, DC2
@@ -19,7 +19,7 @@ c$$$      set N to command line argument
       
       IM=CMPLX(0,1)
 
-      DO F = 1, 2002    
+      DO F = 1, 1201    
          LAMBDAP=E+1
          SQRTARG=((((E**2)*(LAMBDAP**2)) - 4*E*LAMBDAP))
          IF (SQRTARG .GE. 0) THEN
@@ -65,7 +65,8 @@ c$$$     +        ((((E**2)*(LAMBDAN**2)) - 4*E*LAMBDAN))))
          D=(DC1*(XIN**N))+(DC2*(XIN**(-N)))
          TN=2.0/((A+D)+(IM*(C-B)))
 
-         WRITE (*,10) E,(ABS(TP))**2, (ABS(TN))**2
+         WRITE (*,10) E, (((ABS(TP))**2) + ((ABS(TN))**2))
+c$$$         WRITE (*,10) E, (ABS(TP))**2, (ABS(TN))**2
 
 
 
