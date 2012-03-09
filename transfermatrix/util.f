@@ -47,11 +47,11 @@ c$$$  501  FORMAT (A, A, 100ES15.5E3, ES15.5E3)
       SUBROUTINE ZPRINTM(M, LIMX, MNAME)
       IMPLICIT NONE
       INTEGER LIMX, J, K
-      DOUBLE COMPLEX M(2*LIMX, 2*LIMX)
+      DOUBLE COMPLEX M(LIMX, LIMX)
       CHARACTER*3 MNAME
-      DO J=1, 2*LIMX
+      DO J=1, LIMX
          WRITE (*,600) MNAME,(REAL(M(J, K)), '+', DIMAG(M(J, K)),
-     +       'I | ', K=1,2*LIMX)
+     +       'I | ', K=1,LIMX)
       END DO
 C      WRITE (*,400) MNAME, REAL(T(2,1)), REAL(T(2, 2))
 C      WRITE (*,401) MNAME, 'I', AIMAG(T(1, 1)), AIMAG(T(1, 2))

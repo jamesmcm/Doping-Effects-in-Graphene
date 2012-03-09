@@ -78,7 +78,7 @@ c$$$  Originally the first M matrix was set here
       DOUBLE PRECISION FUNCTION GETTRANS(TVALS, LIMX, LIMY,
      +   E, FLUX, WRAPX)
       IMPLICIT NONE
-      INTEGER I, LIMY, WRAPX, LIMX
+      INTEGER I/1/, LIMY, WRAPX, LIMX
       DOUBLE PRECISION TVALS(LIMX), E, FLUX
       DOUBLE PRECISION CHECKUNI
       EXTERNAL CHECKUNI
@@ -93,12 +93,12 @@ c$$$  Originally the first M matrix was set here
      +               TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
      +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MODD, LIMX)
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MEVEN, LIMX)
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MULT, LIMX)
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, O, LIMX)
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, IO, LIMX)
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, ABCD, LIMX)
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MODD, 2*LIMX)
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MEVEN, 2*LIMX)
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MULT, 2*LIMX)
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, O, 2*LIMX)
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, IO, 2*LIMX)
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, ABCD, 2*LIMX)
 
 
       CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
@@ -107,15 +107,16 @@ c$$$  Must decide whether we want zig-zag or armchair edges
 C     For now I have left it as before so I can compare results
 
       DO I = 1, LIMX
-         MULT(I, I)=1
-         MULT(LIMX+I, LIMX+I)=1
-         ABCD(I, I) =1
-         ABCD(LIMX+I, LIMX+I) =1
+         MULT(I, I)=1.0
+         MULT(LIMX+I, LIMX+I)=1.0
+         ABCD(I, I) =1.0
+         ABCD(LIMX+I, LIMX+I) =1.0
       END DO
       CALL FILLOANDINVERT(O, IO, LIMX, FLUX)
+
 c$$$  This was previously moved outside the loop
-c$$$      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-c$$$      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
+      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
+      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, A, LIMX)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, B, LIMX)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, C, LIMX)
@@ -124,7 +125,8 @@ c$$$      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, TTILDEINC, LIMX)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, R, LIMX)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDEINC, LIMX)
-
+      PRINT *, "----"
+      CALL ZPRINTM(MODD, 2*LIMX, "OO ")
          DO I = 1, LIMY
             IF (MOD(LIMY,2) .EQ. 1) THEN
                IF (MOD(I,2) .EQ. 1) THEN
