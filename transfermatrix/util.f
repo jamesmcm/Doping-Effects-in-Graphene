@@ -1,16 +1,13 @@
-C$$$ ROUTINE TO PRINT OUTPUT TO THE SCREEN	  
+C$$$ ROUTINE TO PRINT OUTPUT TO THE SCREEN
       SUBROUTINE PRINTVECTOR(INPUT, LIMX, MNAME)
       IMPLICIT NONE
       INTEGER LIMX, I
       DOUBLE PRECISION INPUT(LIMX)
       CHARACTER*2 MNAME
-	  
       WRITE (*,200) MNAME, (INPUT(I)*INPUT(I), I = 1, LIMX)
  200  FORMAT (A, ' =', ES15.5E2, ES15.5E2)
-	  
       RETURN
       END
-	  
       SUBROUTINE PRINTT(T, LIMX, MNAME)
       IMPLICIT NONE
       INTEGER LIMX, J, K
@@ -29,7 +26,6 @@ C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
 
       RETURN
       END
-      
       SUBROUTINE PRINTM(M, LIMX, MNAME)
       IMPLICIT NONE
       INTEGER LIMX, J, K
@@ -43,7 +39,7 @@ C      WRITE (*,401) MNAME, 'I', AIMAG(T(1, 1)), AIMAG(T(1, 2))
 C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
 
  500  FORMAT (A, 100F6.2)
- 501  FORMAT (A, A, 100ES15.5E3, ES15.5E3)
+c$$$  501  FORMAT (A, A, 100ES15.5E3, ES15.5E3)
 
       RETURN
       END
@@ -54,7 +50,7 @@ C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
       DOUBLE COMPLEX M(2*LIMX, 2*LIMX)
       CHARACTER*3 MNAME
       DO J=1, 2*LIMX
-         WRITE (*,600) MNAME,(REAL(M(J, K)), '+', DIMAG(M(J, K)),  
+         WRITE (*,600) MNAME,(REAL(M(J, K)), '+', DIMAG(M(J, K)),
      +       'I | ', K=1,2*LIMX)
       END DO
 C      WRITE (*,400) MNAME, REAL(T(2,1)), REAL(T(2, 2))
@@ -69,10 +65,9 @@ C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
       SUBROUTINE ZPOLAR(ARG, ZCOMPLEX)
       IMPLICIT NONE
 c$$$  Subroutine to change e^i*arg in to a complex number in sin and cos, stored in zcomplex
-      
+
       DOUBLE PRECISION ARG
       DOUBLE COMPLEX ZCOMPLEX
-      
       ZCOMPLEX = DCMPLX(COS(ARG), SIN(ARG))
       RETURN
       END
@@ -81,7 +76,7 @@ c$$$  Subroutine to change e^i*arg in to a complex number in sin and cos, stored
       IMPLICIT NONE
       INTEGER LIMX
       DOUBLE PRECISION TVALS(LIMX)
-      DOUBLE PRECISION DDOT      
+      DOUBLE PRECISION DDOT
       CONDUCTANCE = DDOT (LIMX, TVALS, 1, TVALS, 1)
       RETURN
       END

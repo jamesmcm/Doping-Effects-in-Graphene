@@ -1,22 +1,21 @@
       SUBROUTINE CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
-      IMPLICIT NONE	  
+      IMPLICIT NONE
       INTEGER LIMX, WRAPX, SZ/1/
       INTEGER I/1/, NEIGH/1/
 c$$$ CHANGED FLUX FROM DOUBLE COMPLEX TO DOUBLE PRECISION
       DOUBLE PRECISION E, FLUX
-      DOUBLE COMPLEX ZEROC / 0.0 / 
+      DOUBLE COMPLEX ZEROC / 0.0 /
       DOUBLE COMPLEX CNUM
 c$$$  May need to move this
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX)
 
       IF ((MOD(LIMX,2) .NE. 0)) THEN
          WRITE (*,*) 'ERROR: LIMX must be even for physical results'
-         STOP 
+         STOP
       ENDIF
 c$$$  HAMMERTIME! Program terminates here if LIMX is odd
 
       SZ = 2 * LIMX
-      
       CALL ZLASET ('A', SZ, SZ, ZEROC, ZEROC, MODD, SZ)
       CALL ZLASET ('A', SZ, SZ, ZEROC, ZEROC, MEVEN, SZ)
 
@@ -43,7 +42,7 @@ c$$$  Double-check this multiplication analytically at some stage
 
 C$$$  THE FOLLOWING CODE WAS MODIFIED --- AVS
 C$$$  NEIGHBOURING SITE FOR ODD ROW, ON THE LEFT/RIGHT, DEPENDING ON I
-         NEIGH = I + (2*MOD(I,2)-1) 
+         NEIGH = I + (2*MOD(I,2)-1)
 C$$$     WRITE (*, *) '? I = ', I, ' NEIGH = ', NEIGH
 C$$$  NEIGHBOUR CAN BE < 0, OR > LIMX. IF WRAPX IS TRUE, THIS INDICATES
 C$$$  A VALID SITE. THE FOLLOWING CODE IS A BIT UGLY, AS I AM NOT SURE
@@ -71,7 +70,7 @@ C$$$       WRITE (*, *) 'PUT: I = ', I, ' NEIGH = ', NEIGH
            MEVEN(LIMX + I, LIMX + NEIGH) = -1*CNUM
          END IF
       END DO
-c$$$  Originally the first M matrix was set here	  
+c$$$  Originally the first M matrix was set here
       RETURN
       END
 
@@ -99,6 +98,7 @@ c$$$  Originally the first M matrix was set here
       CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MULT, LIMX)
       CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, O, LIMX)
       CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, IO, LIMX)
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, ABCD, LIMX)
 
 
       CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
@@ -109,12 +109,13 @@ C     For now I have left it as before so I can compare results
       DO I = 1, LIMX
          MULT(I, I)=1
          MULT(LIMX+I, LIMX+I)=1
+         ABCD(I, I) =1
+         ABCD(LIMX+I, LIMX+I) =1
       END DO
-      CALL FILLOANDINVERT(O, IO, LIMX)
+      CALL FILLOANDINVERT(O, IO, LIMX, FLUX)
 c$$$  This was previously moved outside the loop
-      
 c$$$      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-c$$$      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D) 
+c$$$      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, A, LIMX)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, B, LIMX)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, C, LIMX)
@@ -127,28 +128,26 @@ c$$$      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
          DO I = 1, LIMY
             IF (MOD(LIMY,2) .EQ. 1) THEN
                IF (MOD(I,2) .EQ. 1) THEN
-                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)		
+                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
                ELSE
-                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)		
+                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
                END IF
             ELSE
                IF (MOD(I,2) .EQ. 1) THEN
-                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)		
+                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
                ELSE
-                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)		
+                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
                END IF
             END IF
 
 
             CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-            CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC, 
+            CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
      +           A, B, C,D)
             CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
      +           RTILDE, LIMX, RINC)
-            
-         END DO  
+         END DO
          CALL SV_DECOMP(LIMX, T, TVALS)
-         
          GETTRANS=CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
          RETURN
          END
@@ -159,8 +158,8 @@ c$$$      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
       DOUBLE PRECISION SQRT05, FLUX
       DOUBLE COMPLEX ZISQRT05, CNUM
-	  
-c     It is slightly more efficient to calculate square root once 
+
+c     It is slightly more efficient to calculate square root once
       SQRT05 = SQRT(0.5)
       ZISQRT05 = DCMPLX(0, SQRT05)
 C$$$ GENERATE O-MATRIX
@@ -174,7 +173,6 @@ C$$$ O IS BLOCK MATRIX OF 1/SQRT(2) (1,1;I,-I)
 c$$$  Hopefully this is correct - test analytically later
          ENDDO
          CALL ZCOPY(4*LIMX*LIMX, O, 1, IO, 1)
-         CALL INVERTMATRIX(IO, 2*LIMX)  
-	  
+         CALL INVERTMATRIX(IO, 2*LIMX)
       RETURN
       END
