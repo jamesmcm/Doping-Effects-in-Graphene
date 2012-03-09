@@ -75,3 +75,56 @@ C$$$       WRITE (*, *) 'PUT: I = ', I, ' NEIGH = ', NEIGH
 c$$$  Originally the first M matrix was set here	  
       RETURN
       END
+
+
+      SUBROUTINE GETTRANS(TVALS, LIMX, LIMY, MEVEN, MODD, MULT, O, IO,
+     +     ABCD, A, B, C, D, T, R, TINC, RINC, TTILDEINC, RTILDEINC, 
+     +     TTILDE, RTILDE)
+      IMPLICIT NONE
+      INTEGER I, LIMY, LIMX
+      DOUBLE PRECISION TVALS(LIMX)
+      DOUBLE COMPLEX   ZEROC/0.0/, ONEC/1.0/
+      DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
+     +               MULT(2*LIMX, 2*LIMX), TEMP(2*LIMX, 2*LIMX)
+      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX),
+     +               C(LIMX, LIMX), D(LIMX, LIMX),
+     +               ABCD(2*LIMX, 2*LIMX)
+      DOUBLE COMPLEX T(LIMX, LIMX),    TTILDE(LIMX, LIMX),
+     +               R(LIMX, LIMX),    RTILDE(LIMX, LIMX),
+     +               TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
+     +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
+      DOUBLE COMPLEX O(2 *LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
+
+         DO I = 1, LIMY-1
+            IF (MOD(LIMY,2) .EQ. 1) THEN
+               IF (MOD(I,2) .EQ. 1) THEN
+                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)		
+               ELSE
+                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)		
+               END IF
+            ELSE
+               IF (MOD(I,2) .EQ. 1) THEN
+                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)		
+               ELSE
+                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)		
+               END IF
+            END IF
+
+
+            CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
+            CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC, 
+     +           A, B, C,D)
+            CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
+     +           RTILDE, LIMX, RINC)
+            
+         END DO  
+         CALL SV_DECOMP(LIMX, T, TVALS)
+         ZEROC = 0.0 
+         ONEC = 1.0 
+         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, T, LIMX)
+         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, TTILDE, LIMX)
+         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, R, LIMX)
+         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDE, LIMX)
+         
+         RETURN
+         END

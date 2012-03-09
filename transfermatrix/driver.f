@@ -78,72 +78,10 @@ c$$$  This was moved outside the loop as it is unnecessary here, at the moment
 
          CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
          CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D) 
-C         CALL PRINTT (T, LIMX, 'T  ')
-C         CALL PRINTT (TTILDE, LIMX, 'T~ ')
-C         CALL PRINTT (R, LIMX, 'R  ')
-C         CALL PRINTT (RTILDE, LIMX, 'R~ ')
-C         COND = CHECKUNI (LIMX, T, R, TTILDE, RTILDE)      
-C         WRITE (*, *) '1: I=', I, ' ', COND
-	
 
-		 
-C$$$ ################################################################
-
-
-         DO I = 1, LIMY-1
-            IF (MOD(LIMY,2) .EQ. 1) THEN
-               IF (MOD(I,2) .EQ. 1) THEN
-                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)		
-               ELSE
-                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)		
-               END IF
-            ELSE
-               IF (MOD(I,2) .EQ. 1) THEN
-                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)		
-               ELSE
-                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)		
-               END IF
-            END IF
-
-
-			
-            CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-            CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC, 
-     +       A, B, C,D)
-            CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
-     +       RTILDE, LIMX, RINC)
-C           COND = CHECKUNI (LIMX, T, R, TTILDE, RTILDE)      
-C           WRITE (*, *) '2: I=', I, ' ', COND
-			
-         END DO
-
-C$$$ ################################################################
-            
-         CALL SV_DECOMP(LIMX, T, TVALS)
-c         CALL SV_DECOMP(LIMX, R, RVALS)
-c         CALL SV_DECOMP(LIMX, TTILDE, TTVALS)
-c         CALL SV_DECOMP(LIMX, RTILDE, RTVALS)
-
-C$$$ OUTPUT OF MAIN FUNCTION-COMMENTED OUT WHILE CHECKING FOR UNITARITY
-         		 
-
-C$$$         CALL PRINTVECTOR(TVALS, LIMX, 'T ')
-C$$$         CALL PRINTVECTOR(RVALS, LIMX, 'R ')
-C$$$         CALL PRINTVECTOR(TTVALS, LIMX, 'T~')
-C$$$         CALL PRINTVECTOR(RTVALS, LIMX, 'R~')
-
-	 
-C       CALL PRINTT (T, LIMX, 'T  ')
-C       CALL PRINTT (TTILDE, LIMX, 'T~ ')
-C       CALL PRINTT (R, LIMX, 'R  ')
-C       CALL PRINTT (RTILDE, LIMX, 'R~ ')
-       ZEROC = 0.0 
-       ONEC = 1.0 
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, T, LIMX)
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, TTILDE, LIMX)
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, R, LIMX)
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDE, LIMX)
-       
+         CALL GETTRANS(TVALS, LIMX, LIMY, MEVEN, MODD, MULT, O, IO,
+     +     ABCD, A, B, C, D, T, R, TINC, RINC, TTILDEINC, RTILDEINC, 
+     +     TTILDE, RTILDE)
     
 C$$$  ERROR RETURN TYPE MISMATCH OF FUNCTION CHECKUNI REAL(4)/REAL(8)      
       COND = CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
