@@ -15,73 +15,30 @@ c$$   NB LIMX CHANGED TO 2
       INTEGER I/1/, K/1/, F/1/,LIMY/10/
       CHARACTER*3 VALUE
       
-      DOUBLE PRECISION RVALS(LIMX),  TVALS(LIMX),
-     +                 TTVALS(LIMX), RTVALS(LIMX)
+      DOUBLE PRECISION TVALS(LIMX)
 
-      DOUBLE PRECISION COND/-1.0/
-      DOUBLE PRECISION E/-3/
-      DOUBLE PRECISION G
+      DOUBLE PRECISION COND/-1.0/, FLUX/0.0/, E/-3/, G, DLVAL
       DOUBLE COMPLEX   ZEROC/0.0/, ONEC/1.0/
-      DOUBLE PRECISION DLVAL
       
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
      +               MULT(2*LIMX, 2*LIMX), TEMP(2*LIMX, 2*LIMX)
-      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX),
-     +               C(LIMX, LIMX), D(LIMX, LIMX),
-     +               ABCD(2*LIMX, 2*LIMX)
+
       DOUBLE COMPLEX T(LIMX, LIMX),    TTILDE(LIMX, LIMX),
-     +               R(LIMX, LIMX),    RTILDE(LIMX, LIMX),
-     +               TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
-     +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
+     +               R(LIMX, LIMX),    RTILDE(LIMX, LIMX)
       DOUBLE COMPLEX O(2 *LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
 
       DATA MODD/MSIZE*0.0/, MEVEN/MSIZE*0.0/, O/MSIZE*0.0/,
      +     IO/MSIZE*0.0/,   TEMP/MSIZE*0.0/
 
-      DOUBLE COMPLEX CNUM
-      DOUBLE PRECISION FLUX/0.0/
 C$$$  READS COMMAND LINE ARGUMENT AS LIMY
-
 c      CALL GETARG(1, VALUE)
 c      READ(UNIT=VALUE, FMT=*) LIMY
+
       CALL FILLOANDINVERT(O, IO, LIMX, FLUX)
-c$$$      CALL ZPRINTM (O,  LIMX, 'O ')	  
       DO F = 1, 1201
-c$$$         ARG=5.0
-c$$$         CNUM = DCMPLX(0,0)
-c$$$         CALL ZPOLAR(ARG, CNUM)
-c$$$         PRINT *, CNUM
 
-         CALL CALCMULT(MULT, LIMX, WRAPX, MODD, MEVEN, E, FLUX)
-c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
-c$$$  Must decide whether we want zig-zag or armchair edges
-C     For now I have left it as before so I can compare results
-c$$$         PRINT *, '-----'
-c$$$         CALL ZPRINTM (O,  LIMX, 'OO ')
-c$$$         PRINT *, '-----'
-c$$$         CALL ZPRINTM (IO,  LIMX, 'IO ')	  
-c$$$
-c$$$         STOP
-
-         IF (MOD(LIMY,2) .EQ. 1) THEN
-C$$$  MULT=MODD
-            CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
-         ELSE
-C$$$  MULT=MEVEN
-            CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
-         END IF
-c$$$         CALL PRINTM (MODD,  LIMX, 'MO ')	  
-c$$$         CALL PRINTM (MEVEN, LIMX, 'ME ')
-
-c$$$         CALL FILLOANDINVERT(O, IO, LIMX)
-c$$$  This was moved outside the loop as it is unnecessary here, at the moment
-
-         CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-         CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D) 
-
-         CALL GETTRANS(TVALS, LIMX, LIMY, MEVEN, MODD, MULT, O, IO,
-     +     ABCD, A, B, C, D, T, R, TINC, RINC, TTILDEINC, RTILDEINC, 
-     +     TTILDE, RTILDE)
+         CALL GETTRANS(TVALS, LIMX, LIMY, O, IO,
+     +    T, R, TTILDE, RTILDE, E, FLUX, WRAPX, MODD, MEVEN)
     
 C$$$  ERROR RETURN TYPE MISMATCH OF FUNCTION CHECKUNI REAL(4)/REAL(8)      
       COND = CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
@@ -95,14 +52,6 @@ c      WRITE(*,60) E,(TVALS(I)*TVALS(I), I = 1, LIMX)
 c$$$ 'E' STEPS CONSISTANT WITH ANALYTICAL.C
       E=E+0.005
       END DO
-      
-         
-
-
-C$$$ SO T^2 + R^2 =1 FOR SVD VALUES, ALSO VERIFIED WITH R~ AND T~
-
-
-      
 
  50   FORMAT (F8.5,15ES15.5E3)      
  60   FORMAT (15ES15.5E3)
