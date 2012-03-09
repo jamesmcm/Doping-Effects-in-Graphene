@@ -1,4 +1,4 @@
-      SUBROUTINE CALCMULT(MULT, LIMX, WRAPX, MODD, MEVEN, E, FLUX)
+      SUBROUTINE CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
 	  
       INTEGER LIMX, WRAPX, SZ/1/
       INTEGER I/1/, NEIGH/1/
@@ -7,8 +7,7 @@ c$$$ CHANGED FLUX FROM DOUBLE COMPLEX TO DOUBLE PRECISION
       DOUBLE COMPLEX ZEROC / 0.0 / 
       DOUBLE COMPLEX CNUM
 c$$$  May need to move this
-      DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
-     + MULT(2*LIMX, 2*LIMX)
+      DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX)
 
       IF ((MOD(LIMX,2) .NE. 0)) THEN
          WRITE (*,*) 'ERROR: LIMX must be even for physical results'
@@ -78,15 +77,13 @@ c$$$  Originally the first M matrix was set here
 
 
       SUBROUTINE GETTRANS(TVALS, LIMX, LIMY, O, IO,
-     +    T, R, TTILDE, RTILDE, E, FLUX, WRAPX, MODD, MEVEN)
+     +    T, R, TTILDE, RTILDE, E, FLUX, WRAPX)
       IMPLICIT NONE
       INTEGER I, LIMY, WRAPX, LIMX
-
-
       DOUBLE PRECISION TVALS(LIMX), E, FLUX
       DOUBLE COMPLEX   ZEROC/0.0/, ONEC/1.0/
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
-     +               MULT(2*LIMX, 2*LIMX), TEMP(2*LIMX, 2*LIMX)
+     +               MULT(2*LIMX, 2*LIMX)
       DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX),
      +               C(LIMX, LIMX), D(LIMX, LIMX),
      +               ABCD(2*LIMX, 2*LIMX)
@@ -95,7 +92,11 @@ c$$$  Originally the first M matrix was set here
      +               TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
      +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
       DOUBLE COMPLEX O(2 *LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
-      CALL CALCMULT(MULT, LIMX, WRAPX, MODD, MEVEN, E, FLUX)
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MODD, LIMX)
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MEVEN, LIMX)
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MULT, LIMX)
+
+      CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
 c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
 C     For now I have left it as before so I can compare results
@@ -106,23 +107,26 @@ c$$$         CALL ZPRINTM (IO,  LIMX, 'IO ')
 c$$$
 c$$$         STOP
 
-      IF (MOD(LIMY,2) .EQ. 1) THEN
-C$$$  MULT=MODD
-         CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
-      ELSE
-C$$$  MULT=MEVEN
-         CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
-      END IF
+c$$$      IF (MOD(LIMY,2) .EQ. 1) THEN
+c$$$C$$$  MULT=MODD
+c$$$         CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
+c$$$      ELSE
+c$$$C$$$  MULT=MEVEN
+c$$$         CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
+c$$$      END IF
 c$$$         CALL PRINTM (MODD,  LIMX, 'MO ')	  
 c$$$         CALL PRINTM (MEVEN, LIMX, 'ME ')
-
+      DO I = 1, LIMX
+         MULT(I, I)=1
+         MULT(LIMX+I, LIMX+I)=1
+         END DO
 c$$$         CALL FILLOANDINVERT(O, IO, LIMX)
 c$$$  This was moved outside the loop as it is unnecessary here, at the moment
 
          CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
          CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D) 
 
-         DO I = 1, LIMY-1
+         DO I = 1, LIMY
             IF (MOD(LIMY,2) .EQ. 1) THEN
                IF (MOD(I,2) .EQ. 1) THEN
                   CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)		
@@ -146,12 +150,12 @@ c$$$  This was moved outside the loop as it is unnecessary here, at the moment
             
          END DO  
          CALL SV_DECOMP(LIMX, T, TVALS)
-         ZEROC = 0.0 
-         ONEC = 1.0 
-         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, T, LIMX)
-         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, TTILDE, LIMX)
-         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, R, LIMX)
-         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDE, LIMX)
+c$$$         ZEROC = 0.0 
+c$$$         ONEC = 1.0 
+c$$$         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, T, LIMX)
+c$$$         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, TTILDE, LIMX)
+c$$$         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, R, LIMX)
+c$$$         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDE, LIMX)
          
          RETURN
          END
