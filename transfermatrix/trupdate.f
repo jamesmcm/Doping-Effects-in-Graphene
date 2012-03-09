@@ -140,28 +140,4 @@ C$$$ R = R1 + TTILDE1.BRACKET21.R2.T1. Note: TRTEMP from above is reused here
       RETURN
       END
 
-      SUBROUTINE FILLOANDINVERT(O, IO, LIMX, FLUX)
-      IMPLICIT NONE
-      INTEGER LIMX, I
-      DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
-      DOUBLE PRECISION SQRT05, FLUX
-      DOUBLE COMPLEX ZISQRT05, CNUM
-	  
-c     It is slightly more efficient to calculate square root once 
-      SQRT05 = SQRT(0.5)
-      ZISQRT05 = DCMPLX(0, SQRT05)
-C$$$ GENERATE O-MATRIX
-C$$$ O IS BLOCK MATRIX OF 1/SQRT(2) (1,1;I,-I)
-         DO I = 1, LIMX
-            CALL ZPOLAR(FLUX*I, CNUM)
-            O(I, I)=SQRT05
-            O(I, LIMX+I)=SQRT05
-            O(I+LIMX, I)=ZISQRT05*CNUM
-            O(I+LIMX, I+LIMX)=-ZISQRT05*CNUM
-c$$$  Hopefully this is correct - test analytically later
-         ENDDO
-         CALL ZCOPY(4*LIMX*LIMX, O, 1, IO, 1)
-         CALL INVERTMATRIX(IO, 2*LIMX)  
-	  
-      RETURN
-      END
+

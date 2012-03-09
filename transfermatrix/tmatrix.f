@@ -76,11 +76,13 @@ c$$$  Originally the first M matrix was set here
       END
 
 
-      SUBROUTINE GETTRANS(TVALS, LIMX, LIMY, O, IO,
-     +    T, R, TTILDE, RTILDE, E, FLUX, WRAPX)
+      DOUBLE PRECISION FUNCTION GETTRANS(TVALS, LIMX, LIMY,
+     +   E, FLUX, WRAPX)
       IMPLICIT NONE
       INTEGER I, LIMY, WRAPX, LIMX
       DOUBLE PRECISION TVALS(LIMX), E, FLUX
+      DOUBLE PRECISION CHECKUNI
+      EXTERNAL CHECKUNI
       DOUBLE COMPLEX   ZEROC/0.0/, ONEC/1.0/
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
      +               MULT(2*LIMX, 2*LIMX)
@@ -95,6 +97,9 @@ c$$$  Originally the first M matrix was set here
       CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MODD, LIMX)
       CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MEVEN, LIMX)
       CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MULT, LIMX)
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, O, LIMX)
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, IO, LIMX)
+
 
       CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
 c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
@@ -119,12 +124,12 @@ c$$$         CALL PRINTM (MEVEN, LIMX, 'ME ')
       DO I = 1, LIMX
          MULT(I, I)=1
          MULT(LIMX+I, LIMX+I)=1
-         END DO
-c$$$         CALL FILLOANDINVERT(O, IO, LIMX)
-c$$$  This was moved outside the loop as it is unnecessary here, at the moment
-
-         CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-         CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D) 
+      END DO
+      CALL FILLOANDINVERT(O, IO, LIMX)
+c$$$  This was previously moved outside the loop
+      
+      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
+      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D) 
 
          DO I = 1, LIMY
             IF (MOD(LIMY,2) .EQ. 1) THEN
@@ -150,6 +155,8 @@ c$$$  This was moved outside the loop as it is unnecessary here, at the moment
             
          END DO  
          CALL SV_DECOMP(LIMX, T, TVALS)
+         GETTRANS=CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
+
 c$$$         ZEROC = 0.0 
 c$$$         ONEC = 1.0 
 c$$$         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, T, LIMX)
@@ -159,3 +166,29 @@ c$$$         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDE, LIMX)
          
          RETURN
          END
+
+      SUBROUTINE FILLOANDINVERT(O, IO, LIMX, FLUX)
+      IMPLICIT NONE
+      INTEGER LIMX, I
+      DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
+      DOUBLE PRECISION SQRT05, FLUX
+      DOUBLE COMPLEX ZISQRT05, CNUM
+	  
+c     It is slightly more efficient to calculate square root once 
+      SQRT05 = SQRT(0.5)
+      ZISQRT05 = DCMPLX(0, SQRT05)
+C$$$ GENERATE O-MATRIX
+C$$$ O IS BLOCK MATRIX OF 1/SQRT(2) (1,1;I,-I)
+         DO I = 1, LIMX
+            CALL ZPOLAR(FLUX*I, CNUM)
+            O(I, I)=SQRT05
+            O(I, LIMX+I)=SQRT05
+            O(I+LIMX, I)=ZISQRT05*CNUM
+            O(I+LIMX, I+LIMX)=-ZISQRT05*CNUM
+c$$$  Hopefully this is correct - test analytically later
+         ENDDO
+         CALL ZCOPY(4*LIMX*LIMX, O, 1, IO, 1)
+         CALL INVERTMATRIX(IO, 2*LIMX)  
+	  
+      RETURN
+      END
