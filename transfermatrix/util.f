@@ -1,6 +1,6 @@
 C$$$ ROUTINE TO PRINT OUTPUT TO THE SCREEN	  
       SUBROUTINE PRINTVECTOR(INPUT, LIMX, MNAME)
-	  
+      IMPLICIT NONE
       INTEGER LIMX, I
       DOUBLE PRECISION INPUT(LIMX)
       CHARACTER*2 MNAME
@@ -12,7 +12,7 @@ C$$$ ROUTINE TO PRINT OUTPUT TO THE SCREEN
       END
 	  
       SUBROUTINE PRINTT(T, LIMX, MNAME)
-
+      IMPLICIT NONE
       INTEGER LIMX, J, K
       DOUBLE COMPLEX T(LIMX, LIMX)
       CHARACTER*3 MNAME
@@ -31,7 +31,7 @@ C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
       END
       
       SUBROUTINE PRINTM(M, LIMX, MNAME)
-
+      IMPLICIT NONE
       INTEGER LIMX, J, K
       DOUBLE COMPLEX M(2*LIMX, 2*LIMX)
       CHARACTER*3 MNAME
@@ -49,7 +49,7 @@ C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
       END
 
       SUBROUTINE ZPRINTM(M, LIMX, MNAME)
-
+      IMPLICIT NONE
       INTEGER LIMX, J, K
       DOUBLE COMPLEX M(2*LIMX, 2*LIMX)
       CHARACTER*3 MNAME
@@ -67,6 +67,7 @@ C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
       END
 
       SUBROUTINE ZPOLAR(ARG, ZCOMPLEX)
+      IMPLICIT NONE
 c$$$  Subroutine to change e^i*arg in to a complex number in sin and cos, stored in zcomplex
       
       DOUBLE PRECISION ARG
@@ -77,6 +78,7 @@ c$$$  Subroutine to change e^i*arg in to a complex number in sin and cos, stored
       END
 
       DOUBLE PRECISION FUNCTION CONDUCTANCE (TVALS, LIMX)
+      IMPLICIT NONE
       INTEGER LIMX
       DOUBLE PRECISION TVALS(LIMX)
       DOUBLE PRECISION DDOT      

@@ -1,5 +1,5 @@
       SUBROUTINE CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
-	  
+      IMPLICIT NONE	  
       INTEGER LIMX, WRAPX, SZ/1/
       INTEGER I/1/, NEIGH/1/
 c$$$ CHANGED FLUX FROM DOUBLE COMPLEX TO DOUBLE PRECISION
@@ -93,7 +93,7 @@ c$$$  Originally the first M matrix was set here
      +               R(LIMX, LIMX),    RTILDE(LIMX, LIMX),
      +               TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
      +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
-      DOUBLE COMPLEX O(2 *LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
+      DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
       CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MODD, LIMX)
       CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MEVEN, LIMX)
       CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MULT, LIMX)
@@ -105,22 +105,7 @@ c$$$  Originally the first M matrix was set here
 c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
 C     For now I have left it as before so I can compare results
-c$$$         PRINT *, '-----'
-c$$$         CALL ZPRINTM (O,  LIMX, 'OO ')
-c$$$         PRINT *, '-----'
-c$$$         CALL ZPRINTM (IO,  LIMX, 'IO ')	  
-c$$$
-c$$$         STOP
 
-c$$$      IF (MOD(LIMY,2) .EQ. 1) THEN
-c$$$C$$$  MULT=MODD
-c$$$         CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
-c$$$      ELSE
-c$$$C$$$  MULT=MEVEN
-c$$$         CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
-c$$$      END IF
-c$$$         CALL PRINTM (MODD,  LIMX, 'MO ')	  
-c$$$         CALL PRINTM (MEVEN, LIMX, 'ME ')
       DO I = 1, LIMX
          MULT(I, I)=1
          MULT(LIMX+I, LIMX+I)=1
@@ -128,8 +113,16 @@ c$$$         CALL PRINTM (MEVEN, LIMX, 'ME ')
       CALL FILLOANDINVERT(O, IO, LIMX)
 c$$$  This was previously moved outside the loop
       
-      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D) 
+c$$$      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
+c$$$      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D) 
+      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, A, LIMX)
+      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, B, LIMX)
+      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, C, LIMX)
+      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, D, LIMX)
+      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, T, LIMX)
+      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, TTILDEINC, LIMX)
+      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, R, LIMX)
+      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDEINC, LIMX)
 
          DO I = 1, LIMY
             IF (MOD(LIMY,2) .EQ. 1) THEN
@@ -155,15 +148,8 @@ c$$$  This was previously moved outside the loop
             
          END DO  
          CALL SV_DECOMP(LIMX, T, TVALS)
-         GETTRANS=CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
-
-c$$$         ZEROC = 0.0 
-c$$$         ONEC = 1.0 
-c$$$         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, T, LIMX)
-c$$$         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, TTILDE, LIMX)
-c$$$         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, R, LIMX)
-c$$$         CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDE, LIMX)
          
+         GETTRANS=CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
          RETURN
          END
 
