@@ -115,8 +115,8 @@ C     For now I have left it as before so I can compare results
       CALL FILLOANDINVERT(O, IO, LIMX, FLUX)
 
 c$$$  This was previously moved outside the loop
-      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
+c$$$      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
+c$$$      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, A, LIMX)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, B, LIMX)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, C, LIMX)
@@ -130,18 +130,22 @@ c$$$  This was previously moved outside the loop
 
 
          DO I = 1, LIMY
-            IF (MOD(LIMY,2) .EQ. 1) THEN
-               IF (MOD(I,2) .EQ. 1) THEN
-                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
-               ELSE
-                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
-               END IF
+c$$$            IF (MOD(LIMY,2) .EQ. 1) THEN
+c$$$               IF (MOD(I,2) .EQ. 1) THEN
+c$$$                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
+c$$$               ELSE
+c$$$                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
+c$$$               END IF
+c$$$            ELSE
+c$$$               IF (MOD(I,2) .EQ. 1) THEN
+c$$$                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
+c$$$               ELSE
+c$$$                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
+c$$$               END IF
+            IF (MOD(I,2) .EQ. 1) THEN
+               CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
             ELSE
-               IF (MOD(I,2) .EQ. 1) THEN
-                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
-               ELSE
-                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
-               END IF
+               CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
             END IF
 
             CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
