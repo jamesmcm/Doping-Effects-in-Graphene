@@ -125,8 +125,10 @@ c$$$  This was previously moved outside the loop
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, TTILDEINC, LIMX)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, R, LIMX)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDEINC, LIMX)
-      PRINT *, "----"
-      CALL ZPRINTM(MODD, 2*LIMX, "OO ")
+      CALL ZLASET ('ALL', LIMX, LIMX, ONEC, ZEROC, TTILDE, LIMX)
+      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDE, LIMX)
+
+
          DO I = 1, LIMY
             IF (MOD(LIMY,2) .EQ. 1) THEN
                IF (MOD(I,2) .EQ. 1) THEN
@@ -142,7 +144,6 @@ c$$$  This was previously moved outside the loop
                END IF
             END IF
 
-
             CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
             CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
      +           A, B, C,D)
@@ -150,6 +151,8 @@ c$$$  This was previously moved outside the loop
      +           RTILDE, LIMX, RINC)
          END DO
          CALL SV_DECOMP(LIMX, T, TVALS)
+
+
          GETTRANS=CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
          RETURN
          END
