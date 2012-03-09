@@ -10,14 +10,14 @@ C$$$ WANT TO LOOP OVER DIFFERENT ENERGIES AND PRODUCE T^2 COEFFICIENTS, CHECK TH
 c$$   NB LIMX CHANGED TO 2       
       INTEGER, PARAMETER :: LIMX=2, WRAPY=0, WRAPX=0,
      + MSIZE=4*LIMX*LIMX, M2SIZE=LIMX*LIMX
-      INTEGER I/1/, K/1/, F/1/,LIMY/2/
+      INTEGER I/1/, K/1/, F/1/,LIMY/4/
       CHARACTER*3 VALUE
       
       DOUBLE PRECISION RVALS(LIMX),  TVALS(LIMX),
      +                 TTVALS(LIMX), RTVALS(LIMX)
 
       DOUBLE PRECISION COND/-1.0/
-      DOUBLE PRECISION E/-5/
+      DOUBLE PRECISION E/-3/
       DOUBLE PRECISION G
       DOUBLE COMPLEX   ZEROC/0.0/, ONEC/1.0/
       DOUBLE PRECISION DLVAL
@@ -37,14 +37,14 @@ c$$   NB LIMX CHANGED TO 2
      +     IO/MSIZE*0.0/,   TEMP/MSIZE*0.0/
 
       DOUBLE COMPLEX CNUM
-      DOUBLE PRECISION FLUX/0.00/
+      DOUBLE PRECISION FLUX/0.1/
 C$$$  READS COMMAND LINE ARGUMENT AS LIMY
 
 c      CALL GETARG(1, VALUE)
 c      READ(UNIT=VALUE, FMT=*) LIMY
       CALL FILLOANDINVERT(O, IO, LIMX, FLUX)
 c$$$      CALL ZPRINTM (O,  LIMX, 'O ')	  
-      DO F = 1, 1001
+      DO F = 1, 1201
 c$$$         ARG=5.0
 c$$$         CNUM = DCMPLX(0,0)
 c$$$         CALL ZPOLAR(ARG, CNUM)
@@ -54,8 +54,12 @@ c$$$         PRINT *, CNUM
 c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
 C     For now I have left it as before so I can compare results
-c$$$         CALL ZPRINTM (MODD,  LIMX, 'MO ')	  
-c$$$         CALL ZPRINTM (MEVEN,  LIMX, 'ME ')	  
+c$$$         PRINT *, '-----'
+c$$$         CALL ZPRINTM (O,  LIMX, 'OO ')
+c$$$         PRINT *, '-----'
+c$$$         CALL ZPRINTM (IO,  LIMX, 'IO ')	  
+c$$$
+c$$$         STOP
 
          IF (MOD(LIMY,2) .EQ. 1) THEN
 C$$$  MULT=MODD
@@ -149,7 +153,7 @@ c$$$  WRITES ENERGY, CONDUCTANCE, UNITARITY
 c      WRITE(*,60) E,(TVALS(I)*TVALS(I), I = 1, LIMX)
 
 c$$$ 'E' STEPS CONSISTANT WITH ANALYTICAL.C
-      E=E+0.01
+      E=E+0.005
       END DO
       
          
@@ -340,8 +344,8 @@ C$$$ GENERATE O-MATRIX
 C$$$ O IS BLOCK MATRIX OF 1/SQRT(2) (1,1;I,-I)
          DO I = 1, LIMX
             CALL ZPOLAR(FLUX*I, CNUM)
-            O(I, I)=SQRT05*CNUM
-            O(I, LIMX+I)=SQRT05*CNUM
+            O(I, I)=SQRT05
+            O(I, LIMX+I)=SQRT05
             O(I+LIMX, I)=ZISQRT05*CNUM
             O(I+LIMX, I+LIMX)=-ZISQRT05*CNUM
 c$$$  Hopefully this is correct - test analytically later
@@ -404,10 +408,11 @@ C$$$ FILL TOP-RIGHT SUBMATRIX
          MODD(I, LIMX+I)=1
          MEVEN(I, LIMX+I)=1
 C$$$ FILL BOTTOM-LEFT SUBMATRIX
-         CALL ZPOLAR(FLUX*I, CNUM)
+         CALL ZPOLAR(2*FLUX*I, CNUM)
          MODD(I+LIMX, I)=-1*CNUM
          MEVEN(I+LIMX, I)=-1*CNUM
 C$$$ FILL BOTTOM-RIGHT SUBMATRIX
+         CALL ZPOLAR(FLUX*I, CNUM)
          MODD(LIMX+I,LIMX+I)=E*CNUM
          MEVEN(LIMX+I,LIMX+I)=E*CNUM
 
@@ -530,14 +535,14 @@ C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
       DOUBLE COMPLEX M(2*LIMX, 2*LIMX)
       CHARACTER*3 MNAME
       DO J=1, 2*LIMX
-         WRITE (*,600) MNAME,(REAL(M(J, K)), '+', DIMAG(M(J, K)), 'I', 
-     +        K=1,2*LIMX)
+         WRITE (*,600) MNAME,(REAL(M(J, K)), '+', DIMAG(M(J, K)),  
+     +       'I | ', K=1,2*LIMX)
       END DO
 C      WRITE (*,400) MNAME, REAL(T(2,1)), REAL(T(2, 2))
 C      WRITE (*,401) MNAME, 'I', AIMAG(T(1, 1)), AIMAG(T(1, 2))
 C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
 
- 600  FORMAT (A, 100(F8.4, A, F6.4, A))
+ 600  FORMAT (A, 100(F8.4, A, F7.4, A))
 
       RETURN
       END
