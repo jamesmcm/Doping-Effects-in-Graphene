@@ -9,9 +9,12 @@ c$$$ CHANGED FLUX FROM DOUBLE COMPLEX TO DOUBLE PRECISION
 c$$$  May need to move this
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX)
 
-      IF ((MOD(LIMX,2) .NE. 0)) THEN
-         WRITE (*,*) 'ERROR: LIMX must be even for physical results'
-         STOP
+      IF ((WRAPX .EQ. 1)) THEN
+         IF ((MOD(LIMX,2) .NE. 0)) THEN
+            WRITE (*,*) 'ERROR: LIMX must be even for physical results
+     + for wrapped X'
+            STOP
+         ENDIF
       ENDIF
 c$$$  HAMMERTIME! Program terminates here if LIMX is odd
 
@@ -93,12 +96,8 @@ c$$$  Originally the first M matrix was set here
      +               TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
      +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MODD, 2*LIMX)
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MEVEN, 2*LIMX)
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, MULT, 2*LIMX)
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, O, 2*LIMX)
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, IO, 2*LIMX)
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, ABCD, 2*LIMX)
+
+
 
 
       CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
@@ -106,27 +105,23 @@ c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
 C     For now I have left it as before so I can compare results
 
-      DO I = 1, LIMX
-         MULT(I, I)=1.0
-         MULT(LIMX+I, LIMX+I)=1.0
-         ABCD(I, I) =1.0
-         ABCD(LIMX+I, LIMX+I) =1.0
-      END DO
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ONEC, MULT, 2*LIMX)
+
+c$$$      DO I = 1, LIMX
+c$$$         MULT(I, I)=1.0
+c$$$         MULT(LIMX+I, LIMX+I)=1.0
+c$$$         ABCD(I, I) =1.0
+c$$$         ABCD(LIMX+I, LIMX+I) =1.0
+c$$$      END DO
+
       CALL FILLOANDINVERT(O, IO, LIMX, FLUX)
 
 c$$$  This was previously moved outside the loop
-c$$$      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-c$$$      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, A, LIMX)
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, B, LIMX)
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, C, LIMX)
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, D, LIMX)
+
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, T, LIMX)
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, TTILDEINC, LIMX)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, R, LIMX)
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDEINC, LIMX)
-      CALL ZLASET ('ALL', LIMX, LIMX, ONEC, ZEROC, TTILDE, LIMX)
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, RTILDE, LIMX)
+      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
+      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
 
 
          DO I = 1, LIMY
@@ -167,6 +162,8 @@ c$$$               END IF
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
       DOUBLE PRECISION SQRT05, FLUX
       DOUBLE COMPLEX ZISQRT05, CNUM
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, 0.0, 0.0, O, 2*LIMX)
+
 
 c     It is slightly more efficient to calculate square root once
       SQRT05 = SQRT(0.5)
