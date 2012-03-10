@@ -16,11 +16,11 @@ int main (){
 
 int k=0;
 double i=0;
-double eps,lam,lam_neg;
-double a_n,b_n,c_n,d_n;
-double a_neg,b_neg,c_neg,d_neg;
-double t,t_neg;
-double top,down;
+long double eps,lam,lam_neg;
+long double a_n,b_n,c_n,d_n;
+long double a_neg,b_neg,c_neg,d_neg;
+long double t,t_neg;
+long double top,down,t_d;
 
 int n=0;
 eps=0;
@@ -65,14 +65,15 @@ down=0;
 		//printf("%e %e %e\n",eps,t,t_neg);
 		}
       
-     
+/*     
       down  = f_down(t,t_neg);
       top     = f_top(t,t_neg);
-
-
+*/
+      t_d = t+t_neg;
+      
      
 
-      printf("%e %e %e\n",eps,down,top);
+      printf("%.6e %.20e %.20e\n",eps,t_d);
    }
 		
 
