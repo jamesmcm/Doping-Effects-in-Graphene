@@ -28,6 +28,11 @@ c$$$      COND = CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
 
 c$$$  WRITES ENERGY, CONDUCTANCE, UNITARITY
          WRITE(*,50) E, G, COND
+c$$$     This is gfortran function to flush the output
+c$$$     so that the data are written to the file immediately
+c$$$     If you are not using gfortran, and cannot compile this,
+c$$$     comment it out -- AVS
+         CALL FLUSH()
 
 c      WRITE(*,60) E,(TVALS(I)*TVALS(I), I = 1, LIMX)
 

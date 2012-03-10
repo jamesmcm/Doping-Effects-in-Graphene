@@ -17,9 +17,6 @@ C$$$ ROUTINE TO PRINT OUTPUT TO THE SCREEN
         WRITE (*,400) MNAME, (REAL(T(J, K)), K=1, LIMX)
         WRITE (*,401) MNAME, 'I', (AIMAG(T(J, K)), K=1, LIMX)
       END DO
-C      WRITE (*,400) MNAME, REAL(T(2,1)), REAL(T(2, 2))
-C      WRITE (*,401) MNAME, 'I', AIMAG(T(1, 1)), AIMAG(T(1, 2))
-C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
 
  400  FORMAT (A, 100ES15.5E3, ES15.5E3)
  401  FORMAT (A, A, 100ES15.5E3, ES15.5E3)
@@ -34,12 +31,8 @@ C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
       DO J=1, 2*LIMX
         WRITE (*,500) MNAME, (REAL(M(J, K)), K=1, 2*LIMX)
       END DO
-C      WRITE (*,400) MNAME, REAL(T(2,1)), REAL(T(2, 2))
-C      WRITE (*,401) MNAME, 'I', AIMAG(T(1, 1)), AIMAG(T(1, 2))
-C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
 
  500  FORMAT (A, 100F6.2)
-c$$$  501  FORMAT (A, A, 100ES15.5E3, ES15.5E3)
 
       RETURN
       END
@@ -53,9 +46,6 @@ c$$$  501  FORMAT (A, A, 100ES15.5E3, ES15.5E3)
          WRITE (*,600) MNAME,(REAL(M(J, K)), '+', DIMAG(M(J, K)),
      +       'I | ', K=1,LIMX)
       END DO
-C      WRITE (*,400) MNAME, REAL(T(2,1)), REAL(T(2, 2))
-C      WRITE (*,401) MNAME, 'I', AIMAG(T(1, 1)), AIMAG(T(1, 2))
-C      WRITE (*,401) MNAME, 'I', AIMAG(T(2,1)), AIMAG(T(2, 2))
 
  600  FORMAT (A, 100(F8.4, A, F7.4, A))
 

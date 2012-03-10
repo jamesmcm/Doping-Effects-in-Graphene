@@ -2,13 +2,13 @@
       IMPLICIT NONE
       INTEGER LIMX, WRAPX, SZ/1/
       INTEGER I/1/, NEIGH/1/
-c$$$ CHANGED FLUX FROM DOUBLE COMPLEX TO DOUBLE PRECISION
       DOUBLE PRECISION E, FLUX
       DOUBLE COMPLEX ZEROC / 0.0 /
       DOUBLE COMPLEX CNUM
 c$$$  May need to move this
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX)
 
+c$$$  HAMMERTIME! Program terminates here if LIMX is odd
       IF ((WRAPX .EQ. 1)) THEN
          IF ((MOD(LIMX,2) .NE. 0)) THEN
             WRITE (*,*) 'ERROR: LIMX must be even for physical results
@@ -16,7 +16,6 @@ c$$$  May need to move this
             STOP
          ENDIF
       ENDIF
-c$$$  HAMMERTIME! Program terminates here if LIMX is odd
 
       SZ = 2 * LIMX
       CALL ZLASET ('A', SZ, SZ, ZEROC, ZEROC, MODD, SZ)
@@ -46,7 +45,6 @@ c$$$  Double-check this multiplication analytically at some stage
 C$$$  THE FOLLOWING CODE WAS MODIFIED --- AVS
 C$$$  NEIGHBOURING SITE FOR ODD ROW, ON THE LEFT/RIGHT, DEPENDING ON I
          NEIGH = I + (2*MOD(I,2)-1)
-C$$$     WRITE (*, *) '? I = ', I, ' NEIGH = ', NEIGH
 C$$$  NEIGHBOUR CAN BE < 0, OR > LIMX. IF WRAPX IS TRUE, THIS INDICATES
 C$$$  A VALID SITE. THE FOLLOWING CODE IS A BIT UGLY, AS I AM NOT SURE
 C$$$  WHAT IS MOD(-1, N) IN FORTRAN.
@@ -56,20 +54,17 @@ C$$$  WHAT IS MOD(-1, N) IN FORTRAN.
              ELSE
                NEIGH = MOD (NEIGH - 1, LIMX) + 1
              ENDIF
-C$$$         WRITE (*, *) 'PUT: I = ', I, ' NEIGH = ', NEIGH
              MODD(LIMX + I, LIMX + NEIGH) = -1*CNUM
          END IF
 C$$$     NOW REPEAT THE SAME FOR EVEN ROWS, SWAPPING LEFT AND RIGHT
 C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
          NEIGH = I - (2 * MOD(I, 2)  - 1)
-C$$$     WRITE (*, *) '? I = ', I, ' NEIGH = ', NEIGH
          IF (((NEIGH.LE.LIMX).AND.(NEIGH.GT.0)).OR.(WRAPX.GT.0)) THEN
            IF (NEIGH.LE.0) THEN
              NEIGH = LIMX
            ELSE
              NEIGH = MOD (NEIGH - 1, LIMX) + 1
            END IF
-C$$$       WRITE (*, *) 'PUT: I = ', I, ' NEIGH = ', NEIGH
            MEVEN(LIMX + I, LIMX + NEIGH) = -1*CNUM
          END IF
       END DO
@@ -85,6 +80,8 @@ c$$$  Originally the first M matrix was set here
       DOUBLE PRECISION TVALS(LIMX), E, FLUX
       DOUBLE PRECISION CHECKUNI
       EXTERNAL CHECKUNI
+      DOUBLE PRECISION CHECKUNI2
+      EXTERNAL CHECKUNI2
       DOUBLE COMPLEX   ZEROC/0.0/, ONEC/1.0/
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
      +               MULT(2*LIMX, 2*LIMX)
@@ -97,9 +94,6 @@ c$$$  Originally the first M matrix was set here
      +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
 
-
-
-
       CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
 c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
@@ -107,16 +101,7 @@ C     For now I have left it as before so I can compare results
 
       CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ONEC, MULT, 2*LIMX)
 
-c$$$      DO I = 1, LIMX
-c$$$         MULT(I, I)=1.0
-c$$$         MULT(LIMX+I, LIMX+I)=1.0
-c$$$         ABCD(I, I) =1.0
-c$$$         ABCD(LIMX+I, LIMX+I) =1.0
-c$$$      END DO
-
       CALL FILLOANDINVERT(O, IO, LIMX, FLUX)
-
-c$$$  This was previously moved outside the loop
 
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, T, LIMX)
       CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, R, LIMX)
@@ -124,19 +109,7 @@ c$$$  This was previously moved outside the loop
       CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
 
 
-         DO I = 1, LIMY
-c$$$            IF (MOD(LIMY,2) .EQ. 1) THEN
-c$$$               IF (MOD(I,2) .EQ. 1) THEN
-c$$$                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
-c$$$               ELSE
-c$$$                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
-c$$$               END IF
-c$$$            ELSE
-c$$$               IF (MOD(I,2) .EQ. 1) THEN
-c$$$                  CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
-c$$$               ELSE
-c$$$                  CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
-c$$$               END IF
+      DO I = 1, LIMY
             IF (MOD(I,2) .EQ. 1) THEN
                CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
             ELSE
@@ -148,13 +121,13 @@ c$$$               END IF
      +           A, B, C,D)
             CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
      +           RTILDE, LIMX, RINC)
-         END DO
-         CALL SV_DECOMP(LIMX, T, TVALS)
+      END DO
+      CALL SV_DECOMP(LIMX, T, TVALS)
 
-
-         GETTRANS=CHECKUNI(LIMX,T,R,TTILDE,RTILDE)
-         RETURN
-         END
+c$$$  CheckUni2 is slightly faster --- AVS
+      GETTRANS = CHECKUNI2(LIMX,T,R,TTILDE,RTILDE)
+      RETURN
+      END
 
       SUBROUTINE FILLOANDINVERT(O, IO, LIMX, FLUX)
       IMPLICIT NONE
