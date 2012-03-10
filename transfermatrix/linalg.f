@@ -1,3 +1,65 @@
+C
+C     This function calculates dot product of two square matrices:
+C
+C         C = A . B
+C      
+C      LIMX is the matrix size
+C      
+      SUBROUTINE SQDOT (C, A, B, LIMX)
+      IMPLICIT NONE
+      INTEGER LIMX
+      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX), C(LIMX, LIMX)
+      DOUBLE COMPLEX ZEROC/0.0/, ONEC/1.0/
+          
+      CALL ZGEMM ('N', 'N',  LIMX, LIMX, LIMX,
+     &  ONEC,   A, LIMX, B, LIMX,
+     &  ZEROC,  C, LIMX)
+
+      RETURN
+      END
+      
+C
+C     This function calculates dot product of two square matrices,
+C     and multiplies the result by a scalar alpha:     
+C
+C         C = alpha * A . B
+C      
+C      LIMX is the matrix size
+C      
+      SUBROUTINE SQDOTAX (C, ALPHA, A, B, LIMX)
+      IMPLICIT NONE
+      INTEGER LIMX
+      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX), C(LIMX, LIMX)
+      DOUBLE COMPLEX ALPHA, ZEROC/0.0/
+     
+      CALL ZGEMM ('N', 'N',  LIMX, LIMX, LIMX,
+     &  ALPHA,   A, LIMX, B, LIMX,
+     &  ZEROC,   C, LIMX)
+
+      RETURN
+      END
+
+C
+C     This function calculates dot product of two square matrices,
+C     and updates C according to the formula
+C
+C         C := beta * C + alpha * A . B
+C      
+C      LIMX is the matrix size
+C            
+      SUBROUTINE SQDOTUPD (BETA, C, ALPHA, A, B, LIMX)
+      IMPLICIT NONE
+      INTEGER LIMX
+      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX), C(LIMX, LIMX)
+      DOUBLE COMPLEX BETA, ALPHA
+     
+      CALL ZGEMM ('N', 'N',  LIMX, LIMX, LIMX,
+     &  ALPHA,   A, LIMX, B, LIMX,
+     &  BETA,  C, LIMX)
+
+      RETURN
+      END
+      
       SUBROUTINE INVERTMATRIX(MATRIX, LIMX)
       IMPLICIT NONE
       INTEGER S
@@ -24,7 +86,7 @@
 
 C$$$ MAKE COPY OF MATRIX FOR SVD SINCE IT IS DESTROYED
 C$$$      SVCPY=MATRIX
-      CALL ZCOPY(LIMX*LIMX, MATRIX, 1, SVCPY, 1)
+      CALL SQCOPY(MATRIX, SVCPY, LIMX)
       CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, TEMP2,
      + LIMX, TEMP2, LIMX , WORK, MSIZE, RWORK, S)
       IF (S .NE. 0) THEN

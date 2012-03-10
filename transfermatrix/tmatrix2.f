@@ -144,7 +144,7 @@ C$$$ O IS BLOCK MATRIX OF 1/SQRT(2) (1,1;I,-I)
             O(I+LIMX, I+LIMX)=-ZISQRT05
 c$$$  Hopefully this is correct - test analytically later
          ENDDO
-         CALL ZCOPY(4*LIMX*LIMX, O, 1, IO, 1)
+         CALL SQCOPY (O, IO, 2*LIMX)
          CALL INVERTMATRIX(IO, 2*LIMX)
       RETURN
       END

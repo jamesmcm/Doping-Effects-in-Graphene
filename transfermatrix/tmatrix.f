@@ -108,9 +108,9 @@ C     For now I have left it as before so I can compare results
 
       DO I = 1, LIMY
             IF (MOD(I,2) .EQ. 1) THEN
-               CALL ZCOPY(4*LIMX*LIMX, MODD, 1, MULT, 1)
+               CALL SQCOPY (MODD, MULT, 2*LIMX) 
             ELSE
-               CALL ZCOPY(4*LIMX*LIMX, MEVEN, 1, MULT, 1)
+               CALL SQCOPY(MEVEN, MULT, 2*LIMX)
             END IF
 
             CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
@@ -148,7 +148,7 @@ C$$$ O IS BLOCK MATRIX OF 1/SQRT(2) (1,1;I,-I) if flux == 0
             O(I+LIMX, I+LIMX)=-ZISQRT05*CNUM
 c$$$  Hopefully this is correct - test analytically later
          ENDDO
-         CALL ZCOPY(4*LIMX*LIMX, O, 1, IO, 1)
+         CALL SQCOPY(O, IO, 2*LIMX)
          CALL INVERTMATRIX(IO, 2*LIMX)
       RETURN
       END
