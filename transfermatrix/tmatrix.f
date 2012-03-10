@@ -134,8 +134,10 @@ c$$$  CheckUni2 is slightly faster --- AVS
       INTEGER LIMX, I
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
       DOUBLE PRECISION SQRT05, FLUX
-      DOUBLE COMPLEX ZISQRT05, CNUM
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, 0.0, 0.0, O, 2*LIMX)
+      DOUBLE COMPLEX ZISQRT05, ZEROC/0.0/
+c$$$  There is a difference between 0.0 and DCOMPLEX/0.0/,
+c$$$  due to memory required (2x for dcomplex)      
+      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, O, 2*LIMX)
 
 
 c     It is slightly more efficient to calculate square root once
