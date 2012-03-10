@@ -3,7 +3,6 @@
       INTEGER LIMX, WRAPX, SZ/1/
       INTEGER I/1/, NEIGH/1/
       DOUBLE PRECISION E, FLUX
-      DOUBLE COMPLEX ZEROC / 0.0 /
       DOUBLE COMPLEX CNUM
 c$$$  May need to move this
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX)
@@ -18,8 +17,8 @@ c$$$  HAMMERTIME! Program terminates here if LIMX is odd
       ENDIF
 
       SZ = 2 * LIMX
-      CALL ZLASET ('A', SZ, SZ, ZEROC, ZEROC, MODD, SZ)
-      CALL ZLASET ('A', SZ, SZ, ZEROC, ZEROC, MEVEN, SZ)
+      CALL SQZERO (MODD,  2*LIMX)
+      CALL SQZERO (MEVEN, 2*LIMX)
 
 
 C$$$ FIRST ROW IS EVEN - WRAPX MAKES NO DIFF, SECOND ROW NOT, ETC.
@@ -82,7 +81,6 @@ c$$$  Originally the first M matrix was set here
       EXTERNAL CHECKUNI
       DOUBLE PRECISION CHECKUNI2
       EXTERNAL CHECKUNI2
-      DOUBLE COMPLEX   ZEROC/0.0/, ONEC/1.0/
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
      +               MULT(2*LIMX, 2*LIMX)
       DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX),
@@ -99,15 +97,14 @@ c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
 C     For now I have left it as before so I can compare results
 
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ONEC, MULT, 2*LIMX)
+      CALL SQUNIT (MULT, 2*LIMX)
 
       CALL FILLOANDINVERT(O, IO, LIMX, FLUX)
 
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, T, LIMX)
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, R, LIMX)
-      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
-
+      CALL SQUNIT (T, LIMX)
+      CALL SQUNIT (TTILDE, LIMX)
+      CALL SQZERO (R, LIMX)
+      CALL SQZERO (RTILDE, LIMX)
 
       DO I = 1, LIMY
             IF (MOD(I,2) .EQ. 1) THEN
@@ -134,17 +131,15 @@ c$$$  CheckUni2 is slightly faster --- AVS
       INTEGER LIMX, I
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
       DOUBLE PRECISION SQRT05, FLUX
-      DOUBLE COMPLEX ZISQRT05, ZEROC/0.0/
-c$$$  There is a difference between 0.0 and DCOMPLEX/0.0/,
-c$$$  due to memory required (2x for dcomplex)      
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, O, 2*LIMX)
+      DOUBLE COMPLEX ZISQRT05, CNUM
 
+      CALL SQZERO (O, 2*LIMX)
 
 c     It is slightly more efficient to calculate square root once
       SQRT05 = SQRT(0.5)
       ZISQRT05 = DCMPLX(0, SQRT05)
 C$$$ GENERATE O-MATRIX
-C$$$ O IS BLOCK MATRIX OF 1/SQRT(2) (1,1;I,-I)
+C$$$ O IS BLOCK MATRIX OF 1/SQRT(2) (1,1;I,-I) if flux == 0
          DO I = 1, LIMX
             CALL ZPOLAR(FLUX*I, CNUM)
             O(I, I)=SQRT05

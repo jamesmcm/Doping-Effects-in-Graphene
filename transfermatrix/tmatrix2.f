@@ -3,7 +3,6 @@
       INTEGER LIMX, WRAPX, SZ/1/
       INTEGER I/1/, NEIGH/1/, POS
       DOUBLE PRECISION E, FLUX
-      DOUBLE COMPLEX ZEROC / 0.0 /
       DOUBLE COMPLEX ZPLUS, ZMINUS, Z
 c$$$  May need to move this
       DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX)
@@ -18,7 +17,7 @@ c$$$  HAMMERTIME! Program terminates here if LIMX is odd
       ENDIF
 
       SZ = 2 * LIMX
-      CALL ZLASET ('A', SZ, SZ, ZEROC, ZEROC, MULT, SZ)
+      CALL SQZERO (MULT, 2 * LIMX)
 
 
 C$$$ FIRST ROW IS EVEN - WRAPX MAKES NO DIFF, SECOND ROW NOT, ETC.
@@ -84,7 +83,6 @@ c$$$  Originally the first M matrix was set here
       EXTERNAL CHECKUNI
       DOUBLE PRECISION CHECKUNI2
       EXTERNAL CHECKUNI2
-      DOUBLE COMPLEX   ZEROC/0.0/, ONEC/1.0/
       DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX)
       DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX),
      +               C(LIMX, LIMX), D(LIMX, LIMX),
@@ -99,16 +97,14 @@ c$$$  CALCMULT fills MULT - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
 C     For now I have left it as before so I can compare results
 
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ONEC, MULT, 2*LIMX)
+      CALL SQUNIT (MULT, 2 * LIMX)
+      
+      CALL FILLOANDINVERT2(O, IO, LIMX)
 
-      CALL FILLOANDINVERT2(O, IO, LIMX, FLUX)
-
-c      call zprintm (O, 2*LIMX, 'o: ')
-c      call zprintm (IO, 2*LIMX, 'io: ')
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ONEC, T, LIMX)
-      CALL ZLASET ('ALL', LIMX, LIMX, ZEROC, ZEROC, R, LIMX)
-      CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
-      CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D)
+      CALL SQUNIT (T, LIMX)
+      CALL SQUNIT (TTILDE, LIMX)
+      CALL SQZERO (R, LIMX)
+      CALL SQZERO (RTILDE, LIMX)
 
 
       DO I = 1, LIMY
@@ -127,15 +123,14 @@ c$$$  CheckUni2 is slightly faster --- AVS
       RETURN
       END
 
-      SUBROUTINE FILLOANDINVERT2(O, IO, LIMX, FLUX)
+      SUBROUTINE FILLOANDINVERT2(O, IO, LIMX)
       IMPLICIT NONE
       INTEGER LIMX, I
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
-      DOUBLE PRECISION SQRT05, FLUX
+      DOUBLE PRECISION SQRT05
       DOUBLE COMPLEX ZISQRT05
-      DOUBLE COMPLEX ZEROC/0.0/
-      CALL ZLASET ('ALL', 2*LIMX, 2*LIMX, ZEROC, ZEROC, O, 2*LIMX)
-
+     
+      CALL SQZERO (O, 2 * LIMX)
 
 c     It is slightly more efficient to calculate square root once
       SQRT05 = SQRT(0.5)
