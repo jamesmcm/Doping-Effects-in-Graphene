@@ -73,7 +73,7 @@ down=0;
       
      
 
-      printf("%.6e %.20e %.20e\n",eps,t_d);
+      printf("%.20Le %.20Le\n",eps,t_d);
    }
 		
 
