@@ -6,3 +6,7 @@ x100-y173-xwrap
 x500-y866-xwrap
 	all points: y = 1.5672*x - 0.98186
 	points 1-22: y = 1.6113*x - 1.2965
+
+
+
+x100-y173-nowrap-E10e-5		y = 1.4467 * x + 0.55597
