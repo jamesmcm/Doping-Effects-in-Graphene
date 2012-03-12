@@ -74,7 +74,7 @@ c$$$         CALL PRINTM (MEVEN, LIMX, 'ME ')
 c$$$         CALL FILLOANDINVERT(O, IO, LIMX)
 c$$$  This was moved outside the loop as it is unnecessary here, at the moment
 
-         CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
+         CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D, U)
          CALL GENTANDRINC(LIMX, T, R, TTILDE, RTILDE, A, B, C, D) 
 C         CALL PRINTT (T, LIMX, 'T  ')
 C         CALL PRINTT (TTILDE, LIMX, 'T~ ')
@@ -105,7 +105,7 @@ C$$$ ################################################################
 
 
 			
-            CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
+            CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D, U)
             CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC, 
      +       A, B, C,D)
             CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
@@ -185,7 +185,7 @@ C$$$                     ###############################################
 
  
 C$$$ ROUTINE TO GENERATE A,B,C,D. 
-      SUBROUTINE GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
+      SUBROUTINE GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D, U)
       IMPLICIT NONE
       INTEGER LIMX
       DOUBLE COMPLEX UNITY, ZERO
@@ -193,8 +193,8 @@ C$$$ ROUTINE TO GENERATE A,B,C,D.
      +               C(LIMX, LIMX), D(LIMX, LIMX)
       DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX),
      +               O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX),
-     +               TEMP(2*LIMX, 2*LIMX),
-     + ABCD(2*LIMX, 2*LIMX)
+     +               TEMP(2*LIMX, 2*LIMX),MA(LIMX,LIMX),MB(LIMX,LIMX)
+     + MB(LIMX,LIMX),MC(LIMX,LIMX),MD(LIMX,LIMX)
 	 
       UNITY = 1.0
       ZERO = 0.0	 
@@ -205,12 +205,17 @@ C$$$ ZGEMM MULTIPLIES MATRICES TOGTHER
      +         2*LIMX, O, 2*LIMX, ZERO, TEMP, 2*LIMX)
          CALL ZGEMM('N', 'N', 2*LIMX, 2*LIMX, 2*LIMX, UNITY, IO,
      +         2*LIMX, TEMP, 2*LIMX, ZERO, ABCD, 2*LIMX)	  
+      
+      A = 
+
+
+
 
 C$$$ THIS IS FORTRAN 90 SYNTAX, REMOVE IN FUTURE REVISION WHEN BLAS/LAPACK SUBROUTINE IS FOUND
-         A=ABCD(1:LIMX, 1:LIMX)
-         B=ABCD((LIMX+1):2*LIMX, 1:LIMX)
-         C=ABCD(1:LIMX, LIMX+1:2*LIMX)
-         D=ABCD((LIMX+1):2*LIMX, (LIMX+1):2*LIMX)
+c         A=ABCD(1:LIMX, 1:LIMX)
+c        B=ABCD((LIMX+1):2*LIMX, 1:LIMX)
+c         C=ABCD(1:LIMX, LIMX+1:2*LIMX)
+c         D=ABCD((LIMX+1):2*LIMX, (LIMX+1):2*LIMX)
 
 C$$$ I HAVE VERIFIED THAT AD-BC=1 (IDENTITY MATRIX) AS EXPECTED
       RETURN
