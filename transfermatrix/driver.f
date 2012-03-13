@@ -37,7 +37,7 @@ c$$$     comment it out -- AVS
 c      WRITE(*,60) E,(TVALS(I)*TVALS(I), I = 1, LIMX)
 
 c$$$ 'E' STEPS CONSISTANT WITH ANALYTICAL.C
-         E=E+0.005
+         E=-5+(F-1.0)*0.0001
       END DO
 
  50   FORMAT (F8.5,15ES15.5E3)
