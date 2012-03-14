@@ -31,13 +31,14 @@ int main (){
   
   for(i = 0 ; i <= 100000L;  i++ ){
 	eps = (i/10000.0)-5.00; // Never, ever divide integer by integer,
-                                // if the result is supposed to be an integer
-				// C would do the division
+                                // if the result is not supposed to be an 
+                                // integer
+				// C would do the division with integers
         t     = transmission (eps + 1.0, n); 
         t_neg = transmission (eps - 1.0, n); 
 
         // The logic with all four branches can be simplified
-        t_d = t+t_neg;
+        t_d = t + t_neg;
       
         printf("%.20Le %.20Le\t%.20Le\t%.20Le\n",eps,t_d, t, t_neg);
   }
@@ -54,7 +55,7 @@ double transmission (double lam, int n) {
 }
 
 //Function for complex lambda
-double comp(double lam,int n){
+double comp(double lam, int n){
    double a_n = 0,b_n   = 0,c_n = 0,d_n = 0,
           t   = 0,t_neg = 0, arg1, arg;
    double test = 0;
@@ -86,7 +87,7 @@ double comp(double lam,int n){
 
 }
 //Function for real lambda
-double real(double lam,int n){
+double real(double lam, int n) {
    double a_n = 0, b_n = 0, c_n = 0, d_n = 0, 
           t = 0, xi = 0, cons;
     
@@ -104,20 +105,20 @@ double real(double lam,int n){
 
    b_n =    cons * ( pow( xi, n   ) - pow( xi, -n     ) );
 
-   c_n=  -  cons * ( pow( xi, n   ) - pow( xi, -n     ) );
+   c_n =  - cons * ( pow( xi, n   ) - pow( xi, -n     ) );
 
-   d_n=     cons * ( pow( xi, n+1 ) - pow( xi, -(n+1)  ) );
+   d_n =    cons * ( pow( xi, n+1 ) - pow( xi, -(n+1)  ) );
 
    t = 4.0 / ( pow( a_n + d_n, 2) + pow( c_n - b_n, 2) );
    
    return t;
 }
 
-double f_top(double t,double t_neg){
+double f_top(double t, double t_neg) {
        return (t > t_neg) ? t : t_neg; // You can return the value immediately
 }
 
-double f_down(double t,double t_neg){
+double f_down(double t, double t_neg) {
        return (t_neg < t) ? t_neg : t;
 }     
 
