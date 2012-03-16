@@ -18,6 +18,43 @@ C
       RETURN
       END
       
+      SUBROUTINE SQDOTNH (C, A, B, LIMX)
+      IMPLICIT NONE
+      INTEGER LIMX
+      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX), C(LIMX, LIMX)
+      DOUBLE COMPLEX ZEROC/0.0/, ONEC/1.0/
+          
+      CALL ZGEMM ('N', 'C',  LIMX, LIMX, LIMX,
+     &  ONEC,   A, LIMX, B, LIMX,
+     &  ZEROC,  C, LIMX)
+
+      RETURN
+      END
+      
+      SUBROUTINE SQDOTHN (C, A, B, LIMX)
+      IMPLICIT NONE
+      INTEGER LIMX
+      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX), C(LIMX, LIMX)
+      DOUBLE COMPLEX ZEROC/0.0/, ONEC/1.0/
+          
+      CALL ZGEMM ('C', 'N',  LIMX, LIMX, LIMX,
+     &  ONEC,   A, LIMX, B, LIMX,
+     &  ZEROC,  C, LIMX)
+
+      RETURN
+      END
+      
+      SUBROUTINE SQUPDAXPY (Y, ALPHA, X, LIMX)
+      IMPLICIT NONE
+      INTEGER LIMX
+      DOUBLE COMPLEX X(LIMX, LIMX), Y(LIMX, LIMX)
+          
+      CALL ZAXPY (LIMX*LIMX, ALPHA, X, 1, Y, 1)
+      
+      RETURN
+      END
+
+      
 C
 C     This function calculates dot product of two square matrices,
 C     and multiplies the result by a scalar alpha:     
