@@ -16,3 +16,8 @@ For degeneracy plot:
 300		y = 8.3040e-004 * x - 0.11096
 400		y = 0.0016550 * x - 0.14031
 500		y = 1.1008e-004 * x - 0.11287
+
+
+For upper/lower degeneracy plot
+300u		y = 1.5614 * x + 1.3962
+300l		y = 1.5329 * x + 0.38027
