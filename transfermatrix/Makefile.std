@@ -9,6 +9,10 @@ TARGET = tmsim
 PY_TARGET = $(PYWRAPPER:.c=.so)
 PY_OBJ = $(CORESRC:.f=.o) $(PYWRAPPER:.c=.o)
 
+C_TARGET = c-example
+C_SRC = c-example.c 
+C_OBJ = $(CORESRC:.f=.o) $(C_SRC:.c=.o) 
+
 INC = 
 LIB = -lm -lblas -llapack
 
@@ -19,7 +23,10 @@ F77FLAGS = $(INC) -Wall -fPIC
 PY_INC = -I/usr/include/python2.7
 PY_LDFLAGS = $(LDFLAGS) -lpython2.7
 
-all: $(TARGET) $(PY_TARGET)
+all: $(TARGET) $(PY_TARGET) $(C_TARGET)
+
+$(C_TARGET): $(C_OBJ)
+	gcc -o $@ $(C_OBJ) $(LDFLAGS)
 
 $(PY_TARGET): $(PY_OBJ)
 	gcc -shared -o $@ $(PY_OBJ) $(PY_LDFLAGS)
