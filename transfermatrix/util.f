@@ -88,7 +88,7 @@ c$$$ PRINTS REAL AND COMPLEX MATRIX
      +       'I | ', K=1,LIMX)
       END DO
 
- 600  FORMAT (A, 100(F8.4, A, F7.4, A))
+ 600  FORMAT (A, 100(ES15.5E4, A, ES15.5E4, A))
 
       RETURN
       END

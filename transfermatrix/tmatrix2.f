@@ -86,7 +86,8 @@ c$$$  Originally the first M matrix was set here
       DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX)
       DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX),
      +               C(LIMX, LIMX), D(LIMX, LIMX),
-     +               ABCD(2*LIMX, 2*LIMX)
+     +               ABCD(2*LIMX, 2*LIMX),
+     + AOLD(LIMX,LIMX),BOLD(LIMX,LIMX),COLD(LIMX,LIMX),DOLD(LIMX,LIMX)
       DOUBLE COMPLEX T(LIMX, LIMX),    TTILDE(LIMX, LIMX),
      +               R(LIMX, LIMX),    RTILDE(LIMX, LIMX),
      +               TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
@@ -110,7 +111,8 @@ C     For now I have left it as before so I can compare results
       DO I = 1, LIMY
             CALL CALCMULT2(LIMX, WRAPX, MULT, E, FLUX, I)
 c           CALL zprintm (MULT, 2*LIMX, 'm: ')
-            CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
+            CALL GENABCD(LIMX, MULT, O, IO, ABCD, AOLD, BOLD, COLD, DOLD)
+            CALL GENABCDNEW(LIMX,MULT,A,B,C,D,U)
             CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
      +           A, B, C,D)
             CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,

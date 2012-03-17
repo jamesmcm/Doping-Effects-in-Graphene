@@ -90,8 +90,9 @@ c$$$  Originally the first M matrix was set here
      +               R(LIMX, LIMX),    RTILDE(LIMX, LIMX),
      +               TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
      +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
-      DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
-
+      DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX),
+     + AOLD(LIMX,LIMX),BOLD(LIMX,LIMX),COLD(LIMX,LIMX),DOLD(LIMX,LIMX),
+     + U(LIMX,LIMX)
       CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
 c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
@@ -113,7 +114,9 @@ C     For now I have left it as before so I can compare results
                CALL SQCOPY(MEVEN, MULT, 2*LIMX)
             END IF
 
-            CALL GENABCD(LIMX, MULT, O, IO, ABCD, A, B, C, D)
+            CALL GENABCD(LIMX, MULT, O, IO, ABCD, AOLD, BOLD, COLD,
+     +            DOLD)
+            CALL GENABCDNEW(LIMX,MULT,A,B,C,D,U)
             CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
      +           A, B, C,D)
             CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
@@ -126,6 +129,7 @@ c$$$  CheckUni2 is slightly faster --- AVS
       RETURN
       END
 
+c$$$  AIM TO CHANGE TO FILL(U,LIMX,FLUX)
       SUBROUTINE FILLOANDINVERT(O, IO, LIMX, FLUX)
       IMPLICIT NONE
       INTEGER LIMX, I
