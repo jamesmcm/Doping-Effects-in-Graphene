@@ -45,7 +45,7 @@ c         CONDB = CHECKUNI2(LIMX,T,R,TTILDE,RTILDE)
          G    = CONDUCTANCE (TVALS, LIMX)
       WRITE(*,70) NORMMA,NORMA,NORMOA
 c$$$  WRITES ENERGY, CONDUCTANCE, UNITARITY
-         WRITE(*,50) E, G, CONDA
+c         WRITE(*,50) E, G, CONDA
 
 c$$$     This is gfortran function to flush the output
 c$$$     so that the data are written to the file immediately

@@ -1,3 +1,4 @@
+c$$$ 
       SUBROUTINE CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
       IMPLICIT NONE
       INTEGER LIMX, WRAPX, SZ/1/
@@ -93,6 +94,7 @@ c$$$  Originally the first M matrix was set here
       DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX),
      + AOLD(LIMX,LIMX),BOLD(LIMX,LIMX),COLD(LIMX,LIMX),DOLD(LIMX,LIMX),
      + U(LIMX,LIMX)
+
       CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
 c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
@@ -100,12 +102,12 @@ C     For now I have left it as before so I can compare results
 
       CALL SQUNIT (MULT, 2*LIMX)
 
-      CALL FILLOANDINVERT(O, IO, LIMX, FLUX)
+      CALL FILLU(U, LIMX, FLUX)
 
-      CALL SQUNIT (T, LIMX)
-      CALL SQUNIT (TTILDE, LIMX)
-      CALL SQZERO (R, LIMX)
-      CALL SQZERO (RTILDE, LIMX)
+C      CALL SQUNIT (T, LIMX)
+C      CALL SQUNIT (TTILDE, LIMX)
+C      CALL SQZERO (R, LIMX)
+C      CALL SQZERO (RTILDE, LIMX)
 
       DO I = 1, LIMY
             IF (MOD(I,2) .EQ. 1) THEN
@@ -114,9 +116,8 @@ C     For now I have left it as before so I can compare results
                CALL SQCOPY(MEVEN, MULT, 2*LIMX)
             END IF
 
-            CALL GENABCD(LIMX, MULT, O, IO, ABCD, AOLD, BOLD, COLD,
-     +            DOLD)
-            CALL GENABCDNEW(LIMX,MULT,A,B,C,D,U)
+        
+            CALL GENABCD(LIMX,MULT,A,B,C,D,U)
             CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
      +           A, B, C,D)
             CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
@@ -130,29 +131,18 @@ c$$$  CheckUni2 is slightly faster --- AVS
       END
 
 c$$$  AIM TO CHANGE TO FILL(U,LIMX,FLUX)
-      SUBROUTINE FILLOANDINVERT(O, IO, LIMX, FLUX)
+      SUBROUTINE FILLU(U, LIMX, FLUX)
       IMPLICIT NONE
       INTEGER LIMX, I
-      DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
+      DOUBLE COMPLEX U(LIMX,LIMX)
       DOUBLE PRECISION SQRT05, FLUX
       DOUBLE COMPLEX ZISQRT05, CNUM
+      DOUBLE COMPLEX ZI/(0.0, 1.0)/      
+      
+      CALL SQUNITZ(U, ZI, LIMX)
+      
 
-      CALL SQZERO (O, 2*LIMX)
 
-c     It is slightly more efficient to calculate square root once
-      SQRT05 = SQRT(0.5)
-      ZISQRT05 = DCMPLX(0, SQRT05)
-C$$$ GENERATE O-MATRIX
-C$$$ O IS BLOCK MATRIX OF 1/SQRT(2) (1,1;I,-I) if flux == 0
-         DO I = 1, LIMX
-            CALL ZPOLAR(FLUX*I, CNUM)
-            O(I, I)=SQRT05
-            O(I, LIMX+I)=SQRT05
-            O(I+LIMX, I)=ZISQRT05*CNUM
-            O(I+LIMX, I+LIMX)=-ZISQRT05*CNUM
-c$$$  Hopefully this is correct - test analytically later
-         ENDDO
-         CALL SQCOPY(O, IO, 2*LIMX)
-         CALL INVERTMATRIX(IO, 2*LIMX)
+     
       RETURN
       END

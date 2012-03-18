@@ -111,8 +111,7 @@ C     For now I have left it as before so I can compare results
       DO I = 1, LIMY
             CALL CALCMULT2(LIMX, WRAPX, MULT, E, FLUX, I)
 c           CALL zprintm (MULT, 2*LIMX, 'm: ')
-            CALL GENABCD(LIMX, MULT, O, IO, ABCD, AOLD, BOLD, COLD, DOLD)
-            CALL GENABCDNEW(LIMX,MULT,A,B,C,D,U)
+            CALL GENABCD(LIMX,MULT,A,B,C,D,U)
             CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
      +           A, B, C,D)
             CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
