@@ -104,10 +104,10 @@ C     For now I have left it as before so I can compare results
 
       CALL FILLU(U, LIMX, FLUX)
 
-C      CALL SQUNIT (T, LIMX)
-C      CALL SQUNIT (TTILDE, LIMX)
-C      CALL SQZERO (R, LIMX)
-C      CALL SQZERO (RTILDE, LIMX)
+      CALL SQUNIT (T, LIMX)
+      CALL SQUNIT (TTILDE, LIMX)
+      CALL SQZERO (R, LIMX)
+      CALL SQZERO (RTILDE, LIMX)
 
       DO I = 1, LIMY
             IF (MOD(I,2) .EQ. 1) THEN
