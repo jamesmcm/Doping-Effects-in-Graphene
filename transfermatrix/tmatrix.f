@@ -72,6 +72,77 @@ c$$$  Originally the first M matrix was set here
       RETURN
       END
 
+      SUBROUTINE CALCMULTNEW(LIMX, WRAPX, MULT, E, FLUX, POS)
+      IMPLICIT NONE
+      INTEGER LIMX, WRAPX
+      DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX)
+      DOUBLE PRECISION E, FLUX
+      INTEGER POS
+      INTEGER I/1/, NEIGH/1/ 
+      DOUBLE COMPLEX CNUM
+
+c$$$  HAMMERTIME! Program terminates here if LIMX is odd
+      IF ((WRAPX .EQ. 1)) THEN
+         IF ((MOD(LIMX,2) .NE. 0)) THEN
+            WRITE (*,*) 'ERROR: LIMX must be even for physical results
+     + for wrapped X'
+            STOP
+         ENDIF
+      ENDIF
+
+      CALL SQZERO (MULT,  2*LIMX)
+
+
+C$$$ FIRST ROW IS EVEN - WRAPX MAKES NO DIFF, SECOND ROW NOT, ETC.
+C$$$ - WHAT MATTERS IS WHICH ROW IT IS CENTRED ON
+C$$$ THERE ARE 2 TRANSFER MATRICES TO GENERATE
+C$$$ THERE ARE 4 BLOCK SUBMATRICES TO FILL
+C$$$ MODD DOESN'T DEPEND ON XWRAPPING, MEVEN DOES.   '
+      DO I = 1, LIMX
+C$$$ FILL TOP-RIGHT SUBMATRIX
+         MULT(I, LIMX+I) = 1
+C$$$ FILL BOTTOM-LEFT SUBMATRIX
+         CALL ZPOLAR(2*FLUX*I, CNUM)
+         MULT(I + LIMX, I) = -CNUM
+C$$$ FILL BOTTOM-RIGHT SUBMATRIX
+         CALL ZPOLAR(FLUX*I, CNUM)
+         MULT(LIMX+I, LIMX+I) = E*CNUM
+
+c$$$  Double-check this multiplication analytically at some stage
+
+C$$$  THE FOLLOWING CODE WAS MODIFIED --- AVS
+C$$$  NEIGHBOURING SITE FOR ODD ROW, ON THE LEFT/RIGHT, DEPENDING ON I
+         NEIGH = I + (2*MOD(I,2)-1)
+C$$$  NEIGHBOUR CAN BE < 0, OR > LIMX. IF WRAPX IS TRUE, THIS INDICATES
+C$$$  A VALID SITE. THE FOLLOWING CODE IS A BIT UGLY, AS I AM NOT SURE
+C$$$  WHAT IS MOD(-1, N) IN FORTRAN.
+         IF (((NEIGH.LE.LIMX).AND.(NEIGH.GT.0)).OR.(WRAPX.GT.0)) THEN
+           IF (NEIGH.LE.0) THEN
+               NEIGH = NEIGH + LIMX
+             ELSE
+               NEIGH = MOD (NEIGH - 1, LIMX) + 1
+             ENDIF
+             IF (MOD(POS, 2).EQ.1) THEN
+                 MULT(LIMX + I, LIMX + NEIGH) = - CNUM
+             END IF
+         END IF
+C$$$     NOW REPEAT THE SAME FOR EVEN ROWS, SWAPPING LEFT AND RIGHT
+C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
+         NEIGH = I - (2 * MOD(I, 2)  - 1)
+         IF (((NEIGH.LE.LIMX).AND.(NEIGH.GT.0)).OR.(WRAPX.GT.0)) THEN
+           IF (NEIGH.LE.0) THEN
+             NEIGH = LIMX
+           ELSE
+             NEIGH = MOD (NEIGH - 1, LIMX) + 1
+           END IF
+           IF (MOD (POS, 2).EQ.0) THEN
+               MULT(LIMX + I, LIMX + NEIGH) = - CNUM
+           END IF
+         END IF
+      END DO
+      RETURN
+      END
+
 
       DOUBLE PRECISION FUNCTION GETTRANS(TVALS, LIMX, LIMY,
      +   E, FLUX, WRAPX)
@@ -92,7 +163,9 @@ c$$$  Originally the first M matrix was set here
      +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
       DOUBLE COMPLEX U(LIMX,LIMX)
 
-      CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
+c      CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
+      CALL CALCMULTNEW(LIMX, WRAPX, MODD, E, FLUX, 1)
+      CALL CALCMULTNEW(LIMX, WRAPX, MEVEN, E, FLUX, 2)
 c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
 C     For now I have left it as before so I can compare results
