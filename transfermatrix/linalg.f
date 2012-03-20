@@ -113,6 +113,52 @@ C
       RETURN
       END
 
+      DOUBLE PRECISION FUNCTION DNORMDIFF (A, B, LIMX)
+      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX)
+      DOUBLE COMPLEX D(LIMX, LIMX)
+      DOUBLE PRECISION WORK (LIMX)
+      DOUBLE COMPLEX MINUSONE/-1.0/
+      DOUBLE PRECISION ZLANGE
+      
+      CALL SQCOPY    (A, D, LIMX)
+      CALL SQUPDAXPY (D, MINUSONE, B, LIMX)
+      DNORMDIFF = ZLANGE ('F', LIMX, LIMX, D, LIMX, WORK)
+
+      RETURN
+      END
+      
+      SUBROUTINE INVSOLVE(A, B, LIMX)
+c     Solve A := inv(A).B      
+      IMPLICIT NONE
+      INTEGER S
+      INTEGER LIMX, PIVOT(LIMX, LIMX)
+      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX), RHS(LIMX, LIMX)
+c      DOUBLE COMPLEX SVA (LIMX, LIMX), PROD (LIMX, LIMX)
+c      DOUBLE PRECISION dnormdiff
+      
+      CALL SQCOPY (B, RHS, LIMX)
+c     CALL SQCOPY (A, SVA, LIMX)
+      CALL ZGETRF(LIMX, LIMX, A, LIMX, PIVOT, S)
+      IF (S .NE. 0) THEN
+         WRITE (*,*) 'INVSOLVE: NON-INVERTABLE MATRIX WITH S=', S
+         STOP
+      END IF
+
+      CALL ZGETRS('N', LIMX, LIMX, A, LIMX, PIVOT, RHS, LIMX, S)
+      IF (S .NE. 0) THEN
+         WRITE (*,*) 'INVSOLVE: NON-SOLVABLE SYSTEM WITH S=', S
+         STOP
+      END IF
+c      call sqdot (prod, SVA, rhs, LIMX) 
+c      write (*, *) 'quality: ', dnormdiff (B, PROD, LIMX)
+       
+      CALL SQCOPY (RHS, A, LIMX)
+      
+      RETURN
+      END
+
+      
+
       SUBROUTINE SV_DECOMP(LIMX, MATRIX, OUTPUTS)
 
       INTEGER LIMX, MSIZE, S
