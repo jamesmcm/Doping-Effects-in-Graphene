@@ -19,7 +19,7 @@ C    M(A,B,C,D) COMPONENTS OF MATRIX, U: PHASE MATRIX
       HALF  = 0.5
       NHALF = -0.5
 
-C     
+C     Surely this negates any purpose in rewriting the code?
       MA = MULT(1:LIMX, 1:LIMX)
       MB = MULT(1:LIMX, (LIMX+1):2*LIMX)
       MC = MULT((LIMX+1):2*LIMX, 1:LIMX)
