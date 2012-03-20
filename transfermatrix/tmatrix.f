@@ -143,7 +143,7 @@ c$$$  AIM TO CHANGE TO FILL(U,LIMX,FLUX)
          CALL ZPOLAR(FLUX*I, CNUM)
          U(I,I)=ZI*CNUM
       ENDDO
-      CALL ZPRINTM(U, LIMX, "U :")
+c$$$      CALL ZPRINTM(U, LIMX, "U :")
 
 c$$$      CALL SQUNITZ(U, ZI, LIMX)
       
