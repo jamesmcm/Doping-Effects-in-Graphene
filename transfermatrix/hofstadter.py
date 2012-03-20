@@ -11,7 +11,11 @@ def G (E, Phi, Wrap):
     tvals = array(tl)
     #print tvals
     g = tmatrix.conductance(tl)
-    print E, Phi, g, c
+    if c > 1e-8: 
+        import sys
+        print E, Phi, g, c, wrap
+        print "unitarity does not hold, exiting"
+        sys.exit(-1)
     return g
 
 figure()
@@ -21,6 +25,7 @@ Phivals = arange (0.0, 2.0*math.pi + 0.0001, 2.0*math.pi/400);
 X, Y = meshgrid (Phivals, Evals)
 Z = zeros (shape(X))
 for i in range (len (Evals)):
+    print "NOWRAP: E = ", Y[i, 0]
     for j in range(len (Phivals)):
         Z[i, j] = G(Y[i, j], X[i, j], False)
         
@@ -39,6 +44,7 @@ Phivals = arange (0.0, 2.0*math.pi + 0.0001, 2.0*math.pi/400);
 X, Y = meshgrid (Phivals, Evals)
 Z = zeros (shape(X))
 for i in range (len (Evals)):
+    print "WRAP: E = ", Y[i, 0]
     for j in range(len (Phivals)):
         Z[i, j] = G(Y[i, j], X[i, j], True)
         
