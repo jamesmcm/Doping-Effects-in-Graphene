@@ -111,8 +111,9 @@ C     For now I have left it as before so I can compare results
             CALL GENABCD(LIMX,MULT,A,B,C,D,U)
             CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
      +           A, B, C,D)
-            CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
-     +           RTILDE, LIMX, RINC)
+            CALL UPDATETANDR(T,    R,    TTILDE,    RTILDE, 
+     +                       TINC, RINC, TTILDEINC, RTILDEINC,
+     +                       LIMX)
       END DO
       CALL SV_DECOMP(LIMX, T, TVALS)
 

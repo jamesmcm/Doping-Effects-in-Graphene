@@ -101,8 +101,9 @@ C$$$ Thus, We can simply reuse R here: T = A + B * R
       RETURN
       END
 
-      SUBROUTINE UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
-     + RTILDE, LIMX, RINC)
+      SUBROUTINE UPDATETANDR(T,    R,    TTILDE, RTILDE, 
+     +                       TINC, RINC, TTILDEINC, RTILDEINC, 
+     +                       LIMX )
       IMPLICIT NONE
       INTEGER LIMX
       DOUBLE COMPLEX T(LIMX, LIMX), TTILDE(LIMX, LIMX),

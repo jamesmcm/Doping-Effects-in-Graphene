@@ -85,15 +85,12 @@ c$$$  Originally the first M matrix was set here
       DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
      +               MULT(2*LIMX, 2*LIMX)
       DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX),
-     +               C(LIMX, LIMX), D(LIMX, LIMX),
-     +               ABCD(2*LIMX, 2*LIMX)
+     +               C(LIMX, LIMX), D(LIMX, LIMX)
       DOUBLE COMPLEX T(LIMX, LIMX),    TTILDE(LIMX, LIMX),
      +               R(LIMX, LIMX),    RTILDE(LIMX, LIMX),
      +               TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
      +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
-      DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX),
-     + AOLD(LIMX,LIMX),BOLD(LIMX,LIMX),COLD(LIMX,LIMX),DOLD(LIMX,LIMX),
-     + U(LIMX,LIMX)
+      DOUBLE COMPLEX U(LIMX,LIMX)
 
       CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
 c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
@@ -120,8 +117,9 @@ C     For now I have left it as before so I can compare results
             CALL GENABCD(LIMX,MULT,A,B,C,D,U)
             CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
      +           A, B, C,D)
-            CALL UPDATETANDR(TINC, TTILDEINC, R, RTILDEINC, T, TTILDE,
-     +           RTILDE, LIMX, RINC)
+            CALL UPDATETANDR(T,     R,    TTILDE,    RTILDE, 
+     +                       TINC,  RINC, TTILDEINC, RTILDEINC, 
+     +                       LIMX)
       END DO
       CALL SV_DECOMP(LIMX, T, TVALS)
 
@@ -135,20 +133,15 @@ c$$$  AIM TO CHANGE TO FILL(U,LIMX,FLUX)
       IMPLICIT NONE
       INTEGER LIMX, I
       DOUBLE COMPLEX U(LIMX,LIMX)
-      DOUBLE PRECISION SQRT05, FLUX
-      DOUBLE COMPLEX ZISQRT05, CNUM
+      DOUBLE PRECISION FLUX
+      DOUBLE COMPLEX   CNUM
       DOUBLE COMPLEX ZI/(0.0, 1.0)/      
+
       CALL SQZERO (U, LIMX)
       DO I = 1, LIMX
          CALL ZPOLAR(FLUX*I, CNUM)
          U(I,I)=ZI*CNUM
       ENDDO
-c$$$      CALL ZPRINTM(U, LIMX, "U :")
-
-c$$$      CALL SQUNITZ(U, ZI, LIMX)
-      
-
-
      
       RETURN
       END
