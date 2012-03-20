@@ -85,14 +85,12 @@ c$$$  Originally the first M matrix was set here
       EXTERNAL CHECKUNI2
       DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX)
       DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX),
-     +               C(LIMX, LIMX), D(LIMX, LIMX),
-     +               ABCD(2*LIMX, 2*LIMX),
-     + AOLD(LIMX,LIMX),BOLD(LIMX,LIMX),COLD(LIMX,LIMX),DOLD(LIMX,LIMX)
+     +               C(LIMX, LIMX), D(LIMX, LIMX)
       DOUBLE COMPLEX T(LIMX, LIMX),    TTILDE(LIMX, LIMX),
      +               R(LIMX, LIMX),    RTILDE(LIMX, LIMX),
      +               TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
      +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
-      DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
+      DOUBLE COMPLEX U(LIMX, LIMX)
 
 c$$$  CALCMULT fills MULT - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
@@ -100,7 +98,7 @@ C     For now I have left it as before so I can compare results
 
       CALL SQUNIT (MULT, 2 * LIMX)
       
-      CALL FILLOANDINVERT2(O, IO, LIMX)
+      CALL FILLU2 (U, FLUX, LIMX)
 
       CALL SQUNIT (T, LIMX)
       CALL SQUNIT (TTILDE, LIMX)
@@ -110,7 +108,6 @@ C     For now I have left it as before so I can compare results
 
       DO I = 1, LIMY
             CALL CALCMULT2(LIMX, WRAPX, MULT, E, FLUX, I)
-c           CALL zprintm (MULT, 2*LIMX, 'm: ')
             CALL GENABCD(LIMX,MULT,A,B,C,D,U)
             CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
      +           A, B, C,D)
@@ -124,28 +121,14 @@ c$$$  CheckUni2 is slightly faster --- AVS
       RETURN
       END
 
-      SUBROUTINE FILLOANDINVERT2(O, IO, LIMX)
+      SUBROUTINE FILLU2(U, FLUX, LIMX)
       IMPLICIT NONE
       INTEGER LIMX, I
-      DOUBLE COMPLEX O(2*LIMX, 2*LIMX), IO(2*LIMX, 2*LIMX)
-      DOUBLE PRECISION SQRT05
-      DOUBLE COMPLEX ZISQRT05
+      DOUBLE COMPLEX U(LIMX, LIMX)
+      DOUBLE PRECISION FLUX
+      DOUBLE COMPLEX ZI/(0.0, 1.0)/
      
-      CALL SQZERO (O, 2 * LIMX)
+      CALL SQUNITZ (U, ZI, LIMX)
 
-c     It is slightly more efficient to calculate square root once
-      SQRT05 = SQRT(0.5)
-      ZISQRT05 = DCMPLX(0, SQRT05)
-C$$$ GENERATE O-MATRIX
-C$$$ O IS BLOCK MATRIX OF 1/SQRT(2) (1,1;I,-I)
-         DO I = 1, LIMX
-            O(I, I)=SQRT05
-            O(I, LIMX+I)=SQRT05
-            O(I+LIMX, I)=ZISQRT05
-            O(I+LIMX, I+LIMX)=-ZISQRT05
-c$$$  Hopefully this is correct - test analytically later
-         ENDDO
-         CALL SQCOPY (O, IO, 2*LIMX)
-         CALL INVERTMATRIX(IO, 2*LIMX)
       RETURN
       END
