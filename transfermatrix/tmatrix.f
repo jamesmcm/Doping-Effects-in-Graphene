@@ -138,8 +138,14 @@ c$$$  AIM TO CHANGE TO FILL(U,LIMX,FLUX)
       DOUBLE PRECISION SQRT05, FLUX
       DOUBLE COMPLEX ZISQRT05, CNUM
       DOUBLE COMPLEX ZI/(0.0, 1.0)/      
-      
-      CALL SQUNITZ(U, ZI, LIMX)
+      CALL SQZERO (U, LIMX)
+      DO I = 1, LIMX
+         CALL ZPOLAR(FLUX*I, CNUM)
+         U(I,I)=ZI*CNUM
+      ENDDO
+      CALL ZPRINTM(U, LIMX, "U :")
+
+c$$$      CALL SQUNITZ(U, ZI, LIMX)
       
 
 
