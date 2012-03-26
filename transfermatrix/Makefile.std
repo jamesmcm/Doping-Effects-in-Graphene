@@ -1,5 +1,5 @@
 DRIVER   = driver.f
-CORESRC  = linalg.f tmatrix.f util.f trupdate.f
+CORESRC  = linalg.f tmatrix.f tmatrixy.f util.f trupdate.f
 PYWRAPPER = _tmatrix.c
 HELPERS  = 
 
