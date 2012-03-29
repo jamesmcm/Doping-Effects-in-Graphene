@@ -318,7 +318,7 @@ C     Odd is defined for odd leftmost column, even for even leftmost column
 C     M={{-N3^-1, E*N3^-1},{-E*N3^-1, E^2 N3^-1 - N2^-1}}
 
       CALL INVERTMATRIX(N3, NSIZE)
-      CALL INVERTMATRIX(N2, NSIZE)
+c$$$      CALL INVERTMATRIX(N2, NSIZE)
 
       MULT(1:NSIZE, 1:NSIZE)=-1*N3
       MULT(1:NSIZE, NSIZE+1:2*NSIZE)=E*N3
