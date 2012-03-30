@@ -1,5 +1,5 @@
 DRIVER   = driver.f
-CORESRC  = linalg.f tmatrix.f util.f trupdate.f
+CORESRC  = linalg.f tmatrix.f tmatrixx.f tmatrixy.f util.f trupdate.f
 HELPERS  = 
 
 OBJ = $(DRIVER:.f=.o) $(CORESRC:.f=.o) $(HELPERS:.c=.o)
@@ -10,8 +10,8 @@ INC =
 LIB = -lm -lblas -llapack
 
 LDFLAGS  = $(LIB)
-CFLAGS   = $(INC)
-F77FLAGS = $(INC)
+CFLAGS   = $(INC) -Wall
+F77FLAGS = $(INC) -Wall
 
 $(TARGET): $(OBJ)
 	gcc -o $(TARGET) $(OBJ) $(LDFLAGS)
