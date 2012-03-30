@@ -61,7 +61,7 @@ def CompareOldData (Xu, Yu, Zu, Xw, Yw, Zw):
     
     
 def G (E, Phi, Wrap):
-    tl, c = tmatrix.gettrans (Lx, Ly, E, Phi, Wrap)
+    tl, c = tmatrix.gettrans ('Y', 'Y', Lx, Ly, E, Phi, Wrap)
     tvals = array(tl)
     #print tvals
     g = tmatrix.conductance(tl)

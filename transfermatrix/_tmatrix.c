@@ -22,13 +22,17 @@ PyObject * GetTrans (PyObject * self, PyObject * args) {
           double energy, flux;
           double *transvals;
           double check; 
+          char *current_dir; 
+          char *gauge_dir; 
           PyObject *retval; 
           PyObject *tval_list;
    
-          double gettrans_ (double *t, int *Lx, int *Ly, 
-			   double *E, double *F, int *w); 
+          double gettrans_ (char *current_dir, char *gauge_dir, 
+			    double *t, int *Lx, int *Ly, 
+			    double *E, double *F, int *w); 
    
-          if (!PyArg_ParseTuple (args, "iiddi", 
+          if (!PyArg_ParseTuple (args, "ssiiddi", 
+				 &current_dir, &gauge_dir, 
 				 &Lx, &Ly, &energy, &flux, &wrap)) {
 	       PyErr_SetString(errorObject, "invalid arguments to GetTrans");
 	       return NULL; 
@@ -36,8 +40,10 @@ PyObject * GetTrans (PyObject * self, PyObject * args) {
           
           transvals = PyMem_New (double, Lx); 
           
-          check = gettrans_ (transvals, &Lx, &Ly, &energy, &flux, &wrap); 
+          check = gettrans_ (current_dir, gauge_dir, transvals,  
+			     &Lx, &Ly, &energy, &flux, &wrap); 
           
+          //fprintf (stderr, "gettrans: %g %g\n", check, transvals[0]); 
           tval_list = PyList_New (Lx); 
           for (i = 0; i < Lx; i++) {
 	       PyList_SetItem (tval_list, i, 

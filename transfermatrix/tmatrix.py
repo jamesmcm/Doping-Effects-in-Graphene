@@ -1,7 +1,7 @@
 import _tmatrix
 import numpy
 
-def gettrans(Lx, Ly, E, phi, wrap):
+def gettrans(current, gauge, Lx, Ly, E, phi, wrap):
     """
        This function calculates transmission
        eigenvalues
@@ -27,7 +27,7 @@ def gettrans(Lx, Ly, E, phi, wrap):
            check --- unitarity check
            
     """
-    tvals, check = _tmatrix.gettrans(Lx, Ly, E, phi, wrap)
+    tvals, check = _tmatrix.gettrans(current, gauge, Lx, Ly, E, phi, wrap)
     return tvals, check
 
 def conductance (tvals):
