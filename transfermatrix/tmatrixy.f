@@ -144,8 +144,8 @@ C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
       RETURN
       END
 
-
-      DOUBLE PRECISION FUNCTION GETTRANSYX(TVALS, LIMX, LIMY,
+	  
+	  DOUBLE PRECISION FUNCTION GETTRANSY(GAUGE, TVALS, LIMX, LIMY,
      +   E, FLUX, WRAPX)
       IMPLICIT NONE
       INTEGER I/1/, LIMY, WRAPX, LIMX
@@ -162,6 +162,7 @@ C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
      +               TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
      +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
       DOUBLE COMPLEX U(LIMX, LIMX)
+      CHARACTER GAUGE
 
 c$$$  CALCMULT fills MULT - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
@@ -170,6 +171,16 @@ C     For now I have left it as before so I can compare results
       CALL SQUNIT (MULT, 2 * LIMX)
       
       CALL FILLUYX (U, FLUX, LIMX)
+      IF (GAUGE .EQ. 'X') THEN
+         CALL FILLUYX (U, FLUX, LIMX)
+      ELSE
+         IF (GAUGE .EQ. 'Y') THEN
+            CALL FILLUYY (U, FLUX, LIMX)
+         ELSE
+            WRITE (*,*) 'Invalid guage identifier (X and Y only)' 
+            STOP
+         END IF
+      END IF
 
       CALL SQUNIT (T, LIMX)
       CALL SQUNIT (TTILDE, LIMX)
@@ -178,7 +189,13 @@ C     For now I have left it as before so I can compare results
 
 
       DO I = 1, LIMY
-            CALL CALCMULTYX(LIMX, WRAPX, MULT, E, FLUX, I)
+            IF (GAUGE .EQ. 'X') THEN
+               CALL CALCMULTYX(LIMX, WRAPX, MULT, E, FLUX, I)
+            ELSE
+               IF (GAUGE .EQ. 'Y') THEN
+                  CALL CALCMULTYY(LIMX, WRAPX, MULT, E, FLUX, I)
+               END IF
+            END IF
             CALL GENABCD(LIMX,MULT,A,B,C,D,U)
             CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
      +           A, B, C,D)
@@ -189,64 +206,7 @@ C     For now I have left it as before so I can compare results
       CALL SV_DECOMP(LIMX, T, TVALS)
 
 c$$$  CheckUni2 is slightly faster --- AVS
-      GETTRANSYX = CHECKUNI2(LIMX,T,R,TTILDE,RTILDE)
-      RETURN
-      END
-
-      DOUBLE PRECISION FUNCTION GETTRANSYY(TVALS, LIMX, LIMY,
-     +   E, FLUX, WRAPX)
-      IMPLICIT NONE
-      INTEGER I/1/, LIMY, WRAPX, LIMX
-      DOUBLE PRECISION TVALS(LIMX), E, FLUX
-      DOUBLE PRECISION CHECKUNI
-      EXTERNAL CHECKUNI
-      DOUBLE PRECISION CHECKUNI2
-      EXTERNAL CHECKUNI2
-      DOUBLE COMPLEX MODD(2*LIMX, 2*LIMX), MEVEN(2*LIMX, 2*LIMX),
-     +               MULT(2*LIMX, 2*LIMX)
-      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX),
-     +               C(LIMX, LIMX), D(LIMX, LIMX)
-      DOUBLE COMPLEX T(LIMX, LIMX),    TTILDE(LIMX, LIMX),
-     +               R(LIMX, LIMX),    RTILDE(LIMX, LIMX),
-     +               TINC(LIMX, LIMX), TTILDEINC(LIMX, LIMX),
-     +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
-      DOUBLE COMPLEX U(LIMX,LIMX)
-
-c      CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
-      CALL CALCMULTYY(LIMX, WRAPX, MODD, E, FLUX, 1)
-      CALL CALCMULTYY(LIMX, WRAPX, MEVEN, E, FLUX, 2)
-c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
-c$$$  Must decide whether we want zig-zag or armchair edges
-C     For now I have left it as before so I can compare results
-
-      CALL SQUNIT (MULT, 2*LIMX)
-
-      CALL FILLUYY(U, LIMX, FLUX)
-
-      CALL SQUNIT (T, LIMX)
-      CALL SQUNIT (TTILDE, LIMX)
-      CALL SQZERO (R, LIMX)
-      CALL SQZERO (RTILDE, LIMX)
-
-      DO I = 1, LIMY
-            IF (MOD(I,2) .EQ. 1) THEN
-               CALL SQCOPY (MODD, MULT, 2*LIMX) 
-            ELSE
-               CALL SQCOPY(MEVEN, MULT, 2*LIMX)
-            END IF
-
-        
-            CALL GENABCD(LIMX,MULT,A,B,C,D,U)
-            CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
-     +           A, B, C,D)
-            CALL UPDATETANDR(T,     R,    TTILDE,    RTILDE, 
-     +                       TINC,  RINC, TTILDEINC, RTILDEINC, 
-     +                       LIMX)
-      END DO
-      CALL SV_DECOMP(LIMX, T, TVALS)
-
-c$$$  CheckUni2 is slightly faster --- AVS
-      GETTRANSYY = CHECKUNI2(LIMX,T,R,TTILDE,RTILDE)
+      GETTRANSY = CHECKUNI2(LIMX,T,R,TTILDE,RTILDE)
       RETURN
       END
 
@@ -262,7 +222,7 @@ c$$$  CheckUni2 is slightly faster --- AVS
       RETURN
       END
 
-      SUBROUTINE FILLUYY(U, LIMX, FLUX)
+      SUBROUTINE FILLUYY(U, FLUX, LIMX)
       IMPLICIT NONE
       INTEGER LIMX, I
       DOUBLE COMPLEX U(LIMX,LIMX)

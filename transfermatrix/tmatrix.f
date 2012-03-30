@@ -5,32 +5,22 @@
       DOUBLE PRECISION TVALS(LIMX), E, FLUX
       CHARACTER CURRENT, GAUGE
 
-c      DOUBLE PRECISION GETTRANSXX
-c      EXTERNAL GETTRANSXX
-c      DOUBLE PRECISION GETTRANSXY
-c      EXTERNAL GETTRANSXY
-      DOUBLE PRECISION GETTRANSYX
-      EXTERNAL GETTRANSYX
-      DOUBLE PRECISION GETTRANSYY
-      EXTERNAL GETTRANSYY
+c      DOUBLE PRECISION GETTRANSX
+c      EXTERNAL GETTRANSX
+      DOUBLE PRECISION GETTRANSY
+      EXTERNAL GETTRANSY
 
       IF (CURRENT .EQ. 'X') THEN
          WRITE (*,*) 'ERROR, X current unsuported!'
          STOP
-c         IF (GAUGE .EQ. 'X') THEN
-c            GETTRANS = GETTRANSXX(TVALS, LIMX, LIMY, E, FLUX, WRAPX)
-c         END IF
-c         IF (GAUGE .EQ. 'Y') THEN
-c            GETTRANS = GETTRANSXY(TVALS, LIMX, LIMY, E, FLUX, WRAPX)
-c         END IF
+c         GETTRANS = GETTRANSX(GAUGE, TVALS, LIMX, LIMY, E, FLUX, WRAPX)
       ELSE
          IF (CURRENT .EQ. 'Y') THEN
-            IF (GAUGE .EQ. 'X') THEN
-               GETTRANS = GETTRANSYX(TVALS, LIMX, LIMY, E, FLUX, WRAPX)
-            END IF
-            IF (GAUGE .EQ. 'Y') THEN
-               GETTRANS = GETTRANSYY(TVALS, LIMX, LIMY, E, FLUX, WRAPX)
-            END IF
+            GETTRANS = GETTRANSY(GAUGE, TVALS, LIMX, LIMY, E, FLUX,
+     +                            WRAPX)
+         ELSE
+            WRITE (*,*) 'Invalid current identifier (X and Y only)' 
+            STOP
          END IF
       END IF
 
