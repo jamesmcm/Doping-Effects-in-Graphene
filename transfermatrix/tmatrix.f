@@ -5,15 +5,19 @@
       DOUBLE PRECISION TVALS(LIMX), E, FLUX
       CHARACTER CURRENT, GAUGE
 
-c      DOUBLE PRECISION GETTRANSX
-c      EXTERNAL GETTRANSX
+      DOUBLE PRECISION GETTRANSX
+      EXTERNAL GETTRANSX
       DOUBLE PRECISION GETTRANSY
       EXTERNAL GETTRANSY
 
       IF (CURRENT .EQ. 'X') THEN
-         WRITE (*,*) 'ERROR, X current unsuported!'
-         STOP
-c         GETTRANS = GETTRANSX(GAUGE, TVALS, LIMX, LIMY, E, FLUX, WRAPX)
+c$$$         WRITE (*,*) 'ERROR, X current unsuported!'
+         IF (MOD(LIMY, 2) .NE. 0) THEN
+            WRITE (*,*) 'ERROR, LIMY must be even for X current!'
+            STOP
+         ELSE
+         GETTRANS = GETTRANSX(GAUGE, TVALS, LIMX, LIMY/2, E, FLUX)
+      END IF
       ELSE
          IF (CURRENT .EQ. 'Y') THEN
             GETTRANS = GETTRANSY(GAUGE, TVALS, LIMX, LIMY, E, FLUX,

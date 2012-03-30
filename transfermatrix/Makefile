@@ -10,18 +10,16 @@ INC =
 LIB = -lm -lblas -llapack
 
 LDFLAGS  = $(LIB)
-CFLAGS   = $(INC) -Wall
-F77FLAGS = $(INC) -Wall
+CFLAGS   = $(INC)
+F77FLAGS = $(INC)
 
 $(TARGET): $(OBJ)
 	gcc -o $(TARGET) $(OBJ) $(LDFLAGS)
 
 %.o: %.c
 	gcc $(CFLAGS) -o $@ -c $< 
-	
+
 %.o: %.f
 	gfortran $(F77FLAGS) -o $@ -c $<
-	
-	
 clean::
 	-rm $(TARGET) *.o

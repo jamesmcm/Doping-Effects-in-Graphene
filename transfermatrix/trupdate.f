@@ -15,7 +15,7 @@ C    M(A,B,C,D) COMPONENTS OF MATRIX, U: PHASE MATRIX
       DOUBLE COMPLEX UNITY/1.0/, ZERO/0.0/,   NEG/-1.0/,
      +               HALF/0.5/,  NHALF/-0.5/
      
-C     Surely this negates any purpose in rewriting the code?
+
       MA = MULT(1:LIMX, 1:LIMX)
       MB = MULT(1:LIMX, (LIMX+1):2*LIMX)
       MC = MULT((LIMX+1):2*LIMX, 1:LIMX)

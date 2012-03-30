@@ -12,9 +12,10 @@ c$$$ CHECKUNI2 IS SLIGHTLY FASTER
 
       
 
-      INTEGER, PARAMETER :: LIMX=2, WRAPY=0, WRAPX=0,
-     + MSIZE=4*LIMX*LIMX, M2SIZE=LIMX*LIMX
-      INTEGER F/1/, LIMY/10/,I/1/
+      INTEGER, PARAMETER :: LIMX=3, WRAPY=0, WRAPX=0,
+     + MSIZE=4*LIMX*LIMX, M2SIZE=LIMX*LIMX, LIMY=10
+C     FOR X CURRENY LIMY MUST BE EVEN, LIMX MUST BE >3
+      INTEGER F/1/, I/1/
 c$$$      CHARACTER*3 VALUE
       DOUBLE PRECISION TVALS(LIMX)
 c$$$ E NEEDS TO BE THE SAME AS INCREMENT
@@ -30,7 +31,7 @@ c      CALL GETARG(1, VALUE)
 c      READ(UNIT=VALUE, FMT=*) LIMY
 
 
-      DO F = 1, 5
+      DO F = 1, 602
         
 c$$$  CHECKING THE NEW GENABCD *
       CONDA = GETTRANS(CURRENT, GAUGE, TVALS, LIMX, LIMY, E, FLUX,
@@ -46,9 +47,9 @@ C$$$  *END OF CHECKING NEW GENABCD
 
 c         CONDB = CHECKUNI2(LIMX,T,R,TTILDE,RTILDE)
          G    = CONDUCTANCE (TVALS, LIMX)
-      WRITE(*,70) NORMMA,NORMA,NORMOA
+c$$$      WRITE(*,70) NORMMA,NORMA,NORMOA
 c$$$  WRITES ENERGY, CONDUCTANCE, UNITARITY
-c         WRITE(*,50) E, G, CONDA
+         WRITE(*,50) E, G, CONDA
 
 c$$$     This is gfortran function to flush the output
 c$$$     so that the data are written to the file immediately
@@ -58,8 +59,7 @@ c$$$     comment it out -- AVS
 
 c      WRITE(*,60) E,(TVALS(I)*TVALS(I), I = 1, LIMX),CONDB
 
-c$$$ 'E' STEPS CONSISTANT WITH ANALYTICAL.C
-         E=-3+(F-1.0)*0.0001
+         E=-3+(F-1.0)*0.01
       END DO
 
  50   FORMAT (F15.5,20ES20.5E3)
