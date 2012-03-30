@@ -31,7 +31,8 @@ C     For now I have left it as before so I can compare results
 
       CALL SQUNIT (MULT, 2*NSIZE)
 
-      CALL FILLUYX(U, NSIZE, FLUX)
+      CALL FILLUYX(U, FLUX, NSIZE)
+
 
       CALL SQUNIT (T, NSIZE)
       CALL SQUNIT (TTILDE, NSIZE)
