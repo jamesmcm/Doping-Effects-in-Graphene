@@ -7,19 +7,21 @@ C    M(A,B,C,D) COMPONENTS OF MATRIX, U: PHASE MATRIX
       DOUBLE COMPLEX  U(LIMX, LIMX)
       DOUBLE COMPLEX  A(LIMX, LIMX), B(LIMX, LIMX),
      +                C(LIMX, LIMX), D(LIMX, LIMX)
-      DOUBLE COMPLEX  MA(LIMX, LIMX), MB(LIMX, LIMX),
-     +                MC(LIMX, LIMX), MD(lIMX, LIMX)
+      DOUBLE COMPLEX  MA(LIMX, LIMX)
+c      , MB(LIMX, LIMX),
+c     +                MC(LIMX, LIMX), MD(lIMX, LIMX)
       DOUBLE COMPLEX  BU (LIMX, LIMX),  UC (LIMX, LIMX),
      +                DU (LIMX, LIMX),  UDU(LIMX,LIMX),
      +                TEMPBC  (LIMX, LIMX)
       DOUBLE COMPLEX UNITY/1.0/, ZERO/0.0/,   NEG/-1.0/,
      +               HALF/0.5/,  NHALF/-0.5/
-     
+      DOUBLE COMPLEX UIC, UJ, MBIJ, MCIJ, MDIJ
+      INTEGER I, J
 
-      MA = MULT(1:LIMX, 1:LIMX)
-      MB = MULT(1:LIMX, (LIMX+1):2*LIMX)
-      MC = MULT((LIMX+1):2*LIMX, 1:LIMX)
-      MD = MULT((LIMX+1):2*LIMX, (LIMX+1):2*LIMX)
+c      MA = MULT(1:LIMX, 1:LIMX)
+c      MB = MULT(1:LIMX, (LIMX+1):2*LIMX)
+c      MC = MULT((LIMX+1):2*LIMX, 1:LIMX)
+c      MD = MULT((LIMX+1):2*LIMX, (LIMX+1):2*LIMX)
 
 c$$$ M(A,B,C,D) INITALISE TO ZERO'S
       CALL SQZERO(A, LIMX)
@@ -29,19 +31,34 @@ c$$$ M(A,B,C,D) INITALISE TO ZERO'S
       CALL SQZERO(TEMPBC, LIMX)
 
 c     BU := Mb*U
-      CALL SQDOT(BU, MB, U, LIMX)
+c      CALL SQDOT(BU, MB, U, LIMX)
 c     DU := Md*U
-      CALL SQDOT(DU, MD, U, LIMX)
+c      CALL SQDOT(DU, MD, U, LIMX)
 c     UC := Udagger * Mc
-      CALL ZGEMM('C', 'N', LIMX, LIMX, LIMX,
-     +     UNITY, U,  LIMX,
-     +            MC, LIMX,
-     +      ZERO, UC, LIMX)
+c      CALL ZGEMM('C', 'N', LIMX, LIMX, LIMX,
+c     +     UNITY, U,  LIMX,
+c     +            MC, LIMX,
+c     +      ZERO, UC, LIMX)
 c     UDU := Udagger*DU = Udagger * Md * U     
-      CALL ZGEMM('C', 'N', LIMX, LIMX, LIMX,
-     +     UNITY, U, LIMX,
-     +           DU, LIMX,
-     +     ZERO, UDU, LIMX)
+c      CALL ZGEMM('C', 'N', LIMX, LIMX, LIMX,
+c     +     UNITY, U, LIMX,
+c     +           DU, LIMX,
+c     +     ZERO, UDU, LIMX)
+
+      DO I = 1, LIMX
+        UIC = DCONJG(U(I, I))
+        DO J = 1, LIMX
+          MA(I, J) = MULT (I, J)
+          MBIJ = MULT (I, LIMX + J)
+          MCIJ = MULT (I + LIMX, J)
+          MDIJ = MULT (I + LIMX, J + LIMX)
+          
+          UJ = U(J, J)
+          BU(I, J)  =        MBIJ * UJ
+          UC(I, J)  = UIC  * MCIJ
+          UDU(I, J) = UIC  * MDIJ * UJ
+        ENDDO
+      ENDDO
 
 c$$$ CREATED TEMP MATICIES -> GENERATE A
 c     Micro-optimization: 16 calls to ZAXPY can be replaced by
