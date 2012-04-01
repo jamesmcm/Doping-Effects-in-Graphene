@@ -1,5 +1,6 @@
 DRIVER   = driver.f
 CORESRC  = linalg.f tmatrix.f tmatrixx.f tmatrixy.f util.f trupdate.f
+CORESRC += unitarity.f
 HELPERS  = 
 
 OBJ = $(DRIVER:.f=.o) $(CORESRC:.f=.o) $(HELPERS:.c=.o)
