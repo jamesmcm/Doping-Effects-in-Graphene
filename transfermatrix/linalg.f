@@ -199,7 +199,7 @@ c      CALL DCOPY(N, SVALS, 1, OUTPUTS, 1)
 C$$$ MAKE COPY OF MATRIX FOR SVD SINCE IT IS DESTROYED
       CALL SQCOPY(MATRIX, SVCPY, N)
       
-      CALL ZGESVD('N', 'N', N, N, SVCPY, N, OUTPUTS,
+      CALL ZGESVD('A', 'A', N, N, SVCPY, N, OUTPUTS,
      +             U, N, V, N,
      +             WORK, MSIZE, RWORK, S)
       IF (S .NE. 0) THEN
