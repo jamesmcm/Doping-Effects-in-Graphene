@@ -54,7 +54,7 @@ C     For now I have left it as before so I can compare results
      +                       TINC,  RINC, TTILDEINC, RTILDEINC, 
      +                       NSIZE)
       END DO
-      CALL SV_DECOMP(NSIZE, T, TVALS)
+      CALL SQSVDVALS(NSIZE, T, TVALS)
 
 c$$$  CheckUni2 is slightly faster --- AVS
       GETTRANSX = CHECKUNI2(NSIZE,T,R,TTILDE,RTILDE)

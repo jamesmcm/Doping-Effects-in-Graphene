@@ -159,26 +159,56 @@ c      write (*, *) 'quality: ', dnormdiff (B, PROD, N)
 
       
 
-      SUBROUTINE SV_DECOMP(N, MATRIX, OUTPUTS)
-
-      INTEGER N, MSIZE, S
-      DOUBLE PRECISION SVALS(N), OUTPUTS(N), RWORK(5*N)
-      DOUBLE COMPLEX MATRIX(N, N), TEMP2(N, N),
-     + SVCPY(N, N), WORK(4*N*N)
+      SUBROUTINE SQSVDVALS(N, MATRIX, OUTPUTS)
+      INTEGER N
+      DOUBLE COMPLEX MATRIX(N, N)
+      DOUBLE PRECISION OUTPUTS(N)
+      
+      DOUBLE PRECISION RWORK(5*N)
+      DOUBLE COMPLEX   TEMP2(N, N), SVCPY(N, N), WORK(4*N*N)
+      INTEGER MSIZE, S
 
       MSIZE=4*N*N
 
 C$$$ MAKE COPY OF MATRIX FOR SVD SINCE IT IS DESTROYED
 C$$$      SVCPY=MATRIX
       CALL SQCOPY(MATRIX, SVCPY, N)
-      CALL ZGESVD('N', 'N', N, N, SVCPY, N, SVALS, TEMP2,
+      CALL ZGESVD('N', 'N', N, N, SVCPY, N, OUTPUTS, TEMP2,
      + N, TEMP2, N , WORK, MSIZE, RWORK, S)
       IF (S .NE. 0) THEN
          WRITE (*,*) 'SVD FAILED WITH S=', S
          STOP
       END IF
+c      CALL DCOPY(N, SVALS, 1, OUTPUTS, 1)
 
-      CALL DCOPY(N, SVALS, 1, OUTPUTS, 1)
+      RETURN
+      END
+      
+      SUBROUTINE SQSVDFULL(N, MATRIX, OUTPUTS, U, V)
+      INTEGER N
+      DOUBLE COMPLEX MATRIX(N, N),
+     +               U(N, N), V(N, N)
+      DOUBLE PRECISION OUTPUTS(N)
+      
+      INTEGER MSIZE, S
+      DOUBLE PRECISION RWORK(5*N)
+      DOUBLE COMPLEX   SVCPY(N, N),  WORK(4*N*N)
+
+      MSIZE = 4*N*N
+
+C$$$ MAKE COPY OF MATRIX FOR SVD SINCE IT IS DESTROYED
+      CALL SQCOPY(MATRIX, SVCPY, N)
+      
+      CALL ZGESVD('N', 'N', N, N, SVCPY, N, OUTPUTS,
+     +             U, N, V, N,
+     +             WORK, MSIZE, RWORK, S)
+      IF (S .NE. 0) THEN
+         WRITE (*,*) 'SVD FAILED WITH S=', S
+         STOP
+
+      END IF
+
+c      CALL DCOPY(N, SVALS, 1, OUTPUTS, 1)
 
       RETURN
       END

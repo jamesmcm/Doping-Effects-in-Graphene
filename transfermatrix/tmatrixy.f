@@ -145,7 +145,7 @@ C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
       END
 
 	  
-	  DOUBLE PRECISION FUNCTION GETTRANSY(GAUGE, TVALS, LIMX, LIMY,
+      DOUBLE PRECISION FUNCTION GETTRANSY(GAUGE, TVALS, LIMX, LIMY,
      +   E, FLUX, WRAPX)
       IMPLICIT NONE
       INTEGER I/1/, LIMY, WRAPX, LIMX
@@ -203,7 +203,7 @@ C     For now I have left it as before so I can compare results
      +                       TINC, RINC, TTILDEINC, RTILDEINC,
      +                       LIMX)
       END DO
-      CALL SV_DECOMP(LIMX, T, TVALS)
+      CALL SQSVDVALS(LIMX, T, TVALS)
 
 c$$$  CheckUni2 is slightly faster --- AVS
       GETTRANSY = CHECKUNI2(LIMX,T,R,TTILDE,RTILDE)
