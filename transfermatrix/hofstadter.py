@@ -3,67 +3,38 @@ from numpy import *
 import tmatrix
 import math
 
-Lx = 4
-Ly = 7
+Lx = 10
+Ly = 16
 
-def SaveData (Xy, Yu, Zu, Xw, Yw, Zw):
+def SaveData (data):
     import shelve
     f = shelve.open('hofstadter-%dx%d.dat' % (Lx, Ly))
-    f['Xw'] = Xw
-    f['Yw'] = Yw
-    f['Zw'] = Zw
-    f['Xu'] = Xu
-    f['Yu'] = Yu
-    f['Zu'] = Zu
+    for k, v in data.items():
+        f[k] = v
     f.close()
     
 
-def CompareOldData (Xu, Yu, Zu, Xw, Yw, Zw):
+def CompareOldData (dict):
+    s = 0.0
     try: 
         import shelve
         f = shelve.open('hofstadter-%dx%d.dat' % (Lx, Ly))
-        Xwold = f['Xw']
-        Ywold = f['Yw']
-        Zwold = f['Zw']
-        Xuold = f['Xu']
-        Yuold = f['Yu']
-        Zuold = f['Zu']
+        for k, v in data.items(): 
+            fv = f[k]
+            d  = norm (v - fv)
+            print "diff: ", k, d
+            s += d
         f.close()
-        dxu = norm (Xu - Xuold)
-        dyu = norm (Yu - Yuold)
-        dzu = norm (Zu - Zuold)
-        print "dxu: ", dxu, "dyu:", dyu, "dzw", dzu
-        if (dxu >  1e-6) or (dyu > 1e-6):
-            print "Grid has changed, comparison is meaningless"
-            return None
-    
-        figure() 
-        title ('Diff for unwrapped case')
-        pcolor (Xu, Yu, Zu - Zuold)
-        colorbar()
-    
-        dxw = norm (Xw - Xwold)
-        dyw = norm (Yw - Ywold)
-        dzw = norm (Zw - Zwold)
-        print "dxw: ", dxw, "dyw:", dyw, "dzw:", dzw
-        if (dxw >  1e-6) or (dyw > 1e-6):
-            print "Grid has changed, comparison is meaningless"
-            return None
-        figure() 
-        title ('Diff for wrapped case')
-        pcolor (Xw, Yw, Zw - Zwold)
-        colorbar()
-        return dzu + dzw
+        return s
     except:
         pass
     print "Cannot read saved data to do comparison"
     return None
     
     
-def G (E, Phi, Wrap):
-    tl, c = tmatrix.gettrans ('Y', 'Y', Lx, Ly, E, Phi, Wrap)
+def G (E, Phi, current, gauge, wrap):
+    tl, c = tmatrix.gettrans (current, gauge, Lx, Ly, E, Phi, wrap)
     tvals = array(tl)
-    #print tvals
     g = tmatrix.conductance(tl)
     if c > 1e-8: 
         import sys
@@ -72,47 +43,71 @@ def G (E, Phi, Wrap):
         sys.exit(-1)
     return g
 
-figure()
+
+def doScan(Evals, Phivals, wrap, dir, gauge): 
+    X, Y = meshgrid (Phivals, Evals)
+    Z = zeros (shape(X))
+    for i in range (len (Evals)):
+        print 'Wrap:', wrap, 'Dir:', dir, 'Gauge:', gauge, "E = ", Y[i, 0]
+        for j in range(len (Phivals)):
+            Z[i, j] = G(Y[i, j], X[i, j], dir, gauge, wrap)
+    figure()     
+    pcolor (X/2.0/math.pi, Y, Z)
+    xlim(0.0, 1.0)
+    ylim(-4.0, 4.0)
+    tit = ''
+    if wrap: 
+       tit += 'Open boundary, '
+    else:
+       tit += 'Wrapped boundary, ' 
+    tit += "current J || %s, " % dir
+    tit += 'potential A || %s ' % gauge
+    title (tit)
+    xlabel (r'Magnetic flux $\Phi / \Phi_0$')
+    ylabel (r'Energy $\epsilon/t$')
+    colorbar()
+    return X, Y, Z
+
+def scanE (Evals, wrap, dir, gauge):
+    X = Evals
+    Y = zeros (shape(X))
+    for i, E in enumerate (X):
+        Y[i] = G (X[i], 0.0, dir, gauge, wrap)
+    figure()
+    plot (X, Y)
+    tit = ''
+    if wrap: 
+       tit += 'Open boundary, '
+    else:
+       tit += 'Wrapped boundary, ' 
+    tit += "current J || %s, " % dir
+    tit += 'potential A || %s ' % gauge
+    title (tit)
+    xlabel (r'Energy $\epsilon/t$')
+    ylabel (r'Conductance $G(E)$')  
+    return X, Y
+
 Evals = arange (-4.0, 4.01, 0.01)
 Phivals = arange (0.0, 2.0*math.pi + 0.0001, 2.0*math.pi/100); 
 
-Xu, Yu = meshgrid (Phivals, Evals)
-Zu = zeros (shape(Xu))
-for i in range (len (Evals)):
-    print "NOWRAP: E = ", Yu[i, 0]
-    for j in range(len (Phivals)):
-        Zu[i, j] = G(Yu[i, j], Xu[i, j], False)
-        
-pcolor (Xu/2.0/math.pi, Yu, Zu)
-xlim(0.0, 1.0)
-ylim(-4.0, 4.0)
-title ('Open boundary')
-xlabel (r'Magnetic flux $\Phi / \Phi_0$')
-ylabel (r'Energy $\epsilon/t$')
-colorbar()
+Xx, Yx        = scanE(Evals, False, 'X', 'X')
+Xuy, Yuy, Zuy = doScan(Evals, Phivals, False, 'Y', 'Y')
+Xux, Yux, Zux = doScan(Evals, Phivals, False, 'Y', 'X')
+Xwy, Ywy, Zwy = doScan(Evals, Phivals, True,  'Y', 'Y')
+Xwx, Ywx, Zwx = doScan(Evals, Phivals, True,  'Y', 'X')
 
-figure()
-Evals = arange (-4.0, 4.01, 0.01)
-Phivals = arange (0.0, 2.0*math.pi + 0.0001, 2.0*math.pi/100); 
-
-Xw, Yw = meshgrid (Phivals, Evals)
-Zw = zeros (shape(Xw))
-for i in range (len (Evals)):
-    print "WRAP: E = ", Yw[i, 0]
-    for j in range(len (Phivals)):
-        Zw[i, j] = G(Yw[i, j], Xw[i, j], True)
-        
-pcolor (Xw/2.0/math.pi, Yw, Zw)
-xlim(0.0, 1.0)
-ylim(-4.0, 4.0)
-title ('Wrapped boundary')
-xlabel (r'Magnetic flux $\Phi / \Phi_0$')
-ylabel (r'Energy $\epsilon/t$')
-colorbar()
-
-if CompareOldData (Xu, Yu, Zu, Xw, Yw, Zw) == None: 
+#if CompareOldData (Xu, Yu, Zu, Xw, Yw, Zw) == None:
+data = dict (Xux=Xux, Yux=Yux, Zux=Zux,
+             Xuy=Xuy, Yuy=Yuy, Zuy=Zuy, 
+             Xwx=Xwx, Ywx=Ywx, Zwx=Zwx, 
+             Xwy=Xwy, Ywy=Ywy, Zwy=Zwx, 
+             Xx=Xx, Yx=Yx)
+             
+if CompareOldData (data) == None: 
     print "Saving the data"
-    SaveData (Xu, Yu, Zu, Xw, Yw, Zw)
+    SaveData (data)
+#    SaveData (Xu, Yu, Zu, Xw, Yw, Zw)
+print "Check gauge invariance: unwrapped, J||Y: ", norm(Zuy - Zux)             
     
 show ()
         
