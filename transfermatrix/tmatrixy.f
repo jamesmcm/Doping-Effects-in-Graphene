@@ -148,7 +148,7 @@ C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
       DOUBLE PRECISION FUNCTION GETTRANSY(GAUGE, TVALS, LIMX, LIMY,
      +   E, FLUX, WRAPX)
       IMPLICIT NONE
-      INTEGER I/1/, LIMY, WRAPX, LIMX
+      INTEGER I/1/, LIMY, WRAPX, LIMX, II
       DOUBLE PRECISION TVALS(LIMX), E, FLUX
       DOUBLE PRECISION CHECKUNI
       EXTERNAL CHECKUNI
@@ -163,6 +163,7 @@ C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
      +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
       DOUBLE COMPLEX U(LIMX, LIMX)
       CHARACTER GAUGE
+      DOUBLE PRECISION THR/1e-12/
 
 c$$$  CALCMULT fills MULT - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
@@ -196,17 +197,23 @@ C     For now I have left it as before so I can compare results
                   CALL CALCMULTYY(LIMX, WRAPX, MULT, E, FLUX, I)
                END IF
             END IF
-            CALL GENABCD(LIMX,MULT,A,B,C,D,U)
-            CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
-     +           A, B, C,D)
+            CALL GENABCD(MULT, U, A,B,C,D, LIMX)
+            CALL GENTANDRINC(A, B, C, D,
+     +                       TINC, RINC, TTILDEINC, RTILDEINC,
+     +                       LIMX)
             CALL UPDATETANDR(T,    R,    TTILDE,    RTILDE, 
      +                       TINC, RINC, TTILDEINC, RTILDEINC,
      +                       LIMX)
+c
+c           Unitarity correction: not needed, unless E = 0; 
+c           however, the result at E = 0 is unreliable anyway.
+c             
+c           CALL CORRUNI (T, R, TTILDE, RTILDE, THR, LIMX) 
       END DO
-      CALL SQSVDVALS(LIMX, T, TVALS)
+      CALL SQSVDVALS(T, TVALS, LIMX)
 
 c$$$  CheckUni2 is slightly faster --- AVS
-      GETTRANSY = CHECKUNI2(LIMX,T,R,TTILDE,RTILDE)
+      GETTRANSY = CHECKUNI2(T,R,TTILDE,RTILDE, LIMX)
       RETURN
       END
 

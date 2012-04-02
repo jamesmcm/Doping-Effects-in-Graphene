@@ -47,17 +47,18 @@ C     For now I have left it as before so I can compare results
             END IF
 
         
-            CALL GENABCD(NSIZE,MULT,A,B,C,D,U)
-            CALL GENTANDRINC(NSIZE, TINC, RINC, TTILDEINC, RTILDEINC,
-     +           A, B, C,D)
+            CALL GENABCD(MULT, U, A,B,C,D, NSIZE)
+            CALL GENTANDRINC(A, B, C, D,
+     +                       TINC, RINC, TTILDEINC, RTILDEINC,
+     +                       NSIZE)
             CALL UPDATETANDR(T,     R,    TTILDE,    RTILDE, 
      +                       TINC,  RINC, TTILDEINC, RTILDEINC, 
      +                       NSIZE)
       END DO
-      CALL SQSVDVALS(NSIZE, T, TVALS)
+      CALL SQSVDVALS(T, TVALS, NSIZE)
 
 c$$$  CheckUni2 is slightly faster --- AVS
-      GETTRANSX = CHECKUNI2(NSIZE,T,R,TTILDE,RTILDE)
+      GETTRANSX = CHECKUNI2(T, R, TTILDE, RTILDE, NSIZE)
       RETURN
       END
 

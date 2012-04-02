@@ -159,7 +159,7 @@ c      write (*, *) 'quality: ', dnormdiff (B, PROD, N)
 
       
 
-      SUBROUTINE SQSVDVALS(N, MATRIX, OUTPUTS)
+      SUBROUTINE SQSVDVALS(MATRIX, OUTPUTS, N)
       INTEGER N
       DOUBLE COMPLEX MATRIX(N, N)
       DOUBLE PRECISION OUTPUTS(N)
@@ -184,7 +184,7 @@ c      CALL DCOPY(N, SVALS, 1, OUTPUTS, 1)
       RETURN
       END
       
-      SUBROUTINE SQSVDFULL(N, MATRIX, OUTPUTS, U, V)
+      SUBROUTINE SQSVDFULL(MATRIX, OUTPUTS, U, V, N)
       INTEGER N
       DOUBLE COMPLEX MATRIX(N, N),
      +               U(N, N), V(N, N)
