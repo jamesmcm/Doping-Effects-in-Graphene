@@ -3,8 +3,8 @@ from numpy import *
 import tmatrix
 import math
 
-Lx = 10
-Ly = 16
+Lx = 4
+Ly = 8
 
 def SaveData (data):
     import shelve
@@ -57,9 +57,9 @@ def doScan(Evals, Phivals, wrap, dir, gauge):
     ylim(-4.0, 4.0)
     tit = ''
     if wrap: 
-       tit += 'Open boundary, '
+       tit += 'Wrapped boundary, '
     else:
-       tit += 'Wrapped boundary, ' 
+       tit += 'Open boundary, ' 
     tit += "current J || %s, " % dir
     tit += 'potential A || %s ' % gauge
     title (tit)
@@ -68,29 +68,26 @@ def doScan(Evals, Phivals, wrap, dir, gauge):
     colorbar()
     return X, Y, Z
 
-def scanE (Evals, wrap, dir, gauge):
+def scanE (Evals):
     X = Evals
-    Y = zeros (shape(X))
+    Yx = zeros (shape(X))
+    Yy = zeros (shape(X))
     for i, E in enumerate (X):
-        Y[i] = G (X[i], 0.0, dir, gauge, wrap)
+        Yx[i] = G (X[i], 0.0, 'X', 'X', False)
+        Yy[i] = G (X[i], 0.0, 'Y', 'X', False)
     figure()
-    plot (X, Y)
-    tit = ''
-    if wrap: 
-       tit += 'Open boundary, '
-    else:
-       tit += 'Wrapped boundary, ' 
-    tit += "current J || %s, " % dir
-    tit += 'potential A || %s ' % gauge
-    title (tit)
+    plot (X, Yx, label='J || x')
+    plot (X, Yy, label='J || y')
+    legend()
+    title ('Open boundary, zero flux')
     xlabel (r'Energy $\epsilon/t$')
     ylabel (r'Conductance $G(E)$')  
-    return X, Y
+    return X, Yx
 
 Evals = arange (-4.0, 4.01, 0.01)
 Phivals = arange (0.0, 2.0*math.pi + 0.0001, 2.0*math.pi/100); 
 
-Xx, Yx        = scanE(Evals, False, 'X', 'X')
+Xx, Yx        = scanE(Evals)
 Xuy, Yuy, Zuy = doScan(Evals, Phivals, False, 'Y', 'Y')
 Xux, Yux, Zux = doScan(Evals, Phivals, False, 'Y', 'X')
 Xwy, Ywy, Zwy = doScan(Evals, Phivals, True,  'Y', 'Y')
