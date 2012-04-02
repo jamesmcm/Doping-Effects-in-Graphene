@@ -8,8 +8,7 @@ C     NSIZE = LIMY/2
       EXTERNAL CHECKUNI
       DOUBLE PRECISION CHECKUNI2
       EXTERNAL CHECKUNI2
-      DOUBLE COMPLEX MODD(2*NSIZE, 2*NSIZE), MEVEN(2*NSIZE, 2*NSIZE),
-     +               MULT(2*NSIZE, 2*NSIZE)
+      DOUBLE COMPLEX MULT(2*NSIZE, 2*NSIZE)
       DOUBLE COMPLEX A(NSIZE, NSIZE), B(NSIZE, NSIZE),
      +               C(NSIZE, NSIZE), D(NSIZE, NSIZE)
       DOUBLE COMPLEX T(NSIZE, NSIZE),    TTILDE(NSIZE, NSIZE),
@@ -19,34 +18,16 @@ C     NSIZE = LIMY/2
       DOUBLE COMPLEX U(NSIZE,NSIZE)
       CHARACTER GAUGE
 
-c      CALL CALCMULT(LIMX, WRAPX, MODD, MEVEN, E, FLUX)
-c$$$      CALL CALCMULTNEW(LIMX, WRAPX, MODD, E, FLUX, 1)
-c$$$      CALL CALCMULTNEW(LIMX, WRAPX, MEVEN, E, FLUX, 2)
-      CALL CALCMULTXY(NSIZE, MODD, E, FLUX, 1)
-      CALL CALCMULTXY(NSIZE, MEVEN, E, FLUX, 2)
-
-c$$$  CALCMULT fills MODD, MEVEN - do multiplication in main loop
-c$$$  Must decide whether we want zig-zag or armchair edges
-C     For now I have left it as before so I can compare results
-
       CALL SQUNIT (MULT, 2*NSIZE)
-
       CALL FILLUYX(U, FLUX, NSIZE)
 
-
-      CALL SQUNIT (T, NSIZE)
+      CALL SQUNIT (T,      NSIZE)
       CALL SQUNIT (TTILDE, NSIZE)
-      CALL SQZERO (R, NSIZE)
+      CALL SQZERO (R,      NSIZE)
       CALL SQZERO (RTILDE, NSIZE)
 
       DO I = 1, LIMX
-            IF (MOD(I,2) .EQ. 1) THEN
-               CALL SQCOPY (MODD, MULT, 2*NSIZE) 
-            ELSE
-               CALL SQCOPY(MEVEN, MULT, 2*NSIZE)
-            END IF
-
-        
+            CALL CALCMULTXY(E, FLUX, I, MULT, NSIZE)
             CALL GENABCD(MULT, U, A,B,C,D, NSIZE)
             CALL GENTANDRINC(A, B, C, D,
      +                       TINC, RINC, TTILDEINC, RTILDEINC,
@@ -62,7 +43,7 @@ c$$$  CheckUni2 is slightly faster --- AVS
       RETURN
       END
 
-      SUBROUTINE CALCMULTXY(NSIZE, MULT, E, FLUX, POS)
+      SUBROUTINE CALCMULTXY(E, FLUX, POS, MULT, NSIZE)
 C     NOTE LIMY MUST BE PASSED AS CONSTANT PARAMETER FOR THIS, LIMY MUST BE EVEN
       IMPLICIT NONE
       INTEGER LIMX, POS

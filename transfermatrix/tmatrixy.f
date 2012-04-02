@@ -1,4 +1,4 @@
-      SUBROUTINE CALCMULTYX(LIMX, WRAPX, MULT, E, FLUX, POS)
+      SUBROUTINE CALCMULTYX(E, FLUX, POS, WRAPX, MULT, LIMX)
       IMPLICIT NONE
       INTEGER LIMX, WRAPX, SZ/1/
       INTEGER I/1/, NEIGH/1/, POS
@@ -16,7 +16,6 @@ c$$$  HAMMERTIME! Program terminates here if LIMX is odd
          ENDIF
       ENDIF
 
-      SZ = 2 * LIMX
       CALL SQZERO (MULT, 2 * LIMX)
 
 
@@ -73,7 +72,7 @@ c$$$  Originally the first M matrix was set here
       RETURN
       END
 
-      SUBROUTINE CALCMULTYY(LIMX, WRAPX, MULT, E, FLUX, POS)
+      SUBROUTINE CALCMULTYY(E, FLUX, POS, WRAPX, MULT, LIMX)
       IMPLICIT NONE
       INTEGER LIMX, WRAPX
       DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX)
@@ -191,10 +190,10 @@ C     For now I have left it as before so I can compare results
 
       DO I = 1, LIMY
             IF (GAUGE .EQ. 'X') THEN
-               CALL CALCMULTYX(LIMX, WRAPX, MULT, E, FLUX, I)
+               CALL CALCMULTYX(E, FLUX, I, WRAPX, MULT, LIMX)
             ELSE
                IF (GAUGE .EQ. 'Y') THEN
-                  CALL CALCMULTYY(LIMX, WRAPX, MULT, E, FLUX, I)
+                  CALL CALCMULTYY(E, FLUX, I, WRAPX, MULT, LIMX)
                END IF
             END IF
             CALL GENABCD(MULT, U, A,B,C,D, LIMX)
