@@ -40,19 +40,17 @@ PyObject * GetTrans (PyObject * self, PyObject * args) {
 	  }
           
           transvals = PyMem_New (double, maxnt); 
-          
           check = gettrans_ (current_dir, gauge_dir, transvals, &Nt, 
 			     &Lx, &Ly, &energy, &flux, &wrap); 
           
-          //fprintf (stderr, "gettrans: %g %g\n", check, transvals[0]); 
-          tval_list = PyList_New (Lx); 
+          tval_list = PyList_New (Nt); 
           for (i = 0; i < Nt; i++) {
 	       PyList_SetItem (tval_list, i, 
 			       Py_BuildValue ("d", transvals[i])); 
 	  }
-          
+   
           PyMem_Free (transvals); 
-          
+   
           retval = Py_BuildValue ("Nd", tval_list, check); 
           return retval; 
 }
