@@ -40,7 +40,6 @@
             GETTRANS = GETTRANSY(GAUGE, TVALS, NVALS, LIMY, E, FLUX,
      +                           WRAPX)
       END IF
-
       IF (NVALS .EQ. 0) THEN
             WRITE (*,*) 'Invalid current identifier (X and Y only)' 
             STOP

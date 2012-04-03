@@ -19,14 +19,23 @@ C     NSIZE = LIMY/2
       CHARACTER GAUGE
 
       CALL SQUNIT (MULT, 2*NSIZE)
-      CALL FILLUXX(U, FLUX, NSIZE)
+      IF (GAUGE .EQ. 'X') THEN
+          CALL FILLUXX(U, FLUX, NSIZE)
+      ELSE
+        CALL FILLUXY(U, FLUX, NSIZE)
+      ENDIF
 
       CALL SQUNIT (T,      NSIZE)
       CALL SQUNIT (TTILDE, NSIZE)
       CALL SQZERO (R,      NSIZE)
       CALL SQZERO (RTILDE, NSIZE)
+
       DO I = 1, LIMX
-            CALL CALCMULTXX(E, FLUX, I, MULT, NSIZE)
+            IF (GAUGE .EQ. 'X') THEN
+              CALL CALCMULTXX(E, FLUX, I, MULT, NSIZE)
+            ELSE
+              CALL CALCMULTXY(E, FLUX, I, MULT, NSIZE)
+            ENDIF
             CALL GENABCD(MULT, U, A,B,C,D, NSIZE)
             CALL GENTANDRINC(A, B, C, D,
      +                       TINC, RINC, TTILDEINC, RTILDEINC,
@@ -94,9 +103,9 @@ C     NOTE LIMY MUST BE PASSED AS CONSTANT PARAMETER FOR THIS, LIMY MUST BE EVEN
       IMPLICIT NONE
       INTEGER LIMX, POS
 C     WRAPY ignored
-      INTEGER I/1/, NSIZE
+      INTEGER I, J, IN, JN, NSIZE
       DOUBLE PRECISION E, FLUX
-      DOUBLE COMPLEX CNUM
+      DOUBLE COMPLEX CNUM, TAU1(NSIZE), TAU2(NSIZE), TI, N3IJ, TJ
 
       DOUBLE COMPLEX MULT(NSIZE*2, NSIZE*2), 
      +     N3(NSIZE, NSIZE), N2(NSIZE, NSIZE)
@@ -127,12 +136,38 @@ C     Odd is defined for odd leftmost column, even for even leftmost column
 C     M={{-N3^-1, E*N3^-1},{-E*N3^-1, E^2 N3^-1 - N2^-1}}
 
       CALL INVERTMATRIX(N3, NSIZE)
-c$$$      CALL INVERTMATRIX(N2, NSIZE)
-
-      MULT(1:NSIZE, 1:NSIZE)=-1*N3
-      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=E*N3
-      MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-E*N3
-      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=(E*E*N3) - N2
+c
+c     Note: strictly speaking, the phase should be different by one
+c     FLUX between even and odd neighbouring slices. For an open boundary,
+c     however, we can make a gauge transformation which eliminates the
+c     extra phase. Indeed, after we do this, the fluxes through every loop
+c     remain the same. If, for some reason, the offset is to be
+c     reintroduced later, the U matrix has to be changed accordingly.
+c 
+      DO I = 1, NSIZE
+        CALL ZPOLAR ( FLUX * 2 * I, TAU1(I))
+c       The minus sign is due to the fact that tau1 is x->x+1 hopping,
+c       while tau_2 is x+2->x+1 hopping
+        CALL ZPOLAR (-FLUX * 2 * I, TAU2(I))
+      ENDDO
+      
+      DO I = 1, NSIZE
+        IN = I + NSIZE
+        TI = TAU2(I)
+        DO J = 1, NSIZE
+          JN = J + NSIZE
+          TJ = TAU1(J)
+          N3IJ  = N3 (I, J)
+          MULT(I,   J)  =     - N3IJ * TJ
+          MULT(I,  JN)  =   E * N3IJ
+          MULT(IN,  J)  = - E * N3IJ * TJ / TI
+          MULT(IN, JN)  = (E * E * N3IJ  - N2(I, J)) / TI
+        ENDDO
+      ENDDO
+c      MULT(1:NSIZE, 1:NSIZE)=-1*N3
+c      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=E*N3
+c      MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-E*N3
+c      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=(E*E*N3) - N2
 
       RETURN
       END
@@ -159,8 +194,8 @@ c$$$      CALL INVERTMATRIX(N2, NSIZE)
 
       CALL SQZERO (U, LIMX)
       DO I = 1, LIMX
-         CALL ZPOLAR(2 * FLUX*I, CNUM)
-         U(I,I)=ZI*CNUM
+         CALL ZPOLAR(FLUX * 2 * I, CNUM)
+         U(I, I) = ZI * CNUM
       ENDDO
      
       RETURN

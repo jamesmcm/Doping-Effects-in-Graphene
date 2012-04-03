@@ -92,12 +92,14 @@ Xuy, Yuy, Zuy = doScan(Evals, Phivals, False, 'Y', 'Y')
 Xux, Yux, Zux = doScan(Evals, Phivals, False, 'Y', 'X')
 Xwy, Ywy, Zwy = doScan(Evals, Phivals, True,  'Y', 'Y')
 Xwx, Ywx, Zwx = doScan(Evals, Phivals, True,  'Y', 'X')
+Xa,  Ya,  Za  = doScan(Evals, Phivals, False, 'X', 'X')
 
 #if CompareOldData (Xu, Yu, Zu, Xw, Yw, Zw) == None:
 data = dict (Xux=Xux, Yux=Yux, Zux=Zux,
              Xuy=Xuy, Yuy=Yuy, Zuy=Zuy, 
              Xwx=Xwx, Ywx=Ywx, Zwx=Zwx, 
              Xwy=Xwy, Ywy=Ywy, Zwy=Zwx, 
+             Xa=Xa,   Ya=Ya,   Za=Za, 
              Xx=Xx, Yx=Yx)
              
 if CompareOldData (data) == None: 
