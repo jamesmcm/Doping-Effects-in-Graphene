@@ -3,54 +3,54 @@ C     This function calculates dot product of two square matrices:
 C
 C         C = A . B
 C      
-C      LIMX is the matrix size
+C      N is the matrix size
 C      
-      SUBROUTINE SQDOT (C, A, B, LIMX)
+      SUBROUTINE SQDOT (C, A, B, N)
       IMPLICIT NONE
-      INTEGER LIMX
-      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX), C(LIMX, LIMX)
+      INTEGER N
+      DOUBLE COMPLEX A(N, N), B(N, N), C(N, N)
       DOUBLE COMPLEX ZEROC/0.0/, ONEC/1.0/
           
-      CALL ZGEMM ('N', 'N',  LIMX, LIMX, LIMX,
-     &  ONEC,   A, LIMX, B, LIMX,
-     &  ZEROC,  C, LIMX)
+      CALL ZGEMM ('N', 'N',  N, N, N,
+     &  ONEC,   A, N, B, N,
+     &  ZEROC,  C, N)
 
       RETURN
       END
       
-      SUBROUTINE SQDOTNH (C, A, B, LIMX)
+      SUBROUTINE SQDOTNH (C, A, B, N)
       IMPLICIT NONE
-      INTEGER LIMX
-      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX), C(LIMX, LIMX)
+      INTEGER N
+      DOUBLE COMPLEX A(N, N), B(N, N), C(N, N)
       DOUBLE COMPLEX ZEROC/0.0/, ONEC/1.0/
           
-      CALL ZGEMM ('N', 'C',  LIMX, LIMX, LIMX,
-     &  ONEC,   A, LIMX, B, LIMX,
-     &  ZEROC,  C, LIMX)
+      CALL ZGEMM ('N', 'C',  N, N, N,
+     &  ONEC,   A, N, B, N,
+     &  ZEROC,  C, N)
 
       RETURN
       END
       
-      SUBROUTINE SQDOTHN (C, A, B, LIMX)
+      SUBROUTINE SQDOTHN (C, A, B, N)
       IMPLICIT NONE
-      INTEGER LIMX
-      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX), C(LIMX, LIMX)
+      INTEGER N
+      DOUBLE COMPLEX A(N, N), B(N, N), C(N, N)
       DOUBLE COMPLEX ZEROC/0.0/, ONEC/1.0/
           
-      CALL ZGEMM ('C', 'N',  LIMX, LIMX, LIMX,
-     &  ONEC,   A, LIMX, B, LIMX,
-     &  ZEROC,  C, LIMX)
+      CALL ZGEMM ('C', 'N',  N, N, N,
+     &  ONEC,   A, N, B, N,
+     &  ZEROC,  C, N)
 
       RETURN
       END
       
-      SUBROUTINE SQUPDAXPY (Y, ALPHA, X, LIMX)
+      SUBROUTINE SQUPDAXPY (Y, ALPHA, X, N)
       IMPLICIT NONE
-      INTEGER LIMX
+      INTEGER N
       DOUBLE COMPLEX ALPHA
-      DOUBLE COMPLEX X(LIMX, LIMX), Y(LIMX, LIMX)
+      DOUBLE COMPLEX X(N, N), Y(N, N)
           
-      CALL ZAXPY (LIMX*LIMX, ALPHA, X, 1, Y, 1)
+      CALL ZAXPY (N*N, ALPHA, X, 1, Y, 1)
       
       RETURN
       END
@@ -62,17 +62,17 @@ C     and multiplies the result by a scalar alpha:
 C
 C         C = alpha * A . B
 C      
-C      LIMX is the matrix size
+C      N is the matrix size
 C      
-      SUBROUTINE SQDOTAX (C, ALPHA, A, B, LIMX)
+      SUBROUTINE SQDOTAX (C, ALPHA, A, B, N)
       IMPLICIT NONE
-      INTEGER LIMX
-      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX), C(LIMX, LIMX)
+      INTEGER N
+      DOUBLE COMPLEX A(N, N), B(N, N), C(N, N)
       DOUBLE COMPLEX ALPHA, ZEROC/0.0/
      
-      CALL ZGEMM ('N', 'N',  LIMX, LIMX, LIMX,
-     &  ALPHA,   A, LIMX, B, LIMX,
-     &  ZEROC,   C, LIMX)
+      CALL ZGEMM ('N', 'N',  N, N, N,
+     &  ALPHA,   A, N, B, N,
+     &  ZEROC,   C, N)
 
       RETURN
       END
@@ -83,28 +83,28 @@ C     and updates C according to the formula
 C
 C         C := beta * C + alpha * A . B
 C      
-C      LIMX is the matrix size
+C      N is the matrix size
 C            
-      SUBROUTINE SQDOTUPD (BETA, C, ALPHA, A, B, LIMX)
+      SUBROUTINE SQDOTUPD (BETA, C, ALPHA, A, B, N)
       IMPLICIT NONE
-      INTEGER LIMX
-      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX), C(LIMX, LIMX)
+      INTEGER N
+      DOUBLE COMPLEX A(N, N), B(N, N), C(N, N)
       DOUBLE COMPLEX BETA, ALPHA
      
-      CALL ZGEMM ('N', 'N',  LIMX, LIMX, LIMX,
-     &  ALPHA,   A, LIMX, B, LIMX,
-     &  BETA,  C, LIMX)
+      CALL ZGEMM ('N', 'N',  N, N, N,
+     &  ALPHA,   A, N, B, N,
+     &  BETA,  C, N)
 
       RETURN
       END
       
-      SUBROUTINE INVERTMATRIX(MATRIX, LIMX)
+      SUBROUTINE INVERTMATRIX(MATRIX, N)
       IMPLICIT NONE
       INTEGER S
-      INTEGER LIMX, PIVOT(LIMX, LIMX)
-      DOUBLE COMPLEX MATRIX(LIMX, LIMX), WORK(LIMX*LIMX)
-      CALL ZGETRF(LIMX, LIMX, MATRIX, LIMX, PIVOT, S)
-      CALL ZGETRI(LIMX, MATRIX, LIMX, PIVOT, WORK, LIMX*LIMX, S)
+      INTEGER N, PIVOT(N, N)
+      DOUBLE COMPLEX MATRIX(N, N), WORK(N*N)
+      CALL ZGETRF(N, N, MATRIX, N, PIVOT, S)
+      CALL ZGETRI(N, MATRIX, N, PIVOT, WORK, N*N, S)
       IF (S .NE. 0) THEN
          WRITE (*,*) 'NON-INVERTABLE MATRIX WITH S=', S
          STOP
@@ -113,219 +113,103 @@ C
       RETURN
       END
 
-      DOUBLE PRECISION FUNCTION DNORMDIFF (A, B, LIMX)
-      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX)
-      DOUBLE COMPLEX D(LIMX, LIMX)
-      DOUBLE PRECISION WORK (LIMX)
+      DOUBLE PRECISION FUNCTION DNORMDIFF (A, B, N)
+      DOUBLE COMPLEX A(N, N), B(N, N)
+      DOUBLE COMPLEX D(N, N)
+      DOUBLE PRECISION WORK (N)
       DOUBLE COMPLEX MINUSONE/-1.0/
       DOUBLE PRECISION ZLANGE
       
-      CALL SQCOPY    (A, D, LIMX)
-      CALL SQUPDAXPY (D, MINUSONE, B, LIMX)
-      DNORMDIFF = ZLANGE ('F', LIMX, LIMX, D, LIMX, WORK)
+      CALL SQCOPY    (A, D, N)
+      CALL SQUPDAXPY (D, MINUSONE, B, N)
+      DNORMDIFF = ZLANGE ('F', N, N, D, N, WORK)
 
       RETURN
       END
       
-      SUBROUTINE INVSOLVE(A, B, LIMX)
+      SUBROUTINE INVSOLVE(A, B, N)
 c     Solve A := inv(A).B      
       IMPLICIT NONE
       INTEGER S
-      INTEGER LIMX, PIVOT(LIMX, LIMX)
-      DOUBLE COMPLEX A(LIMX, LIMX), B(LIMX, LIMX), RHS(LIMX, LIMX)
-c      DOUBLE COMPLEX SVA (LIMX, LIMX), PROD (LIMX, LIMX)
+      INTEGER N, PIVOT(N, N)
+      DOUBLE COMPLEX A(N, N), B(N, N), RHS(N, N)
+c      DOUBLE COMPLEX SVA (N, N), PROD (N, N)
 c      DOUBLE PRECISION dnormdiff
       
-      CALL SQCOPY (B, RHS, LIMX)
-c     CALL SQCOPY (A, SVA, LIMX)
-      CALL ZGETRF(LIMX, LIMX, A, LIMX, PIVOT, S)
+      CALL SQCOPY (B, RHS, N)
+c     CALL SQCOPY (A, SVA, N)
+      CALL ZGETRF(N, N, A, N, PIVOT, S)
       IF (S .NE. 0) THEN
          WRITE (*,*) 'INVSOLVE: NON-INVERTABLE MATRIX WITH S=', S
          STOP
       END IF
 
-      CALL ZGETRS('N', LIMX, LIMX, A, LIMX, PIVOT, RHS, LIMX, S)
+      CALL ZGETRS('N', N, N, A, N, PIVOT, RHS, N, S)
       IF (S .NE. 0) THEN
          WRITE (*,*) 'INVSOLVE: NON-SOLVABLE SYSTEM WITH S=', S
          STOP
       END IF
-c      call sqdot (prod, SVA, rhs, LIMX) 
-c      write (*, *) 'quality: ', dnormdiff (B, PROD, LIMX)
+c      call sqdot (prod, SVA, rhs, N) 
+c      write (*, *) 'quality: ', dnormdiff (B, PROD, N)
        
-      CALL SQCOPY (RHS, A, LIMX)
+      CALL SQCOPY (RHS, A, N)
       
       RETURN
       END
 
       
 
-      SUBROUTINE SV_DECOMP(LIMX, MATRIX, OUTPUTS)
+      SUBROUTINE SQSVDVALS(MATRIX, OUTPUTS, N)
+      INTEGER N
+      DOUBLE COMPLEX MATRIX(N, N)
+      DOUBLE PRECISION OUTPUTS(N)
+      
+      DOUBLE PRECISION RWORK(5*N)
+      DOUBLE COMPLEX   TEMP2(N, N), SVCPY(N, N), WORK(4*N*N)
+      INTEGER MSIZE, S
 
-      INTEGER LIMX, MSIZE, S
-      DOUBLE PRECISION SVALS(LIMX), OUTPUTS(LIMX), RWORK(5*LIMX)
-      DOUBLE COMPLEX MATRIX(LIMX, LIMX), TEMP2(LIMX, LIMX),
-     + SVCPY(LIMX, LIMX), WORK(4*LIMX*LIMX)
-
-      MSIZE=4*LIMX*LIMX
+      MSIZE=4*N*N
 
 C$$$ MAKE COPY OF MATRIX FOR SVD SINCE IT IS DESTROYED
 C$$$      SVCPY=MATRIX
-      CALL SQCOPY(MATRIX, SVCPY, LIMX)
-      CALL ZGESVD('N', 'N', LIMX, LIMX, SVCPY, LIMX, SVALS, TEMP2,
-     + LIMX, TEMP2, LIMX , WORK, MSIZE, RWORK, S)
+      CALL SQCOPY(MATRIX, SVCPY, N)
+      CALL ZGESVD('N', 'N', N, N, SVCPY, N, OUTPUTS, TEMP2,
+     + N, TEMP2, N , WORK, MSIZE, RWORK, S)
       IF (S .NE. 0) THEN
          WRITE (*,*) 'SVD FAILED WITH S=', S
          STOP
       END IF
+c      CALL DCOPY(N, SVALS, 1, OUTPUTS, 1)
 
-      CALL DCOPY(LIMX, SVALS, 1, OUTPUTS, 1)
+      RETURN
+      END
+      
+      SUBROUTINE SQSVDFULL(MATRIX, OUTPUTS, U, V, N)
+      INTEGER N
+      DOUBLE COMPLEX MATRIX(N, N),
+     +               U(N, N), V(N, N)
+      DOUBLE PRECISION OUTPUTS(N)
+      
+      INTEGER MSIZE, S
+      DOUBLE PRECISION RWORK(5*N)
+      DOUBLE COMPLEX   SVCPY(N, N),  WORK(4*N*N)
+
+      MSIZE = 4*N*N
+
+C$$$ MAKE COPY OF MATRIX FOR SVD SINCE IT IS DESTROYED
+      CALL SQCOPY(MATRIX, SVCPY, N)
+      
+      CALL ZGESVD('N', 'N', N, N, SVCPY, N, OUTPUTS,
+     +             U, N, V, N,
+     +             WORK, MSIZE, RWORK, S)
+      IF (S .NE. 0) THEN
+         WRITE (*,*) 'SVD FAILED WITH S=', S
+         STOP
+
+      END IF
+
+c      CALL DCOPY(N, SVALS, 1, OUTPUTS, 1)
 
       RETURN
       END
 
-      DOUBLE PRECISION FUNCTION CHECKUNI(LIMX, T,R,TTILDE,RTILDE)
-      IMPLICIT NONE
-
-      INTEGER LIMX, X/1/, Y/1/
-      DOUBLE PRECISION ZLANGE
-      EXTERNAL SQUNIT
-      DOUBLE COMPLEX T(LIMX,LIMX), BETA/-1/,ALPHA/1/,
-     + R(LIMX,LIMX),TTILDE(LIMX,LIMX),RTILDE(LIMX,LIMX),
-     + U(LIMX*2,LIMX*2), CHECK(LIMX*2,LIMX*2)
-
-
-C$$$ TEST CASES OF T,R,T~ R~
-C$$$ FILLS A UNIT MATRIX
-      CALL SQUNIT (CHECK, 2*LIMX)
-      DO X=1, LIMX
-         DO Y=1, LIMX
-C$$$  TOP LEFT
-            U(X,Y)=T(X,Y)
-C$$$  BOTTOM LEFT
-            U(X+LIMX,Y)=R(X,Y)
-C$$$  TOP RIGHT
-            U(X,Y+LIMX)=RTILDE(X,Y)
-C$$$  BOTTOM RIGHT
-            U(X+LIMX,Y+LIMX)=TTILDE(X,Y)
-         END DO
-      END DO
-
-C$$$  ZGEMM HAS INBUILT FUNCTION TO FIND U**H
-      CALL ZGEMM('N', 'C', 2*LIMX, 2*LIMX, 2*LIMX, ALPHA, U,
-     +     2*LIMX, U, 2*LIMX, BETA, CHECK, 2*LIMX)
-C$$$  ZLANGE FINDS MATRIX NORM
-      CHECKUNI = ZLANGE('F', 2*LIMX, 2*LIMX, CHECK, 2*LIMX)
-      RETURN
-      END
-
-C$$$  ROUTINE TO CHECK FOR UNITARY MATRICES
-
-      DOUBLE PRECISION FUNCTION CHECKUNI2(LIMX, T,R,TTILDE,RTILDE)
-      IMPLICIT NONE
- 
-      INTEGER LIMX
-      DOUBLE PRECISION ZLANGE
-      EXTERNAL SQUNIT
-      DOUBLE PRECISION DNORM1, DNORM2, DNORM3, DNORM
-      DOUBLE PRECISION ONED/1.0/
-      DOUBLE COMPLEX ZEROC/0.0/, ONEC/1.0/
-      DOUBLE COMPLEX T(LIMX,LIMX), R(LIMX,LIMX),
-     +               TTILDE(LIMX,LIMX),RTILDE(LIMX,LIMX),
-     +               CK(LIMX, LIMX)
-
-
-C$$$ TEST CASES OF T,R,T~ R~
-
-C$$$ FILLS A UNIT MATRIX
-
-C      DO X = 1, 2*LIMX
-C         DO Y = 1, 2*LIMX
-C            CHECK(X, Y) = (0.0, 0.0)
-C         END DO
-C       CHECK(X, X) = 1.0
-C      END DO
-
-C$$$ ZGEMM HAS INBUILT FUNCTION TO FIND U**H
-C$$   CALL PRINTT (U, 2*LIMX, 'U1 ')
-
-c     Unitarity can be also checked using subblocks only
-c     The definition of unitarity can be easily cast into the form
-c     |T|^2 + |R|^2 = 1, T*R~ + R* T~ = 0
-
-c     Check that T * T + R* R = 1   (* is the Hermitian conjugate)
-c     Here I use zherk, which does T^+T
-c     Beware: it computes only the upper-diagonal part!
-      CALL SQUNIT (CK, LIMX)
-      CALL ZHERK ('U', 'C', LIMX, LIMX, ONED, T, LIMX,
-     +  -ONED, CK, LIMX)
-      CALL ZHERK ('U', 'C', LIMX, LIMX, ONED, R, LIMX,
-     +  ONED, CK, LIMX)
-C$$$ ZLANGE FINDS MATRIX NORM
-      DNORM1 = ZLANGE ('F', LIMX, LIMX, CK, LIMX)
-
-c     Check that T~* T~ + R~* R~ = 1
-      CALL SQUNIT (CK, LIMX)
-      CALL ZHERK ('U', 'C', LIMX, LIMX, ONED, TTILDE, LIMX,
-     +  -ONED, CK, LIMX)
-      CALL ZHERK ('U', 'C', LIMX, LIMX, ONED, RTILDE, LIMX,
-     +  ONED, CK, LIMX)
-      DNORM2 = ZLANGE ('F', LIMX, LIMX, CK, LIMX)
-
-c     Now check that T* R~ + R* T~ = 0
-      CALL ZGEMM ('C', 'N', LIMX, LIMX, LIMX, ONEC, T,
-     +           LIMX, RTILDE, LIMX, ZEROC, CK, LIMX)
-      CALL ZGEMM ('C', 'N', LIMX, LIMX, LIMX, ONEC, R,
-     +           LIMX, TTILDE, LIMX, ONEC, CK, LIMX)
-      DNORM3 = ZLANGE ('F', LIMX, LIMX, CK, LIMX)
-
-C$$   CALL PRINTT (CHECK, 2 * LIMX, 'C2 ')
-c     ZHERK does only the upper-triangular part. Therefore, the norm
-c     DNORM1 should be roughly doubled, ditto DNORM2
-c     There are two related off-diagonal blocks in the cross-product,
-c     this doubles the norm DNORM3. (The relation is not exact,
-c     since, the diagonal is not doubled)
-      DNORM = 2.0* DNORM1 + 2.0 * DNORM2 + 2.0 * DNORM3
-c     WRITE (*, *) 'CHECKUNI2:', DNORM1, DNORM2, DNORM3, DNORM
-      CHECKUNI2 = DNORM
-      RETURN
-      END
-C$$$  ROUTINE TO CHECK FOR UNITARY MATRICES
-
-      DOUBLE PRECISION FUNCTION CHECKUNI3(LIMX, T,R,TTILDE,RTILDE)
-      IMPLICIT NONE
-
-      INTEGER LIMX, X/1/, Y/1/
-      DOUBLE PRECISION ZLANGE
-      EXTERNAL SQUNIT
-      DOUBLE PRECISION ONED/1.0/
-      DOUBLE COMPLEX T(LIMX,LIMX),
-     + R(LIMX,LIMX),TTILDE(LIMX,LIMX),RTILDE(LIMX,LIMX),
-     + U(LIMX*2,LIMX*2), CHECK(LIMX*2,LIMX*2)
-
-
-C$$$ TEST CASES OF T,R,T~ R~
-
-C$$$ FILLS A UNIT MATRIX
-      CALL SQUNIT (CHECK, 2*LIMX)
-      DO X=1, LIMX
-         DO Y=1, LIMX
-C$$$  TOP LEFT
-            U(X,Y)=T(X,Y)
-C$$$  BOTTOM LEFT
-            U(X+LIMX,Y)=R(X,Y)
-C$$$  TOP RIGHT
-            U(X,Y+LIMX)=RTILDE(X,Y)
-C$$$  BOTTOM RIGHT
-            U(X+LIMX,Y+LIMX)=TTILDE(X,Y)
-         END DO
-      END DO
-
-C$$$  ZHERK calculates U^H * U, and then subtracts 1.
-C$$$  However, this is perfomed in the upper triangular part only
-C$$   Therefore, we double the norm.
-      CALL ZHERK('U', 'C', 2*LIMX, 2*LIMX, ONED, U, 2*LIMX,
-     +     -ONED, CHECK, 2*LIMX)
-C$$$  ZLANGE FINDS MATRIX NORM
-      CHECKUNI3 = 2 * ZLANGE('F', 2*LIMX, 2*LIMX, CHECK, 2*LIMX)
-      RETURN
-      END

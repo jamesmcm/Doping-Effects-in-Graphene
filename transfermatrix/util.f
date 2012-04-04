@@ -96,10 +96,9 @@ c$$$ PRINTS REAL AND COMPLEX MATRIX
       SUBROUTINE ZPOLAR(ARG, ZCOMPLEX)
       IMPLICIT NONE
 c$$$  Subroutine to change e^i*arg in to a complex number in sin and cos, stored in zcomplex
-
       DOUBLE PRECISION ARG
       DOUBLE COMPLEX ZCOMPLEX
-      ZCOMPLEX = DCMPLX(COS(ARG), SIN(ARG))
+      ZCOMPLEX = DCMPLX(DCOS(ARG), DSIN(ARG))
       RETURN
       END
 c$$$ 

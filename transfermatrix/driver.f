@@ -3,27 +3,35 @@
 
       DOUBLE PRECISION CONDUCTANCE
       EXTERNAL CONDUCTANCE
-      DOUBLE PRECISION GETTRANSXY
+      DOUBLE PRECISION GETTRANS
       EXTERNAL GETTRANS
-c$$$ CHECKUNI2 IS SLIGHTLY FASTER
       DOUBLE PRECISION CHECKUNI2
       DOUBLE PRECISION ZLANGE
       EXTERNAL CHECKUNI2
 
       
-
-      INTEGER, PARAMETER :: LIMX=3, WRAPY=0, WRAPX=0,
-     +     MSIZE=4*LIMX*LIMX, M2SIZE=LIMX*LIMX, LIMY=2
-      INTEGER F/1/, I/1/
-c$$$      CHARACTER*3 VALUE
-      DOUBLE PRECISION TVALS(LIMY/2)
-c$$$ E NEEDS TO BE THE SAME AS INCREMENT
-      DOUBLE PRECISION CONDA/-1.0/,CONDB/-1.0/, FLUX/0.0/, E/-3/, G,
-     + NORMMA,NORMA,NORMOA
-      DOUBLE COMPLEX T(LIMY/2,LIMY/2),R(LIMY/2,LIMY/2),
-     + TTILDE(LIMY/2,LIMY/2),AOLD(LIMY/2,LIMY/2),
-     + RTILDE(LIMY/2,LIMY/2),A(LIMY/2,LIMY/2),MA(LIMY/2,LIMY/2),
-     + DZNRM2, MODD(LIMY, LIMY), MEVEN(LIMY, LIMY)
+C     For X current,  LIMY MUST be even, LIMX MUST BE >=3
+C     FOR Y current,  LIMX should be even if WRAPX = 1
+      CHARACTER             CURRENT /'Y'/,
+     +                      GAUGE   /'X'/
+       
+      INTEGER, PARAMETER :: LIMX  = 3,
+     +                      LIMY  = 10,
+     +                      WRAPX = 0,
+     +                      WRAPY = 0
+      
+      DOUBLE PRECISION      FLUX/0.0/
+       
+      DOUBLE PRECISION, PARAMETER :: EMIN = -3.0,
+     +                               EMAX =  3.0
+      INTEGER, PARAMETER ::          NE   =  600
+      
+      INTEGER, PARAMETER :: MAXSIZE = 10000
+      DOUBLE  PRECISION TVALS(MAXSIZE)
+      INTEGER NTVALS
+      DOUBLE PRECISION E, CONDA/-1.0/, G
+      INTEGER IE/0/
+    
 
 C$$$  READS COMMAND LINE ARGUMENT AS LIMY
 c      CALL GETARG(1, VALUE)
@@ -31,24 +39,15 @@ c      READ(UNIT=VALUE, FMT=*) LIMY
 c$$$      CALL CALCMULTXY(LIMY/2, MODD, MEVEN, E, FLUX)
 
 
-      DO F = 1, 602
-        
-c$$$  CHECKING THE NEW GENABCD *
-      CONDA = GETTRANSXY(TVALS, LIMX, LIMY/2, E, FLUX)
-c      CALL ZPRINTM(A,LIMX,'A  ')
-c      CALL ZPRINTM(MA,LIMX,'MA ')
-c      CALL ZPRINTM(AOLD,LIMX,'OA ')
-c$$$      NORMA= ZLANGE ('F', LIMX, LIMX, A, LIMX)
-c$$$      NORMMA = ZLANGE ('F', LIMX, LIMX, MA, LIMX)
-c$$$      NORMOA = ZLANGE ('F', LIMX, LIMX, AOLD, LIMX)
-
-C$$$  *END OF CHECKING NEW GENABCD
-
-c         CONDB = CHECKUNI2(LIMX,T,R,TTILDE,RTILDE)
-      G    = CONDUCTANCE (TVALS, LIMY/2)
-c$$$      WRITE(*,70) NORMA,NORMMA,NORMOA
-c$$$  WRITES ENERGY, CONDUCTANCE, UNITARITY
-      WRITE(*,50) E, G, CONDA
+      DO IE = 0, NE + 1
+         E = EMIN + ( (EMAX - EMIN) * IE) / NE
+         CONDA = GETTRANS(CURRENT, GAUGE,
+     +                   TVALS, NTVALS,
+     +                   LIMX, LIMY,
+     +                   E,    FLUX,
+     +                   WRAPX)
+         G    = CONDUCTANCE (TVALS, NTVALS)
+         WRITE(*,50) E, G, CONDA
 
 c$$$     This is gfortran function to flush the output
 c$$$     so that the data are written to the file immediately
@@ -56,15 +55,8 @@ c$$$     If you are not using gfortran, and cannot compile this,
 c$$$     comment it out -- AVS
          CALL FLUSH()
 
-c      WRITE(*,60) E,(TVALS(I)*TVALS(I), I = 1, LIMX),CONDB
-
-c$$$ 'E' STEPS CONSISTANT WITH ANALYTICAL.C
-         E=-3+(F-1.0)*0.01
       END DO
 
  50   FORMAT (F15.5,20ES20.5E3)
- 60   FORMAT (F15.5,20ES20.5E3)
- 70   FORMAT (20ES20.5E3)
-
       STOP
       END
