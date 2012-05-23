@@ -9,16 +9,18 @@
       DOUBLE PRECISION ZLANGE
       EXTERNAL CHECKUNI2
 
+
       
 C     For X current,  LIMY MUST be even, LIMX MUST BE >=3
 C     FOR Y current,  LIMX should be even if WRAPX = 1
       CHARACTER             CURRENT /'Y'/,
-     +                      GAUGE   /'X'/
+     +                      GAUGE   /'Y'/
        
       INTEGER, PARAMETER :: LIMX  = 3,
      +                      LIMY  = 10,
      +                      WRAPX = 0,
-     +                      WRAPY = 0
+     +                      WRAPY = 0,
+     +                      VSIZE = LIMX*LIMY
       
       DOUBLE PRECISION      FLUX/0.0/
        
@@ -31,6 +33,11 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
       INTEGER NTVALS
       DOUBLE PRECISION E, CONDA/-1.0/, G
       INTEGER IE/0/
+      DOUBLE COMPLEX V(LIMX,LIMY)
+      
+      DATA V/VSIZE*0.0/
+C     Note that V is different size to every other matrix
+c$$$  V - represents potentials of sites in real lattice
     
 
 C$$$  READS COMMAND LINE ARGUMENT AS LIMY
@@ -40,9 +47,11 @@ c      READ(UNIT=VALUE, FMT=*) LIMY
 
       DO IE = 0, NE + 1
          E = EMIN + ( (EMAX - EMIN) * IE) / NE
+C     Function to fill V here - for now just set to zeroes
+         
          CONDA = GETTRANS(CURRENT, GAUGE,
      +                   TVALS, NTVALS,
-     +                   LIMX, LIMY,
+     +                   LIMX, LIMY, V,
      +                   E,    FLUX,
      +                   WRAPX)
          G    = CONDUCTANCE (TVALS, NTVALS)
