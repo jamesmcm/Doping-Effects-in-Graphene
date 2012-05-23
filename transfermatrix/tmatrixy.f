@@ -1,11 +1,13 @@
-      SUBROUTINE CALCMULTYX(E, FLUX, POS, WRAPX, MULT, LIMX)
+      SUBROUTINE CALCMULTYX(E, FLUX, POS, WRAPX, MULT, LIMX, LIMY, V)
       IMPLICIT NONE
-      INTEGER LIMX, WRAPX, SZ/1/
+      INTEGER LIMX, WRAPX, SZ/1/, LIMY
       INTEGER I/1/, NEIGH/1/, POS
       DOUBLE PRECISION E, FLUX
       DOUBLE COMPLEX ZPLUS, ZMINUS, Z
 c$$$  May need to move this
       DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX)
+      DOUBLE COMPLEX V(LIMX, LIMY)
+
 
 c$$$  HAMMERTIME! Program terminates here if LIMX is odd
       IF ((WRAPX .EQ. 1)) THEN
@@ -32,7 +34,7 @@ C$$$ FILL TOP-RIGHT SUBMATRIX
 C$$$ FILL BOTTOM-LEFT SUBMATRIX
          MULT(I+LIMX, I)=-1
 C$$$ FILL BOTTOM-RIGHT SUBMATRIX
-         MULT(LIMX+I,LIMX+I)=E
+         MULT(LIMX+I,LIMX+I)=E-V(I,POS+1)
 
 c$$$  Double-check this multiplication analytically at some stage
 
@@ -74,7 +76,7 @@ c$$$  Originally the first M matrix was set here
 
       SUBROUTINE CALCMULTYY(E, FLUX, POS, WRAPX, MULT, LIMX, LIMY, V)
       IMPLICIT NONE
-      INTEGER LIMX, WRAPX
+      INTEGER LIMX, WRAPX, LIMY
       DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX)
       DOUBLE PRECISION E, FLUX
       INTEGER POS
@@ -110,7 +112,7 @@ C$$$ FILL BOTTOM-LEFT SUBMATRIX
          MULT(I + LIMX, I) = -CNUM
 C$$$ FILL BOTTOM-RIGHT SUBMATRIX
          CALL ZPOLAR(FLUX*I, CNUM)
-         MULT(LIMX+I, LIMX+I) = (E-V(I,POS))*CNUM
+         MULT(LIMX+I, LIMX+I) = (E-V(I,POS+1))*CNUM
 
 c$$$  Double-check this multiplication analytically at some stage
 
@@ -196,7 +198,7 @@ C     For now I have left it as before so I can compare results
 
       DO I = 1, LIMY
             IF (GAUGE .EQ. 'X') THEN
-               CALL CALCMULTYX(E, FLUX, I, WRAPX, MULT, LIMX)
+               CALL CALCMULTYX(E, FLUX, I, WRAPX, MULT, LIMX, LIMY, V)
 C     Note that POS is passed directly as I here
             ELSE
                IF (GAUGE .EQ. 'Y') THEN
