@@ -64,6 +64,9 @@ C     WRAPY ignored
       DOUBLE COMPLEX MULT(NSIZE*2, NSIZE*2), 
      +     N3(NSIZE, NSIZE), N2(NSIZE, NSIZE)
       DOUBLE COMPLEX V(LIMX,2*NSIZE)
+      DOUBLE COMPLEX EV2(NSIZE, NSIZE)
+      DOUBLE COMPLEX EV3(NSIZE, NSIZE)
+
 
 C     Odd is defined for odd leftmost column, even for even leftmost column
       CALL SQZERO (N3, NSIZE)
@@ -72,6 +75,9 @@ C     Odd is defined for odd leftmost column, even for even leftmost column
       DO I = 1, NSIZE
          N3(I, I)=1
          N2(I, I)=1
+C     Not confident about these
+         EV2(I,I)=E-V(POS+1, (2*NSIZE)-I-1) 
+         EV3(I,I)=E-V(POS+2, (2*NSIZE)-I-1) 
          IF (I .NE. 1) THEN
             IF (MOD(POS,2) .EQ. 0) THEN
                N2(I,I-1)=1
@@ -94,10 +100,14 @@ C     M={{-N3^-1, E*N3^-1},{-E*N3^-1, E^2 N3^-1 - N2^-1}}
 c$$$      CALL INVERTMATRIX(N2, NSIZE)
 
 C     I think that E will have to be changed to matrix of applicable E values to take V in to account
+C     So we have {E-V_1, 0, 0...}{0, E-V_2, 0, ...} etc. 
+C     N3 relates to E2, i.e. of second column
+C     N2 relates to E3, i.e. of first column
       MULT(1:NSIZE, 1:NSIZE)=-1*N3
-      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=E*N3
-      MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-E*N3
-      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=(E*E*N3) - N2
+      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=EV2*N3
+      MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-EV3*N3
+C     Next line is probably wrong
+      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=(EV2*EV3*N3) - N2
 
       RETURN
       END
