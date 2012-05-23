@@ -1,5 +1,5 @@
       DOUBLE PRECISION FUNCTION GETTRANSX(GAUGE, TVALS, LIMX, NSIZE,
-     +   E, FLUX)
+     +   E, FLUX, V)
       IMPLICIT NONE
 C     NSIZE = LIMY/2
       INTEGER I/1/, NSIZE, LIMX
@@ -16,6 +16,8 @@ C     NSIZE = LIMY/2
      +               TINC(NSIZE, NSIZE), TTILDEINC(NSIZE, NSIZE),
      +               RINC(NSIZE, NSIZE), RTILDEINC(NSIZE, NSIZE)
       DOUBLE COMPLEX U(NSIZE,NSIZE)
+
+      DOUBLE COMPLEX V(LIMX,2*NSIZE)
       CHARACTER GAUGE
 
       CALL SQUNIT (MULT, 2*NSIZE)
@@ -32,9 +34,9 @@ C     NSIZE = LIMY/2
 
       DO I = 1, LIMX
             IF (GAUGE .EQ. 'X') THEN
-              CALL CALCMULTXX(E, FLUX, I, MULT, NSIZE)
+              CALL CALCMULTXX(E, FLUX, I, MULT, LIMX, NSIZE, V)
             ELSE
-              CALL CALCMULTXY(E, FLUX, I, MULT, NSIZE)
+              CALL CALCMULTXY(E, FLUX, I, MULT, LIMX, NSIZE, V)
             ENDIF
             CALL GENABCD(MULT, U, A,B,C,D, NSIZE)
             CALL GENTANDRINC(A, B, C, D,
@@ -50,7 +52,7 @@ C     NSIZE = LIMY/2
       RETURN
       END
 
-      SUBROUTINE CALCMULTXY(E, FLUX, POS, MULT, NSIZE)
+      SUBROUTINE CALCMULTXY(E, FLUX, POS, MULT, LIMX, NSIZE, V)
 C     NOTE LIMY MUST BE PASSED AS CONSTANT PARAMETER FOR THIS, LIMY MUST BE EVEN
       IMPLICIT NONE
       INTEGER LIMX, POS
@@ -61,6 +63,7 @@ C     WRAPY ignored
 
       DOUBLE COMPLEX MULT(NSIZE*2, NSIZE*2), 
      +     N3(NSIZE, NSIZE), N2(NSIZE, NSIZE)
+      DOUBLE COMPLEX V(LIMX,2*NSIZE)
 
 C     Odd is defined for odd leftmost column, even for even leftmost column
       CALL SQZERO (N3, NSIZE)
@@ -90,6 +93,7 @@ C     M={{-N3^-1, E*N3^-1},{-E*N3^-1, E^2 N3^-1 - N2^-1}}
       CALL INVERTMATRIX(N3, NSIZE)
 c$$$      CALL INVERTMATRIX(N2, NSIZE)
 
+C     I think that E will have to be changed to matrix of applicable E values to take V in to account
       MULT(1:NSIZE, 1:NSIZE)=-1*N3
       MULT(1:NSIZE, NSIZE+1:2*NSIZE)=E*N3
       MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-E*N3
@@ -98,7 +102,7 @@ c$$$      CALL INVERTMATRIX(N2, NSIZE)
       RETURN
       END
       
-      SUBROUTINE CALCMULTXX(E, FLUX, POS, MULT, NSIZE)
+      SUBROUTINE CALCMULTXX(E, FLUX, POS, MULT, LIMX, NSIZE, V)
 C     NOTE LIMY MUST BE PASSED AS CONSTANT PARAMETER FOR THIS, LIMY MUST BE EVEN
       IMPLICIT NONE
       INTEGER LIMX, POS
@@ -109,7 +113,7 @@ C     WRAPY ignored
 
       DOUBLE COMPLEX MULT(NSIZE*2, NSIZE*2), 
      +     N3(NSIZE, NSIZE), N2(NSIZE, NSIZE)
-
+      DOUBLE COMPLEX V(LIMX,2*NSIZE)
 C     Odd is defined for odd leftmost column, even for even leftmost column
       CALL SQZERO (N3, NSIZE)
       CALL SQZERO (N2, NSIZE)
@@ -151,6 +155,7 @@ c       while tau_2 is x+2->x+1 hopping
         CALL ZPOLAR (-FLUX * 2 * I, TAU2(I))
       ENDDO
       
+C     To introduce V here, must express E as matrix of (E-V) values
       DO I = 1, NSIZE
         IN = I + NSIZE
         TI = TAU2(I)
