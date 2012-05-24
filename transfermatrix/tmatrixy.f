@@ -34,7 +34,7 @@ C$$$ FILL TOP-RIGHT SUBMATRIX
 C$$$ FILL BOTTOM-LEFT SUBMATRIX
          MULT(I+LIMX, I)=-1
 C$$$ FILL BOTTOM-RIGHT SUBMATRIX
-         MULT(LIMX+I,LIMX+I)=E-V(I,POS+1)
+         MULT(LIMX+I,LIMX+I)=E-V(I,POS)
 
 c$$$  Double-check this multiplication analytically at some stage
 
@@ -112,7 +112,7 @@ C$$$ FILL BOTTOM-LEFT SUBMATRIX
          MULT(I + LIMX, I) = -CNUM
 C$$$ FILL BOTTOM-RIGHT SUBMATRIX
          CALL ZPOLAR(FLUX*I, CNUM)
-         MULT(LIMX+I, LIMX+I) = (E-V(I,POS+1))*CNUM
+         MULT(LIMX+I, LIMX+I) = (E-V(I,POS))*CNUM
 
 c$$$  Double-check this multiplication analytically at some stage
 
