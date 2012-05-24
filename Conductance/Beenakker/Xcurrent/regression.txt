@@ -1,0 +1,2 @@
+150x260 nonwrapped	y = 1.5325 * x + 0.86974
+500x866 nonwrapped	y = 1.5581 * x + 0.88516
