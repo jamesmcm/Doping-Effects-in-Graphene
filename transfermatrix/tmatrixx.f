@@ -17,7 +17,7 @@ C     NSIZE = LIMY/2
      +               RINC(NSIZE, NSIZE), RTILDEINC(NSIZE, NSIZE)
       DOUBLE COMPLEX U(NSIZE,NSIZE)
 
-      DOUBLE COMPLEX V(LIMX,2*NSIZE)
+      DOUBLE PRECISION V(LIMX,2*NSIZE)
       CHARACTER GAUGE
 
       CALL SQUNIT (MULT, 2*NSIZE)
@@ -63,21 +63,34 @@ C     WRAPY ignored
 
       DOUBLE COMPLEX MULT(NSIZE*2, NSIZE*2), 
      +     N3(NSIZE, NSIZE), N2(NSIZE, NSIZE)
-      DOUBLE COMPLEX V(LIMX,2*NSIZE)
-      DOUBLE COMPLEX EV2(NSIZE, NSIZE)
-      DOUBLE COMPLEX EV3(NSIZE, NSIZE)
+      DOUBLE PRECISION V(LIMX,2*NSIZE)
+      DOUBLE COMPLEX EV2(NSIZE, NSIZE), EV3N3(NSIZE, NSIZE)
+      DOUBLE COMPLEX EV3(NSIZE, NSIZE), N3EV2(NSIZE, NSIZE)
+      DOUBLE COMPLEX EV3N3EV2(NSIZE, NSIZE)
+      INTEGER J, K
+c$$$C     E-V values stored in column vector - in future
+c$$$      DATA EV2/NSIZE*0.0/
+c$$$      DATA EV3/NSIZE*0.0/
 
 
 C     Odd is defined for odd leftmost column, even for even leftmost column
       CALL SQZERO (N3, NSIZE)
       CALL SQZERO (N2, NSIZE)
+      CALL SQZERO (EV2, NSIZE)
+      CALL SQZERO (EV3, NSIZE)
+      CALL SQZERO (EV3N3, NSIZE)
+      CALL SQZERO (EV3N3EV2, NSIZE)
+      CALL SQZERO (N3EV2, NSIZE)
 
       DO I = 1, NSIZE
          N3(I, I)=1
          N2(I, I)=1
-C     Not confident about these
-         EV2(I,I)=E-V(POS+1, (2*NSIZE)-I-1) 
-         EV3(I,I)=E-V(POS+2, (2*NSIZE)-I-1) 
+C     Error must be here?
+         EV2(I,I)=E-V(POS, (2*NSIZE)-((2*I)-2)) 
+         EV3(I,I)=E-V(POS+1, (2*NSIZE)-((2*I)-2)-1)
+
+C     E2 psi2 = N3 psi3 + psi1
+C     E3 psi3 = N2 psi2 + psi4
          IF (I .NE. 1) THEN
             IF (MOD(POS,2) .EQ. 0) THEN
                N2(I,I-1)=1
@@ -96,19 +109,36 @@ C     Not confident about these
 
 C     M={{-N3^-1, E*N3^-1},{-E*N3^-1, E^2 N3^-1 - N2^-1}}
 
-      CALL INVERTMATRIX(N3, NSIZE)
 c$$$      CALL INVERTMATRIX(N2, NSIZE)
-
 C     I think that E will have to be changed to matrix of applicable E values to take V in to account
 C     So we have {E-V_1, 0, 0...}{0, E-V_2, 0, ...} etc. 
 C     N3 relates to E2, i.e. of second column
 C     N2 relates to E3, i.e. of first column
-      MULT(1:NSIZE, 1:NSIZE)=-1*N3
-      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=EV2*N3
-      MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-EV3*N3
-C     Next line is probably wrong
-      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=(EV2*EV3*N3) - N2
+C     Use looping
 
+
+c$$$      DO I=1, NSIZE:
+      CALL INVERTMATRIX(N3, NSIZE)
+
+      MULT(1:NSIZE, 1:NSIZE)=-1*N3
+      CALL SQDOT(N3EV2, N3, EV2, NSIZE)
+      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=N3EV2
+      CALL SQDOT(EV3N3, EV3, N3, NSIZE)
+      MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-1*EV3N3
+      CALL SQDOT(EV3N3EV2, EV3N3, EV2, NSIZE)
+
+      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=EV3N3EV2 - N2
+
+c$$$c$$$C     Old code
+c$$$      MULT(1:NSIZE, 1:NSIZE)=-1*N3
+c$$$      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=E*N3
+c$$$      MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-E*N3
+c$$$      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=(E*E*N3) - N2
+
+c$$$      CALL PRINTM(EV2, NSIZE, 'EV2: ')
+c$$$      PRINT *, "___"
+c$$$      CALL PRINTM(EV3, NSIZE, 'EV3: ')
+c$$$      PRINT *, "---"
       RETURN
       END
       
@@ -123,7 +153,7 @@ C     WRAPY ignored
 
       DOUBLE COMPLEX MULT(NSIZE*2, NSIZE*2), 
      +     N3(NSIZE, NSIZE), N2(NSIZE, NSIZE)
-      DOUBLE COMPLEX V(LIMX,2*NSIZE)
+      DOUBLE PRECISION V(LIMX,2*NSIZE)
 C     Odd is defined for odd leftmost column, even for even leftmost column
       CALL SQZERO (N3, NSIZE)
       CALL SQZERO (N2, NSIZE)

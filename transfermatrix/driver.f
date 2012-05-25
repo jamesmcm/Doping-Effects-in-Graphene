@@ -14,8 +14,8 @@
       
 C     For X current,  LIMY MUST be even, LIMX MUST BE >=3
 C     FOR Y current,  LIMX should be even if WRAPX = 1
-      CHARACTER             CURRENT /'Y'/,
-     +                      GAUGE   /'X'/
+      CHARACTER             CURRENT /'X'/,
+     +                      GAUGE   /'Y'/
        
       INTEGER, PARAMETER :: LIMX  = 10,
      +                      LIMY  = 16,
@@ -23,19 +23,19 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
      +                      WRAPY = 0,
      +                      VSIZE = LIMX*LIMY
       
-      DOUBLE PRECISION      FLUX/0.1/
+      DOUBLE PRECISION      FLUX/0.0/
        
-      DOUBLE PRECISION, PARAMETER :: EMIN = -3.0,
-     +                               EMAX =  4.0
-      INTEGER, PARAMETER ::          NE   =  700
+      DOUBLE PRECISION, PARAMETER :: EMIN = -3,
+     +                               EMAX =  3
+      INTEGER, PARAMETER ::          NE   =  2000
       
       INTEGER, PARAMETER :: MAXSIZE = 10000
       DOUBLE  PRECISION TVALS(MAXSIZE)
       INTEGER NTVALS
       DOUBLE PRECISION E, CONDA/-1.0/, G
       INTEGER IE/0/
-      DOUBLE COMPLEX V(LIMX,LIMY)
-      DOUBLE COMPLEX POT
+      DOUBLE PRECISION V(LIMX,LIMY)
+      DOUBLE PRECISION POT
       
       DATA V/VSIZE*0.0/
 C     Note that V is different size to every other matrix
@@ -46,7 +46,8 @@ C$$$  READS COMMAND LINE ARGUMENT AS LIMY
 c      CALL GETARG(1, VALUE)
 c      READ(UNIT=VALUE, FMT=*) LIMY
 
-      POT=1.0
+      POT=2.0
+c$$$      CALL TONE(V, POT, LIMX, LIMY)
       CALL TTWO(V, POT, (-1.0*POT), LIMX, LIMY)
       DO IE = 0, NE + 1
          E = EMIN + ( (EMAX - EMIN) * IE) / NE

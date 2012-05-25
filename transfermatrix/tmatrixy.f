@@ -6,7 +6,7 @@
       DOUBLE COMPLEX ZPLUS, ZMINUS, Z
 c$$$  May need to move this
       DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX)
-      DOUBLE COMPLEX V(LIMX, LIMY)
+      DOUBLE PRECISION V(LIMX, LIMY)
 
 
 c$$$  HAMMERTIME! Program terminates here if LIMX is odd
@@ -82,7 +82,7 @@ c$$$  Originally the first M matrix was set here
       INTEGER POS
       INTEGER I/1/, NEIGH/1/ 
       DOUBLE COMPLEX CNUM
-      DOUBLE COMPLEX V(LIMX, LIMY)
+      DOUBLE PRECISION V(LIMX, LIMY)
 
 
 c$$$  HAMMERTIME! Program terminates here if LIMX is odd
@@ -169,7 +169,7 @@ C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
       DOUBLE COMPLEX U(LIMX, LIMX)
       CHARACTER GAUGE
       DOUBLE PRECISION THR/1e-12/
-      DOUBLE COMPLEX V(LIMX, LIMY)
+      DOUBLE PRECISION V(LIMX, LIMY)
 
 
 c$$$  CALCMULT fills MULT - do multiplication in main loop
