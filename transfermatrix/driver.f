@@ -23,7 +23,7 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
      +                      WRAPY = 0,
      +                      VSIZE = LIMX*LIMY
       
-      DOUBLE PRECISION      FLUX/0.0/
+      DOUBLE PRECISION      FLUX/0.1/
        
       DOUBLE PRECISION, PARAMETER :: EMIN = -3,
      +                               EMAX =  3

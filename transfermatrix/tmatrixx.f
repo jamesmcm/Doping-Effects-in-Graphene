@@ -85,7 +85,7 @@ C     Odd is defined for odd leftmost column, even for even leftmost column
       DO I = 1, NSIZE
          N3(I, I)=1
          N2(I, I)=1
-C     Error must be here?
+
          IF (MOD(POS,2) .EQ. 0) THEN
             EV2(I,I)=E-V(POS, 2*I) 
             EV3(I,I)=E-V(POS, (2*I)-1)
@@ -157,15 +157,33 @@ C     WRAPY ignored
       INTEGER I, J, IN, JN, NSIZE
       DOUBLE PRECISION E, FLUX
       DOUBLE COMPLEX CNUM, TAU1(NSIZE), TAU2(NSIZE), TI, N3IJ, TJ
+      DOUBLE COMPLEX EV3II, EV2JJ
 
       DOUBLE COMPLEX MULT(NSIZE*2, NSIZE*2), 
      +     N3(NSIZE, NSIZE), N2(NSIZE, NSIZE)
+      DOUBLE COMPLEX EV2(NSIZE, NSIZE), EV3N3(NSIZE, NSIZE)
+      DOUBLE COMPLEX EV3(NSIZE, NSIZE), N3EV2(NSIZE, NSIZE)
+      DOUBLE COMPLEX EV3N3EV2(NSIZE, NSIZE)
       DOUBLE PRECISION V(LIMX,2*NSIZE)
 C     Odd is defined for odd leftmost column, even for even leftmost column
       CALL SQZERO (N3, NSIZE)
       CALL SQZERO (N2, NSIZE)
+      CALL SQZERO (EV2, NSIZE)
+      CALL SQZERO (EV3, NSIZE)
+      CALL SQZERO (EV3N3, NSIZE)
+      CALL SQZERO (EV3N3EV2, NSIZE)
+      CALL SQZERO (N3EV2, NSIZE)
 
       DO I = 1, NSIZE
+
+         IF (MOD(POS,2) .EQ. 0) THEN
+            EV2(I,I)=E-V(POS, 2*I) 
+            EV3(I,I)=E-V(POS, (2*I)-1)
+         ELSE
+            EV3(I,I)=E-V(POS, 2*I) 
+            EV2(I,I)=E-V(POS, (2*I)-1) 
+         ENDIF
+
          N3(I, I)=1
          N2(I, I)=1
          IF (I .NE. 1) THEN
@@ -202,6 +220,16 @@ c       while tau_2 is x+2->x+1 hopping
         CALL ZPOLAR (-FLUX * 2 * I, TAU2(I))
       ENDDO
       
+c$$$      MULT(1:NSIZE, 1:NSIZE)=-1*N3
+c$$$      CALL SQDOT(N3EV2, N3, EV2, NSIZE)
+c$$$      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=N3EV2
+c$$$      CALL SQDOT(EV3N3, EV3, N3, NSIZE)
+c$$$      MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-1*EV3N3
+c$$$      CALL SQDOT(EV3N3EV2, EV3N3, EV2, NSIZE)
+c$$$
+c$$$      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=EV3N3EV2 - N2
+
+
 C     To introduce V here, must express E as matrix of (E-V) values
       DO I = 1, NSIZE
         IN = I + NSIZE
@@ -210,10 +238,12 @@ C     To introduce V here, must express E as matrix of (E-V) values
           JN = J + NSIZE
           TJ = TAU1(J)
           N3IJ  = N3 (I, J)
+          EV2JJ= EV2(J,J)
+          EV3II=EV3(I,I)
           MULT(I,   J)  =     - N3IJ * TJ
-          MULT(I,  JN)  =   E * N3IJ
-          MULT(IN,  J)  = - E * N3IJ * TJ / TI
-          MULT(IN, JN)  = (E * E * N3IJ  - N2(I, J)) / TI
+          MULT(I,  JN)  =   EV2JJ * N3IJ
+          MULT(IN,  J)  = - EV3II * N3IJ * TJ / TI
+          MULT(IN, JN)  = (EV3II * EV2JJ * N3IJ  - N2(I, J)) / TI
         ENDDO
       ENDDO
 c      MULT(1:NSIZE, 1:NSIZE)=-1*N3
