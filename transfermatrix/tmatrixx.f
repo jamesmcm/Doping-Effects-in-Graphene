@@ -86,8 +86,14 @@ C     Odd is defined for odd leftmost column, even for even leftmost column
          N3(I, I)=1
          N2(I, I)=1
 C     Error must be here?
-         EV2(I,I)=E-V(POS, (2*NSIZE)-((2*I)-2)) 
-         EV3(I,I)=E-V(POS, (2*NSIZE)-((2*I)-1))
+         IF (MOD(POS,2) .EQ. 0) THEN
+            EV2(I,I)=E-V(POS, 2*I) 
+            EV3(I,I)=E-V(POS, (2*I)-1)
+         ELSE
+            EV3(I,I)=E-V(POS, 2*I) 
+            EV2(I,I)=E-V(POS, (2*I)-1) 
+         ENDIF
+
 
 C     E2 psi2 = N3 psi3 + psi1
 C     E3 psi3 = N2 psi2 + psi4
@@ -135,11 +141,11 @@ c$$$      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=E*N3
 c$$$      MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-E*N3
 c$$$      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=(E*E*N3) - N2
 
-c$$$      PRINT*, "POS:", POS
-c$$$      CALL PRINTM(EV2, NSIZE, 'EV2: ')
-c$$$      PRINT *, "___"
-c$$$      CALL PRINTM(EV3, NSIZE, 'EV3: ')
-c$$$      PRINT *, "---"
+      PRINT*, "POS:", POS
+      CALL PRINTM(EV2, NSIZE, 'EV2: ')
+      PRINT *, "___"
+      CALL PRINTM(EV3, NSIZE, 'EV3: ')
+      PRINT *, "---"
       RETURN
       END
       
