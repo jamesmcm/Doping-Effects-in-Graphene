@@ -55,19 +55,19 @@ C     NSIZE = LIMY/2
       SUBROUTINE CALCMULTXY(E, FLUX, POS, MULT, LIMX, NSIZE, V)
 C     NOTE LIMY MUST BE PASSED AS CONSTANT PARAMETER FOR THIS, LIMY MUST BE EVEN
       IMPLICIT NONE
-      INTEGER LIMX, POS
+      INTEGER LIMX, POS, IN, JN
 C     WRAPY ignored
       INTEGER I/1/, NSIZE
       DOUBLE PRECISION E, FLUX
       DOUBLE COMPLEX CNUM
 
       DOUBLE COMPLEX MULT(NSIZE*2, NSIZE*2), 
-     +     N3(NSIZE, NSIZE), N2(NSIZE, NSIZE)
+     +     N3(NSIZE, NSIZE), N2(NSIZE, NSIZE), N3IJ
       DOUBLE PRECISION V(LIMX,2*NSIZE)
-      DOUBLE COMPLEX EV2(NSIZE, NSIZE), EV3N3(NSIZE, NSIZE)
-      DOUBLE COMPLEX EV3(NSIZE, NSIZE), N3EV2(NSIZE, NSIZE)
-      DOUBLE COMPLEX EV3N3EV2(NSIZE, NSIZE)
+      DOUBLE PRECISION EV2(NSIZE), EV3(NSIZE)
+      DOUBLE PRECISION EV2JJ, EV3II
       INTEGER J, K
+
 c$$$C     E-V values stored in column vector - in future
 c$$$      DATA EV2/NSIZE*0.0/
 c$$$      DATA EV3/NSIZE*0.0/
@@ -76,22 +76,17 @@ c$$$      DATA EV3/NSIZE*0.0/
 C     Odd is defined for odd leftmost column, even for even leftmost column
       CALL SQZERO (N3, NSIZE)
       CALL SQZERO (N2, NSIZE)
-      CALL SQZERO (EV2, NSIZE)
-      CALL SQZERO (EV3, NSIZE)
-      CALL SQZERO (EV3N3, NSIZE)
-      CALL SQZERO (EV3N3EV2, NSIZE)
-      CALL SQZERO (N3EV2, NSIZE)
 
       DO I = 1, NSIZE
          N3(I, I)=1
          N2(I, I)=1
 
          IF (MOD(POS,2) .EQ. 0) THEN
-            EV2(I,I)=E-V(POS, 2*I) 
-            EV3(I,I)=E-V(POS, (2*I)-1)
+            EV2(I)=E-V(POS, 2*I) 
+            EV3(I)=E-V(POS, (2*I)-1)
          ELSE
-            EV3(I,I)=E-V(POS, 2*I) 
-            EV2(I,I)=E-V(POS, (2*I)-1) 
+            EV3(I)=E-V(POS, 2*I) 
+            EV2(I)=E-V(POS, (2*I)-1) 
          ENDIF
 
 
@@ -125,15 +120,31 @@ C     Use looping
 
 c$$$      DO I=1, NSIZE:
       CALL INVERTMATRIX(N3, NSIZE)
+      
+c$$$      MULT(1:NSIZE, 1:NSIZE)=-1*N3
+c$$$      CALL SQDOT(N3EV2, N3, EV2, NSIZE)
+c$$$      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=N3EV2
+c$$$      CALL SQDOT(EV3N3, EV3, N3, NSIZE)
+c$$$      MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-1*EV3N3
+c$$$      CALL SQDOT(EV3N3EV2, EV3N3, EV2, NSIZE)
+c$$$
+c$$$      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=EV3N3EV2 - N2
 
-      MULT(1:NSIZE, 1:NSIZE)=-1*N3
-      CALL SQDOT(N3EV2, N3, EV2, NSIZE)
-      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=N3EV2
-      CALL SQDOT(EV3N3, EV3, N3, NSIZE)
-      MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-1*EV3N3
-      CALL SQDOT(EV3N3EV2, EV3N3, EV2, NSIZE)
 
-      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=EV3N3EV2 - N2
+      DO I = 1, NSIZE
+         IN = I + NSIZE
+         DO J= 1, NSIZE
+            JN = J + NSIZE
+            N3IJ = N3(I,J)
+            EV2JJ=EV2(J)
+            EV3II=EV3(I)
+            MULT(I,   J)  =     - N3IJ
+            MULT(I,  JN)  =   EV2JJ * N3IJ
+            MULT(IN,  J)  = - EV3II * N3IJ
+            MULT(IN, JN)  = (EV3II * EV2JJ * N3IJ  - N2(I, J))
+         ENDDO
+      ENDDO
+            
 
 c$$$c$$$C     Old code
 c$$$      MULT(1:NSIZE, 1:NSIZE)=-1*N3
@@ -161,27 +172,20 @@ C     WRAPY ignored
 
       DOUBLE COMPLEX MULT(NSIZE*2, NSIZE*2), 
      +     N3(NSIZE, NSIZE), N2(NSIZE, NSIZE)
-      DOUBLE COMPLEX EV2(NSIZE, NSIZE), EV3N3(NSIZE, NSIZE)
-      DOUBLE COMPLEX EV3(NSIZE, NSIZE), N3EV2(NSIZE, NSIZE)
-      DOUBLE COMPLEX EV3N3EV2(NSIZE, NSIZE)
-      DOUBLE PRECISION V(LIMX,2*NSIZE)
+      DOUBLE PRECISION V(LIMX,2*NSIZE), EV2(NSIZE), EV3(NSIZE)
 C     Odd is defined for odd leftmost column, even for even leftmost column
       CALL SQZERO (N3, NSIZE)
       CALL SQZERO (N2, NSIZE)
-      CALL SQZERO (EV2, NSIZE)
-      CALL SQZERO (EV3, NSIZE)
-      CALL SQZERO (EV3N3, NSIZE)
-      CALL SQZERO (EV3N3EV2, NSIZE)
-      CALL SQZERO (N3EV2, NSIZE)
+
 
       DO I = 1, NSIZE
 
          IF (MOD(POS,2) .EQ. 0) THEN
-            EV2(I,I)=E-V(POS, 2*I) 
-            EV3(I,I)=E-V(POS, (2*I)-1)
+            EV2(I)=E-V(POS, 2*I) 
+            EV3(I)=E-V(POS, (2*I)-1)
          ELSE
-            EV3(I,I)=E-V(POS, 2*I) 
-            EV2(I,I)=E-V(POS, (2*I)-1) 
+            EV3(I)=E-V(POS, 2*I) 
+            EV2(I)=E-V(POS, (2*I)-1) 
          ENDIF
 
          N3(I, I)=1
@@ -238,8 +242,8 @@ C     To introduce V here, must express E as matrix of (E-V) values
           JN = J + NSIZE
           TJ = TAU1(J)
           N3IJ  = N3 (I, J)
-          EV2JJ= EV2(J,J)
-          EV3II=EV3(I,I)
+          EV2JJ= EV2(J)
+          EV3II=EV3(I)
           MULT(I,   J)  =     - N3IJ * TJ
           MULT(I,  JN)  =   EV2JJ * N3IJ
           MULT(IN,  J)  = - EV3II * N3IJ * TJ / TI

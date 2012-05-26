@@ -23,7 +23,7 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
      +                      WRAPY = 0,
      +                      VSIZE = LIMX*LIMY
       
-      DOUBLE PRECISION      FLUX/0.1/
+      DOUBLE PRECISION      FLUX/0.0/
        
       DOUBLE PRECISION, PARAMETER :: EMIN = -3,
      +                               EMAX =  3
@@ -49,9 +49,9 @@ c      READ(UNIT=VALUE, FMT=*) LIMY
 
       POT=2.0
 c$$$      CALL TONE(V, POT, LIMX, LIMY)
-C      CALL TTWO(V, POT, (-1.0*POT), LIMX, LIMY)
+      CALL TTWO(V, POT, (-1.0*POT), LIMX, LIMY)
 
-      CALL TTHREE(V,POT,WID,HEIGHT,LIMX,LIMY)  
+c$$$      CALL TTHREE(V,POT,WID,HEIGHT,LIMX,LIMY)  
       DO IE = 0, NE + 1
          E = EMIN + ( (EMAX - EMIN) * IE) / NE
 
@@ -64,8 +64,8 @@ C     Function to fill V here - for now just set to zeroes
      +                   LIMX, LIMY, V,
      +                   E,    FLUX,
      +                   WRAPX)
-c         G    = CONDUCTANCE (TVALS, NTVALS)
-c         WRITE(*,50) E, G, CONDA
+         G    = CONDUCTANCE (TVALS, NTVALS)
+         WRITE(*,50) E, G, CONDA
 
 c$$$     This is gfortran function to flush the output
 c$$$     so that the data are written to the file immediately

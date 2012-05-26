@@ -10,10 +10,10 @@ c      CHARACTER*3 T_1
 
       CALL DLASET ('ALL',LIMX,LIMY,POT,POT,V,LIMX)
  
-      DO J=1, LIMX
-      WRITE (*, 200) LIMX,LIMY, ' T_1', (V(J, K), K=1, LIMY)  
-   
-      END DO
+c$$$      DO J=1, LIMX
+c$$$      WRITE (*, 200) LIMX,LIMY, ' T_1', (V(J, K), K=1, LIMY)  
+c$$$   
+c$$$      END DO
 
  200  FORMAT (2I3,A, 100F6.2)
 
@@ -37,9 +37,9 @@ c$$$  Differant for sublattice A and B
       END DO
       END DO
 
-      DO J=1, LIMX
-      WRITE (*, 300) LIMX,LIMY, ' T_2', (REAL(V(J, K)), K=1, LIMY)  
-      END DO
+c$$$      DO J=1, LIMX
+c$$$      WRITE (*, 300) LIMX,LIMY, ' T_2', (REAL(V(J, K)), K=1, LIMY)  
+c$$$      END DO
  210  FORMAT (2I3,A)
  300  FORMAT (2I3,A, 100F6.2)
 
@@ -69,9 +69,9 @@ c     Barrier
        
       ENDDO
  
-      DO J=1, LIMX
-      WRITE(*,310) (V(J, K), K=1, LIMY)  
-      ENDDO
+c$$$      DO J=1, LIMX
+c$$$      WRITE(*,310) (V(J, K), K=1, LIMY)  
+c$$$      ENDDO
  310  FORMAT (100F10.6)
       RETURN
       END
@@ -94,10 +94,10 @@ C            WRITE(*,330) J,K, DUM, REAL(V(J,K))
        ENDDO
       ENDDO
      
-      DO J=1, LIMX
-c      WRITE (*, 320) LIMX,LIMY, ' T_4', (REAL(V(J, K)), K=1, LIMY)  
-      WRITE(*,340) (V(J, K), K=1, LIMY)
-      ENDDO
+c$$$      DO J=1, LIMX
+c$$$c      WRITE (*, 320) LIMX,LIMY, ' T_4', (REAL(V(J, K)), K=1, LIMY)  
+c$$$      WRITE(*,340) (V(J, K), K=1, LIMY)
+c$$$      ENDDO
       
  320  FORMAT (2I3,A, 100F10.6)
  330  FORMAT (2I3, 2F10.6)
