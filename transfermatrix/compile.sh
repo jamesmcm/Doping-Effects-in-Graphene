@@ -1,1 +1,2 @@
-gfortran driver.f linalg.f tmatrix.f trupdate.f util.f -o bin.out -L/usr/local/lib -llapack -lblas
+gfortran driver.f linalg.f tmatrix.f tmatrixx.f tmatrixy.f util.f trupdate.f unitarity.f potential.f -o tmsim -L/usr/local/lib -lm -lblas -llapack
+
