@@ -17,8 +17,8 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
       CHARACTER             CURRENT /'X'/,
      +                      GAUGE   /'Y'/
        
-      INTEGER, PARAMETER :: LIMX  = 11,
-     +                      LIMY  = 10,
+      INTEGER, PARAMETER :: LIMX  = 10,
+     +                      LIMY  = 16,
      +                      WRAPX = 0,
      +                      WRAPY = 0,
      +                      VSIZE = LIMX*LIMY
@@ -33,25 +33,29 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
       DOUBLE  PRECISION TVALS(MAXSIZE)
       INTEGER NTVALS
       DOUBLE PRECISION E, CONDA/-1.0/, G
-      INTEGER IE/0/
+      INTEGER IE/0/, J, K
       DOUBLE PRECISION V(LIMX,LIMY)
-      DOUBLE PRECISION POT /0.1/, POTA /0.2/, POTB /0.3/
-      DOUBLE PRECISION HEIGHT /4.0/, WID /5.0/, GWID /0.01/
+      DOUBLE PRECISION POT /2.0/, POTA /0.2/, POTB /0.3/
+      DOUBLE PRECISION HEIGHT /10.0/, WID /7.0/, GWID /0.01/
       
       DATA V/VSIZE*0.0/
 C     Note that V is different size to every other matrix
 c$$$  V - represents potentials of sites in real lattice
-    
-
+c$$$
 C$$$  READS COMMAND LINE ARGUMENT AS LIMY
 c      CALL GETARG(1, VALUE)
 c      READ(UNIT=VALUE, FMT=*) LIMY
 
-      POT=2.0
+      POT=100.0
 c$$$      CALL TONE(V, POT, LIMX, LIMY)
-      CALL TTWO(V, POT, (-1.0*POT), LIMX, LIMY)
+c$$$      CALL TTWO(V, POT, (-1.0*POT), LIMX, LIMY)
 
-c$$$      CALL TTHREE(V,POT,WID,HEIGHT,LIMX,LIMY)  
+      CALL TTHREE(V,POT,WID,HEIGHT,LIMX,LIMY)  
+
+c$$$      DO J=1, LIMX
+c$$$      WRITE(*,310) (V(J, K), K=1, LIMY)  
+c$$$      ENDDO
+c$$$ 310  FORMAT (100F10.6)
       DO IE = 0, NE + 1
          E = EMIN + ( (EMAX - EMIN) * IE) / NE
 
@@ -65,7 +69,7 @@ C     Function to fill V here - for now just set to zeroes
      +                   E,    FLUX,
      +                   WRAPX)
          G    = CONDUCTANCE (TVALS, NTVALS)
-         WRITE(*,50) E, G, CONDA
+c$$$         WRITE(*,50) E, G, CONDA
 
 c$$$     This is gfortran function to flush the output
 c$$$     so that the data are written to the file immediately

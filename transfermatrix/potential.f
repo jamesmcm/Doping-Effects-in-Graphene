@@ -51,24 +51,29 @@ c     Sharp Barrier with a channel.
       IMPLICIT NONE 
       INTEGER LIMX,LIMY,J,K
       DOUBLE PRECISION V(LIMX,LIMY)
-      DOUBLE PRECISION POT, ZERO
+      DOUBLE PRECISION POT, ZERO/0.0/
       DOUBLE PRECISION WID, HEIGHT
 
+      DO J=1, LIMX
+      WRITE(*,310) (V(J, K), K=1, LIMY)  
+      ENDDO
+      PRINT *, "---"
       CALL DLASET ('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
       
       DO J=1,LIMX
             DO K= 1,LIMY    
-              IF((K.GE.(LIMY/2-WID/2)).AND.(K .LT.(LIMY/2+WID/2)))
-     +  V(J,K)=POT 
+              IF((K.GE.(LIMY/2-WID/2)).AND.(K .LT.(LIMY/2+WID/2))) THEN
+                 V(J,K)=0.0 
+              ENDIF
       
 c     Barrier
               IF((K.GE.(LIMY/2-WID/2)).AND.(K .LT.(LIMY/2+WID/2)) 
-     + .AND.(J.GT.(LIMX/2-HEIGHT/2)).AND.(J .LE.(LIMX/2+HEIGHT/2)))
-     +  V(J,K)= 3.14
+     + .AND.(J.GT.(LIMX/2-HEIGHT/2)).AND.(J .LE.(LIMX/2+HEIGHT/2))) THEN
+                 V(J,K)= POT
+              ENDIF
             ENDDO
-       
       ENDDO
- 
+
 c$$$      DO J=1, LIMX
 c$$$      WRITE(*,310) (V(J, K), K=1, LIMY)  
 c$$$      ENDDO
@@ -82,7 +87,7 @@ c$$$  Gaussian Barrier
       INTEGER LIMX,LIMY,J,K
       DOUBLE PRECISION DUM /0.0/
       DOUBLE PRECISION V(LIMX,LIMY)
-      DOUBLE PRECISION POT, ZERO /0.0/, GWID
+      DOUBLE PRECISION POT, ZERO/0.0/, GWID
       
       CALL DLASET ('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
       
