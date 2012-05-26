@@ -141,11 +141,11 @@ c$$$      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=E*N3
 c$$$      MULT(NSIZE+1:2*NSIZE, 1:NSIZE)=-E*N3
 c$$$      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=(E*E*N3) - N2
 
-      PRINT*, "POS:", POS
-      CALL PRINTM(EV2, NSIZE, 'EV2: ')
-      PRINT *, "___"
-      CALL PRINTM(EV3, NSIZE, 'EV3: ')
-      PRINT *, "---"
+c      PRINT*, "POS:", POS
+c      CALL PRINTM(EV2, NSIZE, 'EV2: ')
+c      PRINT *, "___"
+c      CALL PRINTM(EV3, NSIZE, 'EV3: ')
+c      PRINT *, "---"
       RETURN
       END
       
