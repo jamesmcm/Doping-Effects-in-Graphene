@@ -68,7 +68,10 @@ c$$$     comment it out -- AVS
          CALL FLUSH()
 
       END DO
-
+C      CALL TONE(V,POT,LIMX,LIMY)  
+C      CALL TTWO(V,POTA,POTB,LIMX,LIMY)
+      CALL TTHREE(V,POT,WID,HEIGHT,LIMX,LIMY)    
+C      CALL TFOUR(V,POT,GWID,LIMX,LIMY)
  50   FORMAT (F15.5,20ES20.5E3)
       STOP
       END
