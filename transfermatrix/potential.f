@@ -94,7 +94,8 @@ c$$$  Gaussian Barrier
       DO J=1,LIMX
        DO K= 1, LIMY
             DUM=K*0.01
-            V(J,K)=DEXP(-1* (((DUM)-(LIMY/2)*0.01)**2/(2*GWID*GWID)))
+            V(J,K)=POT*
+     +           DEXP(-1* (((DUM)-(LIMY/2)*0.01)**2/(2*GWID*GWID)))
 C            WRITE(*,330) J,K, DUM, REAL(V(J,K))
        ENDDO
       ENDDO
