@@ -54,10 +54,10 @@ c     Sharp Barrier with a channel.
       DOUBLE PRECISION POT, ZERO/0.0/
       DOUBLE PRECISION WID, HEIGHT
 
-      DO J=1, LIMX
-      WRITE(*,310) (V(J, K), K=1, LIMY)  
-      ENDDO
-      PRINT *, "---"
+C      DO J=1, LIMX
+C      WRITE(*,310) (V(J, K), K=1, LIMY)  
+C      ENDDO
+C      PRINT *, "---"
       CALL DLASET ('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
       
       DO J=1,LIMX
