@@ -59,10 +59,10 @@ C     NOTE LIMY MUST BE PASSED AS CONSTANT PARAMETER FOR THIS, LIMY MUST BE EVEN
 C     WRAPY ignored
       INTEGER I/1/, NSIZE
       DOUBLE PRECISION E, FLUX
-      DOUBLE COMPLEX CNUM
+      DOUBLE COMPLEX CNUM, TAU1, TI, N3IJ, TJ
 
       DOUBLE COMPLEX MULT(NSIZE*2, NSIZE*2), 
-     +     N3(NSIZE, NSIZE), N2(NSIZE, NSIZE), N3IJ
+     +     N3(NSIZE, NSIZE), N2(NSIZE, NSIZE)
       DOUBLE PRECISION V(LIMX,2*NSIZE)
       DOUBLE PRECISION EV2(NSIZE), EV3(NSIZE)
       DOUBLE PRECISION EV2JJ, EV3II
@@ -77,9 +77,23 @@ C     Odd is defined for odd leftmost column, even for even leftmost column
       CALL SQZERO (N3, NSIZE)
       CALL SQZERO (N2, NSIZE)
 
+      CALL ZPOLAR (FLUX * (POS), TAU1)
+
+      IF (MOD(POS,2) .EQ. 1) THEN
+         CALL ZPOLAR (FLUX * (POS), TAU1)
+      ENDIF
+      IF (MOD(POS,2) .EQ. 0) THEN
+         CALL ZPOLAR (FLUX * -1 * (POS), TAU1)
+      ENDIF
+
       DO I = 1, NSIZE
-         N3(I, I)=1
-         N2(I, I)=1
+
+         N3(I, I)=1.0/TAU1
+         N2(I, I)=1*TAU1
+
+C     ((-2*MOD(I,2))+1)
+c     The minus sign is due to the fact that tau1 is x->x+1 hopping,
+c     while tau_2 is x+2->x+1 hopping
 
          IF (MOD(POS,2) .EQ. 0) THEN
             EV2(I)=E-V(POS, 2*I) 
@@ -94,20 +108,23 @@ C     E2 psi2 = N3 psi3 + psi1
 C     E3 psi3 = N2 psi2 + psi4
          IF (I .NE. 1) THEN
             IF (MOD(POS,2) .EQ. 0) THEN
-               N2(I,I-1)=1
+               N2(I,I-1)=1*TAU1
             ELSE
-               N3(I,I-1)=1
+               N3(I,I-1)=1*TAU1
             ENDIF
          ENDIF
          IF (I .NE. NSIZE) THEN
             IF (MOD(POS,2) .EQ. 0) THEN
-               N3(I,I+1)=1
+               N3(I,I+1)=1.0/TAU1
             ELSE
-               N2(I,I+1)=1
+               N2(I,I+1)=1.0/TAU1
             ENDIF
          ENDIF
       ENDDO
 
+c$$$      CALL ZPRINTM(N2,NSIZE,"N2 ")
+c$$$      PRINT *, "---"
+c$$$      CALL ZPRINTM(N3,NSIZE,"N3 ")
 C     M={{-N3^-1, E*N3^-1},{-E*N3^-1, E^2 N3^-1 - N2^-1}}
 
 c$$$      CALL INVERTMATRIX(N2, NSIZE)
@@ -133,15 +150,17 @@ c$$$      MULT(NSIZE+1:2*NSIZE, NSIZE+1:2*NSIZE)=EV3N3EV2 - N2
 
       DO I = 1, NSIZE
          IN = I + NSIZE
+         EV3II=EV3(I)
+
          DO J= 1, NSIZE
             JN = J + NSIZE
+
             N3IJ = N3(I,J)
             EV2JJ=EV2(J)
-            EV3II=EV3(I)
-            MULT(I,   J)  =     - N3IJ
-            MULT(I,  JN)  =   EV2JJ * N3IJ
-            MULT(IN,  J)  = - EV3II * N3IJ
-            MULT(IN, JN)  = (EV3II * EV2JJ * N3IJ  - N2(I, J))
+            MULT(I,   J)  =     - N3IJ 
+            MULT(I,  JN)  =   EV2JJ * N3IJ  
+            MULT(IN,  J)  = - EV3II * N3IJ 
+            MULT(IN, JN)  = (EV3II * EV2JJ * N3IJ  - (N2(I, J)))
          ENDDO
       ENDDO
             
@@ -180,6 +199,11 @@ C     Odd is defined for odd leftmost column, even for even leftmost column
 
       DO I = 1, NSIZE
 
+         CALL ZPOLAR ( FLUX * 2 * I, TAU1(I))
+c       The minus sign is due to the fact that tau1 is x->x+1 hopping,
+c       while tau_2 is x+2->x+1 hopping
+         CALL ZPOLAR (-FLUX * 2 * I, TAU2(I))
+
          IF (MOD(POS,2) .EQ. 0) THEN
             EV2(I)=E-V(POS, 2*I) 
             EV3(I)=E-V(POS, (2*I)-1)
@@ -217,13 +241,7 @@ c     extra phase. Indeed, after we do this, the fluxes through every loop
 c     remain the same. If, for some reason, the offset is to be
 c     reintroduced later, the U matrix has to be changed accordingly.
 c 
-      DO I = 1, NSIZE
-        CALL ZPOLAR ( FLUX * 2 * I, TAU1(I))
-c       The minus sign is due to the fact that tau1 is x->x+1 hopping,
-c       while tau_2 is x+2->x+1 hopping
-        CALL ZPOLAR (-FLUX * 2 * I, TAU2(I))
-      ENDDO
-      
+
 c$$$      MULT(1:NSIZE, 1:NSIZE)=-1*N3
 c$$$      CALL SQDOT(N3EV2, N3, EV2, NSIZE)
 c$$$      MULT(1:NSIZE, NSIZE+1:2*NSIZE)=N3EV2
@@ -238,12 +256,12 @@ C     To introduce V here, must express E as matrix of (E-V) values
       DO I = 1, NSIZE
         IN = I + NSIZE
         TI = TAU2(I)
+        EV3II=EV3(I)
         DO J = 1, NSIZE
           JN = J + NSIZE
           TJ = TAU1(J)
           N3IJ  = N3 (I, J)
           EV2JJ= EV2(J)
-          EV3II=EV3(I)
           MULT(I,   J)  =     - N3IJ * TJ
           MULT(I,  JN)  =   EV2JJ * N3IJ
           MULT(IN,  J)  = - EV3II * N3IJ * TJ / TI
