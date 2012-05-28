@@ -35,7 +35,7 @@
             STOP
          END IF
          NVALS = LIMY / 2  
-         GETTRANS = GETTRANSX(GAUGE, TVALS, LIMX, NVALS, E, FLUX, V)
+         GETTRANS = GETTRANSX(GAUGE, TVALS, LIMX, NVALS, V, E, FLUX)
       END IF
        
       IF (CURRENT .EQ. 'Y') THEN
