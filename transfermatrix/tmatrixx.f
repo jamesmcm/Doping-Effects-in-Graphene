@@ -83,7 +83,7 @@ C     Odd is defined for odd leftmost column, even for even leftmost column
          CALL ZPOLAR (FLUX * (POS), TAU1)
       ENDIF
       IF (MOD(POS,2) .EQ. 0) THEN
-         CALL ZPOLAR (FLUX * -1 * (POS), TAU1)
+         CALL ZPOLAR (FLUX * (-1) * (POS), TAU1)
       ENDIF
 
       DO I = 1, NSIZE
