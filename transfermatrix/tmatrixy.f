@@ -223,7 +223,7 @@ c           CALL CORRUNI (T, R, TTILDE, RTILDE, THR, LIMX)
       CALL SQSVDVALS(T, TVALS, LIMX)
 
 c$$$  CheckUni2 is slightly faster --- AVS
-      GETTRANSY = CHECKUNI2(T,R,TTILDE,RTILDE, LIMX)
+      GETTRANSY = CHECKUNI2(T,R,TTILDE,RTILDE, LIMX)    
       RETURN
       END
 
