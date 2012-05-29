@@ -70,7 +70,8 @@ C     Function to fill V here - for now just set to zeroes
      +                   WRAPX)
          G    = CONDUCTANCE (TVALS, NTVALS)
 c$$$         WRITE(*,50) E, G, CONDA
-
+       WRITE(*,60) E, (TVALS(K), K=1, NTVALS)  
+c$$$   
 c$$$     This is gfortran function to flush the output
 c$$$     so that the data are written to the file immediately
 c$$$     If you are not using gfortran, and cannot compile this,
@@ -80,5 +81,7 @@ c$$$     comment it out -- AVS
       END DO
 
  50   FORMAT (F15.5,20ES20.5E3)
+c$$$  Format 10F is dependant on NTVALS. 
+ 60   FORMAT (F15.5,10F10.6)
       STOP
       END
