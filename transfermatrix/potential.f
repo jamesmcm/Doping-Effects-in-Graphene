@@ -187,7 +187,7 @@ c$$$c      WRITE (*, 320) LIMX,LIMY, ' T_4', (REAL(V(J, K)), K=1, LIMY)
             
  320  FORMAT (2I3,A, 100F10.6)
  330  FORMAT (2I3, 2F10.6)
- 340  FORMAT (100F10.6)
+ 340  FORMAT (100F13.6)
 
 
       RETURN 
