@@ -20,6 +20,9 @@ def CompareOldData (dict):
         import shelve
         f = shelve.open('hofstadter-%dx%d.dat' % (Lx, Ly))
         for k, v in data.items(): 
+            if not f.has_key(k): 
+               print "Saved ", k, "is not available, skip"
+               continue
             fv = f[k]
             d  = norm (v - fv)
             print "diff: ", k, d
@@ -93,6 +96,7 @@ Xux, Yux, Zux = doScan(Evals, Phivals, False, 'Y', 'X')
 Xwy, Ywy, Zwy = doScan(Evals, Phivals, True,  'Y', 'Y')
 Xwx, Ywx, Zwx = doScan(Evals, Phivals, True,  'Y', 'X')
 Xa,  Ya,  Za  = doScan(Evals, Phivals, False, 'X', 'X')
+Xb,  Yb,  Zb  = doScan(Evals, Phivals, False, 'X', 'Y')
 
 #if CompareOldData (Xu, Yu, Zu, Xw, Yw, Zw) == None:
 data = dict (Xux=Xux, Yux=Yux, Zux=Zux,
@@ -100,6 +104,7 @@ data = dict (Xux=Xux, Yux=Yux, Zux=Zux,
              Xwx=Xwx, Ywx=Ywx, Zwx=Zwx, 
              Xwy=Xwy, Ywy=Ywy, Zwy=Zwx, 
              Xa=Xa,   Ya=Ya,   Za=Za, 
+             Xb=Xb,   Yb=Yb,   Zb=Zb, 
              Xx=Xx, Yx=Yx)
              
 if CompareOldData (data) == None: 
@@ -107,6 +112,7 @@ if CompareOldData (data) == None:
     SaveData (data)
 #    SaveData (Xu, Yu, Zu, Xw, Yw, Zw)
 print "Check gauge invariance: unwrapped, J||Y: ", norm(Zuy - Zux)             
+print "Check gauge invariance: unwrapped, J||X: ", norm(Zb  - Za)             
     
 show ()
         
