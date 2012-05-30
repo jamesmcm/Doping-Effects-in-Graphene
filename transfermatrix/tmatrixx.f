@@ -108,14 +108,14 @@ C     E2 psi2 = N3 psi3 + psi1
 C     E3 psi3 = N2 psi2 + psi4
          IF (I .NE. 1) THEN
             IF (MOD(POS,2) .EQ. 0) THEN
-               N2(I,I-1)=1*TAU1
+               N2(I,I-1)=1.0/TAU1
             ELSE
                N3(I,I-1)=1*TAU1
             ENDIF
          ENDIF
          IF (I .NE. NSIZE) THEN
             IF (MOD(POS,2) .EQ. 0) THEN
-               N3(I,I+1)=1.0/TAU1
+               N3(I,I+1)=1.0*TAU1
             ELSE
                N2(I,I+1)=1.0/TAU1
             ENDIF

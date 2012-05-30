@@ -145,10 +145,11 @@ c      PRINT *, "---"
       DO J=1,LIMX
             DO K= 1,LIMY         
 c     Barrier - Remember that HEIGHT corresponds to blocking across X (so blocking y-traversal)
-              IF((K.GE.(LIMY/2-WID/2)).AND.(K .LT.(LIMY/2+WID/2)) 
+              IF((K.GE.((LIMY/2.0)-(WID/2.0))).AND.(K .LT.((LIMY/2.0)
+     +              +(WID/2.0))) 
      + .AND.(J.GT.(LIMX/2-HEIGHT/2)).AND.(J .LE.(LIMX/2+HEIGHT/2)))THEN 
-            V(J,K)= POT
-C     I don't think we want this part additive, or you get checkboard within the barrier
+            V(J,K+1)= POT + V(J,K+1)
+C     Also want checkerboard inside barrier
               ENDIF
             ENDDO
       ENDDO
