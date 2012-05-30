@@ -1,8 +1,8 @@
 c$$   NEW SUBROUTINE TO GENERATE A,B,C,D
-      SUBROUTINE GENABCD(N, MULT, A, B, C, D,U)
+      SUBROUTINE GENABCD(MULT, U, A, B, C, D, N)
       IMPLICIT NONE
-      INTEGER N
 C    M(A,B,C,D) COMPONENTS OF MATRIX, U: PHASE MATRIX
+      INTEGER N
       DOUBLE COMPLEX  MULT(2*N, 2*N)
       DOUBLE COMPLEX  U(N, N)
       DOUBLE COMPLEX  A(N, N), B(N, N),
@@ -93,8 +93,9 @@ c     C  := 1/2(Ma - U*Md*U + Mb*U - U*Mc)
       END
  
 C$$$ ROUTINE TO GENERATE T AND R
-      SUBROUTINE GENTANDRINC(N, TINC, RINC, TTILDEINC, RTILDEINC,
-     +                       A, B, C, D)
+      SUBROUTINE GENTANDRINC(A, B, C, D,
+     +                       TINC, RINC, TTILDEINC, RTILDEINC,
+     +                       N)
       IMPLICIT NONE
       INTEGER N
       DOUBLE COMPLEX UNITY/1.0/

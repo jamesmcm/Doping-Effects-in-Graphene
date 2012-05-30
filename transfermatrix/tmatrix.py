@@ -8,6 +8,10 @@ def gettrans(current, gauge, Lx, Ly, E, phi, wrap):
        
        Arguments:
            
+           current -- current direction
+           
+           gauge   -- vector potential direction
+           
            Lx   --- the size of the sample in x direction
                     (across the current flow)
            
@@ -27,7 +31,8 @@ def gettrans(current, gauge, Lx, Ly, E, phi, wrap):
            check --- unitarity check
            
     """
-    tvals, check = _tmatrix.gettrans(current, gauge, Lx, Ly, E, phi, wrap)
+    tvals, check = _tmatrix.gettrans(current.upper(), gauge.upper(), 
+                                    Lx, Ly, E, phi, wrap)
     return tvals, check
 
 def conductance (tvals):

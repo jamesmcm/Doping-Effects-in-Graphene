@@ -1,4 +1,4 @@
-      SUBROUTINE CALCMULTYX(LIMX, WRAPX, MULT, E, FLUX, POS)
+      SUBROUTINE CALCMULTYX(E, FLUX, POS, WRAPX, MULT, LIMX)
       IMPLICIT NONE
       INTEGER LIMX, WRAPX, SZ/1/
       INTEGER I/1/, NEIGH/1/, POS
@@ -16,7 +16,6 @@ c$$$  HAMMERTIME! Program terminates here if LIMX is odd
          ENDIF
       ENDIF
 
-      SZ = 2 * LIMX
       CALL SQZERO (MULT, 2 * LIMX)
 
 
@@ -73,7 +72,7 @@ c$$$  Originally the first M matrix was set here
       RETURN
       END
 
-      SUBROUTINE CALCMULTYY(LIMX, WRAPX, MULT, E, FLUX, POS)
+      SUBROUTINE CALCMULTYY(E, FLUX, POS, WRAPX, MULT, LIMX)
       IMPLICIT NONE
       INTEGER LIMX, WRAPX
       DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX)
@@ -148,7 +147,7 @@ C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
       DOUBLE PRECISION FUNCTION GETTRANSY(GAUGE, TVALS, LIMX, LIMY,
      +   E, FLUX, WRAPX)
       IMPLICIT NONE
-      INTEGER I/1/, LIMY, WRAPX, LIMX
+      INTEGER I/1/, LIMY, WRAPX, LIMX, II
       DOUBLE PRECISION TVALS(LIMX), E, FLUX
       DOUBLE PRECISION CHECKUNI
       EXTERNAL CHECKUNI
@@ -163,6 +162,7 @@ C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
      +               RINC(LIMX, LIMX), RTILDEINC(LIMX, LIMX)
       DOUBLE COMPLEX U(LIMX, LIMX)
       CHARACTER GAUGE
+      DOUBLE PRECISION THR/1e-12/
 
 c$$$  CALCMULT fills MULT - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
@@ -190,23 +190,29 @@ C     For now I have left it as before so I can compare results
 
       DO I = 1, LIMY
             IF (GAUGE .EQ. 'X') THEN
-               CALL CALCMULTYX(LIMX, WRAPX, MULT, E, FLUX, I)
+               CALL CALCMULTYX(E, FLUX, I, WRAPX, MULT, LIMX)
             ELSE
                IF (GAUGE .EQ. 'Y') THEN
-                  CALL CALCMULTYY(LIMX, WRAPX, MULT, E, FLUX, I)
+                  CALL CALCMULTYY(E, FLUX, I, WRAPX, MULT, LIMX)
                END IF
             END IF
-            CALL GENABCD(LIMX,MULT,A,B,C,D,U)
-            CALL GENTANDRINC(LIMX, TINC, RINC, TTILDEINC, RTILDEINC,
-     +           A, B, C,D)
+            CALL GENABCD(MULT, U, A,B,C,D, LIMX)
+            CALL GENTANDRINC(A, B, C, D,
+     +                       TINC, RINC, TTILDEINC, RTILDEINC,
+     +                       LIMX)
             CALL UPDATETANDR(T,    R,    TTILDE,    RTILDE, 
      +                       TINC, RINC, TTILDEINC, RTILDEINC,
      +                       LIMX)
+c
+c           Unitarity correction: not needed, unless E = 0; 
+c           however, the result at E = 0 is unreliable anyway.
+c             
+c           CALL CORRUNI (T, R, TTILDE, RTILDE, THR, LIMX) 
       END DO
-      CALL SQSVDVALS(LIMX, T, TVALS)
+      CALL SQSVDVALS(T, TVALS, LIMX)
 
 c$$$  CheckUni2 is slightly faster --- AVS
-      GETTRANSY = CHECKUNI2(LIMX,T,R,TTILDE,RTILDE)
+      GETTRANSY = CHECKUNI2(T,R,TTILDE,RTILDE, LIMX)
       RETURN
       END
 
