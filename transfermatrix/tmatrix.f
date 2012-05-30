@@ -1,6 +1,6 @@
       DOUBLE PRECISION FUNCTION GETTRANS(CURRENT, GAUGE,
      +                                   TVALS, NVALS,
-     +                                   LIMX, LIMY,
+     +                                   LIMX, LIMY, V,
      +                                   E, FLUX, WRAPX)
       IMPLICIT NONE
       CHARACTER CURRENT, GAUGE
@@ -16,6 +16,7 @@
       EXTERNAL GETTRANSX
       DOUBLE PRECISION GETTRANSY
       EXTERNAL GETTRANSY
+      DOUBLE PRECISION V(LIMX, LIMY)
 
       INTEGER I
 
@@ -26,18 +27,21 @@
       GETTRANS = -1
       NVALS = 0
       
+
+
       IF (CURRENT .EQ. 'X') THEN
          IF (MOD(LIMY, 2) .NE. 0) THEN
             WRITE (*,*) 'ERROR, LIMY must be even for X current!'
             STOP
          END IF
          NVALS = LIMY / 2  
-         GETTRANS = GETTRANSX(GAUGE, TVALS, LIMX, NVALS, E, FLUX)
+         GETTRANS = GETTRANSX(GAUGE, TVALS, LIMX, NVALS, V, E, FLUX)
       END IF
        
       IF (CURRENT .EQ. 'Y') THEN
             NVALS = LIMX 
-            GETTRANS = GETTRANSY(GAUGE, TVALS, NVALS, LIMY, E, FLUX,
+C     Will focus on adding potential matrix to vertical consideration first
+            GETTRANS = GETTRANSY(GAUGE, TVALS, NVALS, LIMY, V, E, FLUX,
      +                           WRAPX)
       END IF
       IF (NVALS .EQ. 0) THEN

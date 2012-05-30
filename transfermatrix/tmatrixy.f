@@ -1,11 +1,13 @@
-      SUBROUTINE CALCMULTYX(E, FLUX, POS, WRAPX, MULT, LIMX)
+      SUBROUTINE CALCMULTYX(E, FLUX, POS, WRAPX, MULT, LIMX, LIMY, V)
       IMPLICIT NONE
-      INTEGER LIMX, WRAPX, SZ/1/
+      INTEGER LIMX, WRAPX, SZ/1/, LIMY
       INTEGER I/1/, NEIGH/1/, POS
       DOUBLE PRECISION E, FLUX
       DOUBLE COMPLEX ZPLUS, ZMINUS, Z
 c$$$  May need to move this
       DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX)
+      DOUBLE PRECISION V(LIMX, LIMY)
+
 
 c$$$  HAMMERTIME! Program terminates here if LIMX is odd
       IF ((WRAPX .EQ. 1)) THEN
@@ -32,7 +34,7 @@ C$$$ FILL TOP-RIGHT SUBMATRIX
 C$$$ FILL BOTTOM-LEFT SUBMATRIX
          MULT(I+LIMX, I)=-1
 C$$$ FILL BOTTOM-RIGHT SUBMATRIX
-         MULT(LIMX+I,LIMX+I)=E
+         MULT(LIMX+I,LIMX+I)=E-V(I,POS)
 
 c$$$  Double-check this multiplication analytically at some stage
 
@@ -72,14 +74,16 @@ c$$$  Originally the first M matrix was set here
       RETURN
       END
 
-      SUBROUTINE CALCMULTYY(E, FLUX, POS, WRAPX, MULT, LIMX)
+      SUBROUTINE CALCMULTYY(E, FLUX, POS, WRAPX, MULT, LIMX, LIMY, V)
       IMPLICIT NONE
-      INTEGER LIMX, WRAPX
+      INTEGER LIMX, WRAPX, LIMY
       DOUBLE COMPLEX MULT(2*LIMX, 2*LIMX)
       DOUBLE PRECISION E, FLUX
       INTEGER POS
       INTEGER I/1/, NEIGH/1/ 
       DOUBLE COMPLEX CNUM
+      DOUBLE PRECISION V(LIMX, LIMY)
+
 
 c$$$  HAMMERTIME! Program terminates here if LIMX is odd
       IF ((WRAPX .EQ. 1)) THEN
@@ -92,6 +96,8 @@ c$$$  HAMMERTIME! Program terminates here if LIMX is odd
 
       CALL SQZERO (MULT,  2*LIMX)
 
+
+C     For V considerations, just replace E with E-V(of the relevant point)
 
 C$$$ FIRST ROW IS EVEN - WRAPX MAKES NO DIFF, SECOND ROW NOT, ETC.
 C$$$ - WHAT MATTERS IS WHICH ROW IT IS CENTRED ON
@@ -106,7 +112,7 @@ C$$$ FILL BOTTOM-LEFT SUBMATRIX
          MULT(I + LIMX, I) = -CNUM
 C$$$ FILL BOTTOM-RIGHT SUBMATRIX
          CALL ZPOLAR(FLUX*I, CNUM)
-         MULT(LIMX+I, LIMX+I) = E*CNUM
+         MULT(LIMX+I, LIMX+I) = (E-V(I,POS))*CNUM
 
 c$$$  Double-check this multiplication analytically at some stage
 
@@ -145,7 +151,7 @@ C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
 
 	  
       DOUBLE PRECISION FUNCTION GETTRANSY(GAUGE, TVALS, LIMX, LIMY,
-     +   E, FLUX, WRAPX)
+     +   V, E, FLUX, WRAPX)
       IMPLICIT NONE
       INTEGER I/1/, LIMY, WRAPX, LIMX, II
       DOUBLE PRECISION TVALS(LIMX), E, FLUX
@@ -163,6 +169,8 @@ C$$$     AGAIN, THE CODE IS NOW RATHER UGLY.
       DOUBLE COMPLEX U(LIMX, LIMX)
       CHARACTER GAUGE
       DOUBLE PRECISION THR/1e-12/
+      DOUBLE PRECISION V(LIMX, LIMY)
+
 
 c$$$  CALCMULT fills MULT - do multiplication in main loop
 c$$$  Must decide whether we want zig-zag or armchair edges
@@ -177,7 +185,7 @@ C     For now I have left it as before so I can compare results
          IF (GAUGE .EQ. 'Y') THEN
             CALL FILLUYY (U, FLUX, LIMX)
          ELSE
-            WRITE (*,*) 'Invalid guage identifier (X and Y only)' 
+            WRITE (*,*) 'Invalid gauge identifier (X and Y only)' 
             STOP
          END IF
       END IF
@@ -190,10 +198,13 @@ C     For now I have left it as before so I can compare results
 
       DO I = 1, LIMY
             IF (GAUGE .EQ. 'X') THEN
-               CALL CALCMULTYX(E, FLUX, I, WRAPX, MULT, LIMX)
+               CALL CALCMULTYX(E, FLUX, I, WRAPX, MULT, LIMX, LIMY, V)
+C     Note that POS is passed directly as I here
             ELSE
                IF (GAUGE .EQ. 'Y') THEN
-                  CALL CALCMULTYY(E, FLUX, I, WRAPX, MULT, LIMX)
+C     For now will add V consideration to YY
+                  CALL CALCMULTYY(E, FLUX, I, WRAPX, MULT, LIMX, 
+     +                 LIMY, V)
                END IF
             END IF
             CALL GENABCD(MULT, U, A,B,C,D, LIMX)
@@ -212,7 +223,7 @@ c           CALL CORRUNI (T, R, TTILDE, RTILDE, THR, LIMX)
       CALL SQSVDVALS(T, TVALS, LIMX)
 
 c$$$  CheckUni2 is slightly faster --- AVS
-      GETTRANSY = CHECKUNI2(T,R,TTILDE,RTILDE, LIMX)
+      GETTRANSY = CHECKUNI2(T,R,TTILDE,RTILDE, LIMX)    
       RETURN
       END
 
