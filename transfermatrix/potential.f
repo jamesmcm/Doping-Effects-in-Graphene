@@ -180,14 +180,14 @@ C            WRITE(*,330) J,K, DUM, REAL(V(J,K))
        ENDDO
       ENDDO
      
-c$$$      DO J=1, LIMX
+      DO J=1, LIMX
 c$$$c      WRITE (*, 320) LIMX,LIMY, ' T_4', (REAL(V(J, K)), K=1, LIMY)  
-c$$$      WRITE(*,340) (V(J, K), K=1, LIMY)
-c$$$      ENDDO
-      
+      WRITE(*,340) (V(J, K), K=1, LIMY)
+      ENDDO
+            
  320  FORMAT (2I3,A, 100F10.6)
  330  FORMAT (2I3, 2F10.6)
- 340  FORMAT (100F10.6)
+ 340  FORMAT (100F13.6)
 
 
       RETURN 

@@ -17,7 +17,7 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
       CHARACTER             CURRENT /'X'/,
      +                      GAUGE   /'Y'/
        
-      INTEGER, PARAMETER :: LIMX  = 10,
+      INTEGER, PARAMETER :: LIMX  = 16,
      +                      LIMY  = 16,
      +                      WRAPX = 0,
      +                      WRAPY = 0,
@@ -46,11 +46,12 @@ C$$$  READS COMMAND LINE ARGUMENT AS LIMY
 c      CALL GETARG(1, VALUE)
 c      READ(UNIT=VALUE, FMT=*) LIMY
 
-      POT=100.0
+
 c$$$      CALL TONE(V, POT, LIMX, LIMY)
 c$$$      CALL TTWO(V, POT, (-1.0*POT), LIMX, LIMY)
 
-      CALL TTHREE(V,POT,WID,HEIGHT,LIMX,LIMY)  
+c      CALL TTHREE(V,POT,WID,HEIGHT,LIMX,LIMY)  
+      CALL TFOUR(V,POT,GWID,LIMX,LIMY)
 
 c$$$      DO J=1, LIMX
 c$$$      WRITE(*,310) (V(J, K), K=1, LIMY)  
@@ -70,7 +71,7 @@ C     Function to fill V here - for now just set to zeroes
      +                   WRAPX)
          G    = CONDUCTANCE (TVALS, NTVALS)
 c$$$         WRITE(*,50) E, G, CONDA
-       WRITE(*,60) E, (TVALS(K), K=1, NTVALS)  
+c       WRITE(*,60) E, (TVALS(K), K=1, NTVALS)  
 c$$$   
 c$$$     This is gfortran function to flush the output
 c$$$     so that the data are written to the file immediately
