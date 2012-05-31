@@ -53,6 +53,7 @@ PyObject * GetTrans (PyObject * self, PyObject * args) {
           for (iV = 0; iV < Lx; iV++) {
 	      PyObject * row = PySequence_GetItem(vlist, iV); 
 	      if (!PySequence_Check(row)) {
+		   Py_DECREF(row); 
 	           PyErr_SetString(errorObject, "V[i] not a sequence");
 		   PyMem_Free(V); 
 		   return NULL; 
@@ -62,12 +63,16 @@ PyObject * GetTrans (PyObject * self, PyObject * args) {
 		 PyObject * value = PySequence_GetItem(row, jV);
 		 double vij; 
 		 if (!PyArg_Parse(value, "d", &vij)) {
+		     Py_DECREF(value); 
+		     Py_DECREF(row); 
 		     PyErr_SetString(errorObject, "cannot parse V[i][j]"); 
 		     PyMem_Free(V); 
 		     return NULL; 
 		 }
-		 V[iV + jV * Lx] = vij; 
-	      }
+		 V[iV + jV * Lx] = vij;
+		 Py_DECREF(value); 
+	     }
+	     Py_DECREF(row); 
 	  }
    
           transvals = PyMem_New (double, maxnt); 
