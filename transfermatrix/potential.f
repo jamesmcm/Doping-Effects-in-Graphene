@@ -122,10 +122,10 @@ c     Barrier
               ENDIF
             ENDDO
       ENDDO
-
-c$$$      DO J=1, LIMX
-c$$$      WRITE(*,310) (V(J, K), K=1, LIMY)  
-c$$$      ENDDO
+     
+      DO J=1, LIMX
+c      WRITE(*,310) (V(J, K), K=1, LIMY)  
+      ENDDO
  310  FORMAT (100F15.6)
       RETURN
       END
@@ -182,7 +182,7 @@ C            WRITE(*,330) J,K, DUM, REAL(V(J,K))
      
       DO J=1, LIMX
 c$$$c      WRITE (*, 320) LIMX,LIMY, ' T_4', (REAL(V(J, K)), K=1, LIMY)  
-      WRITE(*,340) (V(J, K), K=1, LIMY)
+c      WRITE(*,340) (V(J, K), K=1, LIMY)
       ENDDO
             
  320  FORMAT (2I3,A, 100F10.6)
