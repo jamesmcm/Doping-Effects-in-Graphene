@@ -66,7 +66,7 @@ PyObject * GetTrans (PyObject * self, PyObject * args) {
 		     PyMem_Free(V); 
 		     return NULL; 
 		 }
-		 V[iV * Ly + jV] = vij; 
+		 V[iV + jV * Lx] = vij; 
 	      }
 	  }
    
