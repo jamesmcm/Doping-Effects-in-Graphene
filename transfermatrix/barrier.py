@@ -36,7 +36,8 @@ def CompareOldData (dict):
     return None
     
     
-def G (E, U0, Delta):
+def T (E, U0, Delta):
+    print E, U0, Delta
     V = zeros((Lx, Ly))
     Phi = 0.0
     wrap = True
@@ -58,7 +59,7 @@ def G (E, U0, Delta):
         print E, Phi, g, c, wrap
         print "unitarity does not hold, exiting"
         sys.exit(-1)
-    return tl[0]
+    return tl
 
 
 def doScan(Evals, Uvals, Delta): 
@@ -69,10 +70,10 @@ def doScan(Evals, Uvals, Delta):
         print "E = ", Evals[i], "Delta = ", Delta
         for j in range(len (Uvals)):
             print Y[i, j], X[i, j], Delta
-            Z[i, j] = G(Y[i, j], X[i, j], Delta)
+            Z[i, j] = T(Y[i, j], X[i, j], Delta)[0]
     figure()     
     pcolor (X, Y, Z)
-    tit = 'Delta = %g' % Delta
+    tit = 'Delta = %g W = %g' % (Delta, W)
     #xlim(0.0, 1.0)
     #ylim(-4.0, 4.0)
     #tit = ''
@@ -89,15 +90,37 @@ def doScan(Evals, Uvals, Delta):
     #show ()
     return X, Y, Z
 
+def doPlot (E, Delta, Uvals):
+    figure()
+    Tvals = [] 
+    for U in Uvals: 
+        Tvals.append (T(E, U, Delta))
+    for i in [0, 1, 2, 3, 4, 5]:
+       plot (Uvals, [t[i] for t in Tvals])
+    title ('E = %g Delta = %g W = %g' % (E, Delta, W))
+
 
 Evals = arange (-0.3, 0.3, 0.002)
-Uvals = arange (-0.5, 0.5, 0.002)
+Uvals = arange (-0.5, 0.5, 0.005)
 #Phivals = arange (0.0, 2.0*math.pi + 0.0001, 2.0*math.pi/100); 
 #doScan(Evals, Uvals, 0.0)
 #doScan(Evals, Uvals, 0.05)
-doScan(Evals, Uvals, 0.1)
+#doScan(Evals, Uvals, 0.1)
 #doScan(Evals, Uvals, 0.2)
 #doScan(Evals, Uvals, 0.5)
+#W = 10
+#doPlot (-0.25, 0.0, Uvals)
+#W = 2
+#doPlot (-0.25, 0.0, Uvals)
+#W = 1
+#doPlot (-0.25, 0.0, Uvals)
+#W = 10
+#doPlot (0.11, 0.1, Uvals)
+#W = 10
+#doPlot (0.2, 0.1, Uvals)
+W = 20
+doPlot (0.033, 0.03, Uvals)
 show ()
+
         
     
