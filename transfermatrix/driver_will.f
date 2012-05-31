@@ -37,7 +37,7 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
       DOUBLE PRECISION V(LIMX,LIMY), KREAL
 c      DOUBLE PRECISION POT /2.0/, POTA /0.2/, POTB /0.3/
 c      DOUBLE PRECISION HEIGHT /10.0/, WID /7.0/, GWID /0.01/
-      INTEGER, PARAMETER :: NOVAC = 1000000
+      INTEGER, PARAMETER :: NOVAC = 1000
       DOUBLE PRECISION, PARAMETER :: U = 100.0,
      +                               ALAT = 0.0,
      +                               BLAT = 0.0,
@@ -81,18 +81,17 @@ c     +                   TVALS, NTVALS,
 c     +                   LIMX, LIMY, V,
 c     +                   E,    FLUX,
 c     +                   WRAPX)
-            G(IE)    = CONDUCTANCE(TVALS, NTVALS)
+            G(IE + 1)    = CONDUCTANCE(TVALS, NTVALS)
 c$$$         WRITE(*,50) E, G, CONDA
 
 c$$$     This is gfortran function to flush the output
 c$$$     so that the data are written to the file immediately
 c$$$     If you are not using gfortran, and cannot compile this,
 c$$$     comment it out -- AVS
-            CALL FLUSH()
+            
          END DO
          KREAL = K
          CALL INCREMENTCOND(GMEAN, GERROR, G, KREAL, NE)
-
          OPEN(UNIT = 1, FILE = "conductance.dat")
 c$$$ Writes parameters to the file with the intention for
 c$$$ extending later.
@@ -101,6 +100,7 @@ c$$$ extending later.
          DO H = 0, NE - 1
             WRITE (1,60) (EMIN+((EMAX-EMIN)*H)/NE), GMEAN(H+1),
      +                   GERROR(H+1)
+            CALL FLUSH()
          END DO
          CLOSE(1)
       END DO
