@@ -14,11 +14,11 @@
       
 C     For X current,  LIMY MUST be even, LIMX MUST BE >=3
 C     FOR Y current,  LIMX should be even if WRAPX = 1
-      CHARACTER             CURRENT /'X'/,
+      CHARACTER             CURRENT /'Y'/,
      +                      GAUGE   /'Y'/
        
-      INTEGER, PARAMETER :: LIMX  = 30,
-     +                      LIMY  = 30,
+      INTEGER, PARAMETER :: LIMX  = 10,
+     +                      LIMY  = 10,
      +                      WRAPX = 0,
      +                      WRAPY = 0,
      +                      VSIZE = LIMX*LIMY
@@ -36,7 +36,7 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
       INTEGER IE/0/, J, K
       DOUBLE PRECISION V(LIMX,LIMY)
       DOUBLE PRECISION POT /0.5/, POTA /0.2/, POTB /0.3/
-      DOUBLE PRECISION HEIGHT /0.0/, WID /5.0/, GWID /0.01/
+      DOUBLE PRECISION YDIM /0.0/, XDIM /5.0/, GWID /0.01/
       
       DATA V/VSIZE*0.0/
 C     Note that V is different size to every other matrix
@@ -50,8 +50,9 @@ c      READ(UNIT=VALUE, FMT=*) LIMY
 c$$$      CALL TONE(V, POT, LIMX, LIMY)
 c$$$      CALL TTWO(V, POT, (-1.0*POT), LIMX, LIMY)
 
-      CALL TTHREE(V,POT,WID,HEIGHT,LIMX,LIMY)  
-c      CALL TFOUR(V,POT,GWID,LIMX,LIMY)
+c      CALL TVERTADD(V,POT,XDIM,YDIM,LIMX,LIMY)  
+
+      CALL THORADD(V,POT,XDIM,YDIM,LIMX,LIMY)
 
 c$$$      DO J=1, LIMX
 c$$$      WRITE(*,310) (V(J, K), K=1, LIMY)  
@@ -71,7 +72,8 @@ C     Function to fill V here - for now just set to zeroes
      +                   WRAPX)
          G    = CONDUCTANCE (TVALS, NTVALS)
 c$$$         WRITE(*,50) E, G, CONDA
-       WRITE(*,60) E, (TVALS(K), K=1, NTVALS)  
+
+c       WRITE(*,60) E, (TVALS(K), K=1, NTVALS)  
       
 c$$$   
 c$$$     This is gfortran function to flush the output
