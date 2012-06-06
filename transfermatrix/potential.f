@@ -98,12 +98,12 @@ c$$$      END DO
 
 
 c     Sharp Barrier with a channel.
-      SUBROUTINE TTHREE(V,POT,WID,HEIGHT,LIMX,LIMY)
+      SUBROUTINE TTHREE(V,POT,XDIM,YDIM,LIMX,LIMY)
       IMPLICIT NONE 
       INTEGER LIMX,LIMY,J,K
       DOUBLE PRECISION V(LIMX,LIMY)
       DOUBLE PRECISION POT, ZERO/0.0/
-      DOUBLE PRECISION WID, HEIGHT
+      DOUBLE PRECISION XDIM, YDIM
 
 c      DO J=1, LIMX
 c      WRITE(*,310) (V(J, K), K=1, LIMY)  
@@ -114,13 +114,13 @@ c      PRINT *, "---"
 c     Barrier 
       DO J=1,LIMX
             DO K= 1,LIMY    
-              IF((K.GE.(LIMY/2-WID/2)).AND.(K .LT.(LIMY/2+WID/2))) THEN
+             IF((K.GE.(LIMY/2-XDIM/2)).AND.(K .LT.(LIMY/2+XDIM/2)))THEN
                  V(J,K)=POT
               ENDIF
       
 c     Channel
-              IF((K.GE.(LIMY/2-WID/2)).AND.(K .LT.(LIMY/2+WID/2)) 
-     + .AND.(J.GT.(LIMX/2-HEIGHT/2)).AND.(J .LE.(LIMX/2+HEIGHT/2)))THEN 
+              IF((K.GE.(LIMY/2-XDIM/2)).AND.(K .LT.(LIMY/2+XDIM/2)) 
+     + .AND.(J.GT.(LIMX/2-YDIM/2)).AND.(J .LE.(LIMX/2+YDIM/2)))THEN 
             V(J,K)= ZERO
               ENDIF
             ENDDO
@@ -133,26 +133,26 @@ c     Channel
       RETURN
       END
 
-c     Adds a Sharp Barrier with a channel to the current matrix
-      SUBROUTINE TTHREEADD(V,POT,WID,HEIGHT,LIMX,LIMY)
+c     Adds a vertical Sharp Barrier (In X) with a channel to the current matrix
+      SUBROUTINE TVERTADD(V,POT,XDIM,YDIM,LIMX,LIMY)
       IMPLICIT NONE 
       INTEGER LIMX,LIMY,J,K
       DOUBLE PRECISION V(LIMX,LIMY)
       DOUBLE PRECISION POT, ZERO/0.0/
-      DOUBLE PRECISION WID, HEIGHT
+      DOUBLE PRECISION XDIM, YDIM
     
 c     Barrier 
-C     N.B. HEIGHT corresponds to blocking across X (so blocking y-traversal)
+C     N.B. YDIM corresponds to blocking across X (so blocking y-traversal)
       DO J=1,LIMX
             DO K= 1,LIMY    
-              IF((K.GE.(LIMY/2-WID/2)).AND.(K .LT.(LIMY/2+WID/2))) THEN
+             IF((K.GE.(LIMY/2-XDIM/2)).AND.(K .LT.(LIMY/2+XDIM/2)))THEN
                  V(J,K)= V(J,K)+POT
 C     Also want checkerboard inside barrier
               ENDIF
       
 c     Channel
-              IF((K.GE.(LIMY/2-WID/2)).AND.(K .LT.(LIMY/2+WID/2)) 
-     + .AND.(J.GT.(LIMX/2-HEIGHT/2)).AND.(J .LE.(LIMX/2+HEIGHT/2)))THEN 
+              IF((K.GE.(LIMY/2-XDIM/2)).AND.(K .LT.(LIMY/2+XDIM/2)) 
+     + .AND.(J.GT.(LIMX/2-YDIM/2)).AND.(J .LE.(LIMX/2+YDIM/2)))THEN 
             V(J,K)= ZERO
               ENDIF
             ENDDO
@@ -199,9 +199,39 @@ c      WRITE(*,340) (V(J, K), K=1, LIMY)
       RETURN 
       END
 
+c     Adds a horozontal (In Y) Sharp barrier with a channel
+      SUBROUTINE THORADD(V,POT,XDIM,YDIM,LIMX,LIMY)
+      IMPLICIT NONE 
+      INTEGER LIMX,LIMY,J,K
+      DOUBLE PRECISION V(LIMX,LIMY)
+      DOUBLE PRECISION POT, ZERO/0.0/
+      DOUBLE PRECISION XDIM, YDIM
+    
+c     Barrier 
+C     N.B. YDIM corresponds to blocking across X (so blocking y-traversal)
+      DO J=1,LIMX
+            DO K= 1,LIMY    
+             IF((K.GE.(LIMY/2-XDIM/2)).AND.(K .LT.(LIMY/2+XDIM/2)))THEN
+                 V(J,K)= V(J,K)+POT
+C     Also want checkerboard inside barrier
+              ENDIF
+      
+c     Channel
+              IF((K.GE.(LIMY/2-XDIM/2)).AND.(K .LT.(LIMY/2+XDIM/2)) 
+     + .AND.(J.GT.(LIMX/2-YDIM/2)).AND.(J .LE.(LIMX/2+YDIM/2)))THEN 
+            V(J,K)= ZERO
+              ENDIF
+            ENDDO
+      ENDDO
 
 
+      DO J=1, LIMX
+      WRITE(*,310) (V(J, K), K=1, LIMY)  
+      ENDDO
 
+ 310  FORMAT (100F15.6)
+      RETURN
+      END
 
 
 
