@@ -20,6 +20,7 @@ c$$$      END DO
       RETURN
       END
 
+C$$$  Adds a constant value across whole of matrix      
       SUBROUTINE TONEADD(V,POT,LIMX,LIMY)
       IMPLICIT NONE 
       INTEGER LIMX,LIMY,J, K
@@ -67,6 +68,7 @@ c$$$      END DO
       RETURN
       END
 
+c$$$  Adds a constant value to A,B sublattices.      
       SUBROUTINE TTWOADD(V,POTA,POTB,LIMX,LIMY)
       IMPLICIT NONE 
       INTEGER LIMX,LIMY,J,K
@@ -108,14 +110,15 @@ c      WRITE(*,310) (V(J, K), K=1, LIMY)
 c      ENDDO
 c      PRINT *, "---"
       CALL DLASET ('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
-      
+
+c     Barrier 
       DO J=1,LIMX
             DO K= 1,LIMY    
               IF((K.GE.(LIMY/2-WID/2)).AND.(K .LT.(LIMY/2+WID/2))) THEN
                  V(J,K)=POT
               ENDIF
       
-c     Barrier
+c     Channel
               IF((K.GE.(LIMY/2-WID/2)).AND.(K .LT.(LIMY/2+WID/2)) 
      + .AND.(J.GT.(LIMX/2-HEIGHT/2)).AND.(J .LE.(LIMX/2+HEIGHT/2)))THEN 
             V(J,K)= ZERO
@@ -124,39 +127,42 @@ c     Barrier
       ENDDO
      
       DO J=1, LIMX
-c      WRITE(*,310) (V(J, K), K=1, LIMY)  
+      WRITE(*,310) (V(J, K), K=1, LIMY)  
       ENDDO
  310  FORMAT (100F15.6)
       RETURN
       END
 
-c     Sharp Barrier with a channel.
+c     Adds a Sharp Barrier with a channel to the current matrix
       SUBROUTINE TTHREEADD(V,POT,WID,HEIGHT,LIMX,LIMY)
       IMPLICIT NONE 
       INTEGER LIMX,LIMY,J,K
       DOUBLE PRECISION V(LIMX,LIMY)
       DOUBLE PRECISION POT, ZERO/0.0/
       DOUBLE PRECISION WID, HEIGHT
-
-c      DO J=1, LIMX
-c      WRITE(*,310) (V(J, K), K=1, LIMY)  
-c      ENDDO
-c      PRINT *, "---"     
+    
+c     Barrier 
+C     N.B. HEIGHT corresponds to blocking across X (so blocking y-traversal)
       DO J=1,LIMX
-            DO K= 1,LIMY         
-c     Barrier - Remember that HEIGHT corresponds to blocking across X (so blocking y-traversal)
-              IF((K.GE.((LIMY/2.0)-(WID/2.0))).AND.(K .LT.((LIMY/2.0)
-     +              +(WID/2.0))) 
-     + .AND.(J.GT.(LIMX/2-HEIGHT/2)).AND.(J .LE.(LIMX/2+HEIGHT/2)))THEN 
-            V(J,K+1)= POT + V(J,K+1)
+            DO K= 1,LIMY    
+              IF((K.GE.(LIMY/2-WID/2)).AND.(K .LT.(LIMY/2+WID/2))) THEN
+                 V(J,K)= V(J,K)+POT
 C     Also want checkerboard inside barrier
+              ENDIF
+      
+c     Channel
+              IF((K.GE.(LIMY/2-WID/2)).AND.(K .LT.(LIMY/2+WID/2)) 
+     + .AND.(J.GT.(LIMX/2-HEIGHT/2)).AND.(J .LE.(LIMX/2+HEIGHT/2)))THEN 
+            V(J,K)= ZERO
               ENDIF
             ENDDO
       ENDDO
 
-c$$$      DO J=1, LIMX
-c$$$      WRITE(*,310) (V(J, K), K=1, LIMY)  
-c$$$      ENDDO
+
+      DO J=1, LIMX
+      WRITE(*,310) (V(J, K), K=1, LIMY)  
+      ENDDO
+
  310  FORMAT (100F15.6)
       RETURN
       END
