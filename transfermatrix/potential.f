@@ -120,7 +120,7 @@ c     Barrier
       
 c     Channel
               IF((K.GE.(LIMY/2-XDIM/2)).AND.(K .LT.(LIMY/2+XDIM/2)) 
-     + .AND.(J.GT.(LIMX/2-YDIM/2)).AND.(J .LE.(LIMX/2+YDIM/2)))THEN 
+     + .AND.(J.GT.(LIMX/2.0-YDIM/2)).AND.(J .LE.(LIMX/2+YDIM/2)))THEN 
             V(J,K)= ZERO
               ENDIF
             ENDDO
@@ -144,8 +144,8 @@ c     Adds a vertical Sharp Barrier (In X) with a channel to the current matrix
 c     Barrier 
 C     N.B. YDIM corresponds to blocking across X (so blocking y-traversal)
       DO J=1,LIMX
-            DO K= 1,LIMY    
-             IF((K.GE.(LIMY/2-XDIM/2)).AND.(K .LT.(LIMY/2+XDIM/2)))THEN
+           DO K= 1,LIMY    
+            IF((K.GE.(LIMY/2-XDIM/2)).AND.(K .LT.(LIMY/2+XDIM/2)))THEN
                  V(J,K)= V(J,K)+POT
 C     Also want checkerboard inside barrier
               ENDIF
@@ -209,19 +209,20 @@ c     Adds a horozontal (In Y) Sharp barrier with a channel
     
 c     Barrier 
 C     N.B. YDIM corresponds to blocking across X (so blocking y-traversal)
+      
       DO J=1,LIMX
             DO K= 1,LIMY    
-             IF((K.GE.(LIMY/2-XDIM/2)).AND.(K .LT.(LIMY/2+XDIM/2)))THEN
-                 V(J,K)= V(J,K)+POT
-C     Also want checkerboard inside barrier
+c     Horozontal barrier     
+              IF( J.GE.(LIMX/2-YDIM/2).AND.(J.LT.(LIMX/2+YDIM/2 ))) THEN 
+              V(J,K) = V(J,K)+POT
               ENDIF
-      
+       
 c     Channel
-              IF((K.GE.(LIMY/2-XDIM/2)).AND.(K .LT.(LIMY/2+XDIM/2)) 
-     + .AND.(J.GT.(LIMX/2-YDIM/2)).AND.(J .LE.(LIMX/2+YDIM/2)))THEN 
-            V(J,K)= ZERO
-              ENDIF
-            ENDDO
+              IF( J.GE.(LIMX/2-YDIM/2).AND.(J.LT.(LIMX/2+YDIM/2 )) 
+     +       .AND.(K.GT.(LIMY/2-XDIM/2)).AND.(K.LE.(LIMY/2+XDIM/2)))THEN
+             V(J,K)= ZERO
+             ENDIF
+           ENDDO
       ENDDO
 
 
