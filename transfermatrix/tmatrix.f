@@ -1,4 +1,4 @@
-DOUBLE PRECISION FUNCTION GETTRANS(CURRENT, GAUGE,
+      DOUBLE PRECISION FUNCTION GETTRANS(CURRENT, GAUGE,
      +                                   TVALS, NVALS,
      +                                   LIMX, LIMY, V,
      +                                   E, FLUX, WRAPX)
