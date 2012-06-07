@@ -4,11 +4,7 @@
 double gettrans_ (char   *current, 
 		  char   *gauge, 
 		  double *tvals, 
-<<<<<<< HEAD
-		  int    *nt, 
-=======
 		  int    *ntvals, 
->>>>>>> upstream/potential
 		  int    *limx,     // Fortran: pass by ref
 		  int    *limy,     // ditto 
 		  double *V, 
@@ -27,20 +23,10 @@ double G (double *tvals, int Lx) {
 void main () {
      double E = -1.0; 
      double Phi = 0.0;
-     char cur[] = "Y"; 
-     char gauge[] = "X";
-     double tvals[10000]; 
-     double check; 
    
      int Lx = 2; 
      int Ly = 4;
      int wrap = 1; 
-<<<<<<< HEAD
-     int Nt = 0; 
-   
-     check = gettrans_(cur, gauge, tvals, &Nt, &Lx, &Ly, &E, &Phi, &wrap); 
-     printf ("E = %g check = %g G = %g\n", E, check, G(tvals, Nt)); 
-=======
      int maxl = 10000, ntvals = 0; 
      int iv = 0, jv = 0; 
    
@@ -63,5 +49,5 @@ void main () {
      free(V); 
      free(tvals); 
      
->>>>>>> upstream/potential
 }
+
