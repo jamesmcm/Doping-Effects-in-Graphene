@@ -37,7 +37,7 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
       DOUBLE PRECISION V(LIMX,LIMY), KREAL
 c      DOUBLE PRECISION POT /2.0/, POTA /0.2/, POTB /0.3/
 c      DOUBLE PRECISION HEIGHT /10.0/, WID /7.0/, GWID /0.01/
-      INTEGER, PARAMETER :: NOVAC = 1000
+      INTEGER, PARAMETER :: NOVAC = 100000
       DOUBLE PRECISION, PARAMETER :: U = 100.0,
      +                               ALAT = 0.0,
      +                               BLAT = 0.0,
@@ -69,19 +69,18 @@ c$$$ 310  FORMAT (100F10.6)
 
       NTVALS = 1
       DO K = 1, NOVAC
-c         CALL GENVAC(V, LIMX, LIMY, U, ALAT, BLAT)
+         CALL GENVAC(V, LIMX, LIMY, U, ALAT, BLAT)
          DO IE = 0, NE - 1
             E = EMIN + ( (EMAX - EMIN) * IE) / NE
-            CALL FAKEGETTRANS(TVALS, NTVALS)
-C      CALL TFOUR(V,POT,GWID,LIMX,LIMY)
-C     Function to fill V here - for now just set to zeroes
+c            CALL FAKEGETTRANS(TVALS, NTVALS)
          
-c         CONDA = GETTRANS(CURRENT, GAUGE,
-c     +                   TVALS, NTVALS,
-c     +                   LIMX, LIMY, V,
-c     +                   E,    FLUX,
-c     +                   WRAPX)
-            G(IE + 1)    = CONDUCTANCE(TVALS, NTVALS)
+            CONDA = GETTRANS(CURRENT, GAUGE,
+     +                        TVALS, NTVALS,
+     +                        LIMX, LIMY, V,
+     +                        E,    FLUX,
+     +                        WRAPX)
+
+      G(IE + 1) = TVALS(1) * TVALS(1)
 c$$$         WRITE(*,50) E, G, CONDA
 
 c$$$     This is gfortran function to flush the output

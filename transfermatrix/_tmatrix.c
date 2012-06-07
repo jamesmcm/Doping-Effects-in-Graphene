@@ -25,24 +25,60 @@ PyObject * GetTrans (PyObject * self, PyObject * args) {
           double check; 
           char *current_dir; 
           char *gauge_dir; 
+          double *V; 
           PyObject *retval; 
           PyObject *tval_list;
+          PyObject *vlist; 
+          int iV, jV; 
    
           double gettrans_ (char *current_dir, char *gauge_dir, 
-			    double *t, int *nt, int *Lx, int *Ly, 
+			    double *t, int *nt, int *Lx, int *Ly,
+			    double *V, 
 			    double *E, double *F, int *w); 
    
-          if (!PyArg_ParseTuple (args, "ssiiddi", 
+          if (!PyArg_ParseTuple (args, "ssiiddiO", 
 				 &current_dir, &gauge_dir, 
-				 &Lx, &Ly, &energy, &flux, &wrap)) {
+				 &Lx, &Ly, &energy, &flux, &wrap, 
+				 &vlist)) {
 	       PyErr_SetString(errorObject, "invalid arguments to GetTrans");
 	       return NULL; 
 	  }
           
+          if (!PySequence_Check(vlist)) {
+	       PyErr_SetString(errorObject, "V is not a sequence"); 
+	       return NULL; 
+	  }
+   
+          V = PyMem_New (double, Lx * Ly);
+          for (iV = 0; iV < Lx; iV++) {
+	      PyObject * row = PySequence_GetItem(vlist, iV); 
+	      if (!PySequence_Check(row)) {
+		   Py_DECREF(row); 
+	           PyErr_SetString(errorObject, "V[i] not a sequence");
+		   PyMem_Free(V); 
+		   return NULL; 
+	      }
+	      for (jV = 0; jV < Ly; jV++) {
+	          //V[iV * Ly + jV] = 0.0;
+		 PyObject * value = PySequence_GetItem(row, jV);
+		 double vij; 
+		 if (!PyArg_Parse(value, "d", &vij)) {
+		     Py_DECREF(value); 
+		     Py_DECREF(row); 
+		     PyErr_SetString(errorObject, "cannot parse V[i][j]"); 
+		     PyMem_Free(V); 
+		     return NULL; 
+		 }
+		 V[iV + jV * Lx] = vij;
+		 Py_DECREF(value); 
+	     }
+	     Py_DECREF(row); 
+	  }
+   
           transvals = PyMem_New (double, maxnt); 
           check = gettrans_ (current_dir, gauge_dir, transvals, &Nt, 
-			     &Lx, &Ly, &energy, &flux, &wrap); 
-          
+			     &Lx, &Ly, V, &energy, &flux, &wrap); 
+          PyMem_Free(V); 
           tval_list = PyList_New (Nt); 
           for (i = 0; i < Nt; i++) {
 	       PyList_SetItem (tval_list, i, 

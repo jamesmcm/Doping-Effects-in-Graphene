@@ -1,4 +1,4 @@
-      DOUBLE PRECISION FUNCTION CHECKUNI(T, R, TTILDE, RTILDE, N)
+DOUBLE PRECISION FUNCTION CHECKUNI(T, R, TTILDE, RTILDE, N)
       IMPLICIT NONE
 
       INTEGER N, X/1/, Y/1/
@@ -171,8 +171,12 @@ c
 c          U := U - 1/2 * U . epsilon
 c
 c     Then, indeed, the first-order term in epsilon cancels epsilon
-c     on the r.h.s
-c
+c     on the r.h.s. (It is also possible to implement a more symmetric
+c     version of the algorithm: U: = U - 1/4 U . epsilon - 1/4 eta . U^+,
+c     where the second term takes care of the defect in U.U^+ = 1 + eta.
+c     However, I do not see a real benefit in doing so, while twice as many
+c     flops are required to evaluate the two terms.)
+      
 c     Below, we correct the unitary matrix
 c      
 c              |  T    R~ |
@@ -256,24 +260,32 @@ c     Here, we fill in the rest.
       DNORM = DNORM1 + DNORM2 + DNORM3
 
       if (DNORM .GT. THRESHOLD) THEN
-        write (*, *) 'Unitarity correction', dnorm
+        write (*, *) '*** Unitarity correction: ', dnorm
+c
+c       Note that we do not use temporary variables to preserve
+c       old values of T, R, etc. Doing so would only change
+c       would eliminate terms of the order of  eps^2, which are
+c       ignored by this procedure anyway.
+c        
 c       T  := T  - 1/2 ( T . eps_1 + R~ . eps_2^+ )
-c       R  := R  - 1/2 ( R . eps_1 + T~ . eps_2^+ )       
-c       T~ := T~ - 1/2 ( R . eps_2 + T~ . eps_3   )       
-c       R~ := R~ - 1/2 ( T . eps_2 + R~ . eps_3   )       
         CALL SQDOTUPD (ONEC, T, -0.5*ONEC, T,      EPS1,  N)
         CALL SQDOTUPD (ONEC, T, -0.5*ONEC, RTILDE, EPS2H, N)
 
+c       R  := R  - 1/2 ( R . eps_1 + T~ . eps_2^+ )       
         CALL SQDOTUPD (ONEC, R, -0.5*ONEC, R,      EPS1,  N)
         CALL SQDOTUPD (ONEC, R, -0.5*ONEC, TTILDE, EPS2H, N)
 
-        CALL SQDOTUPD (ONEC, TTILDE, -0.5*ONEC, R,      EPS2, N)
-        CALL SQDOTUPD (ONEC, TTILDE, -0.5*ONEC, TTILDE, EPS3, N)
+c       R~ := R~ - 1/2 ( T . eps_2 + R~ . eps_3   )       
         CALL SQDOTUPD (ONEC, RTILDE, -0.5*ONEC, T,      EPS2, N)
         CALL SQDOTUPD (ONEC, RTILDE, -0.5*ONEC, RTILDE, EPS3, N)
+        
+c       T~ := T~ - 1/2 ( R . eps_2 + T~ . eps_3   )       
+        CALL SQDOTUPD (ONEC, TTILDE, -0.5*ONEC, R,      EPS2, N)
+        CALL SQDOTUPD (ONEC, TTILDE, -0.5*ONEC, TTILDE, EPS3, N)
       ENDIF
 
 c     WRITE (*, *) 'CORRUNI:', DNORM1, DNORM2, DNORM3, DNORM
       CORRUNI = DNORM
       RETURN
       END
+
