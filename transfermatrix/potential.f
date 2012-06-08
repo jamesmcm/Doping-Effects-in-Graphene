@@ -79,7 +79,7 @@ c     Channel
 
 
       DO J=1, LIMX
-      WRITE(*,310) (V(J, K), K=1, LIMY)  
+c      WRITE(*,310) (V(J, K), K=1, LIMY)  
       ENDDO
 
  310  FORMAT (100F15.6)
@@ -146,7 +146,7 @@ c     Channel
 
 
       DO J=1, LIMX
-      WRITE(*,310) (V(J, K), K=1, LIMY)  
+c      WRITE(*,310) (V(J, K), K=1, LIMY)  
       ENDDO
 
  310  FORMAT (100F15.6)
