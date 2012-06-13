@@ -23,10 +23,11 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
      +                      WRAPY = 0,
      +                      VSIZE = LIMX*LIMY
       
-      DOUBLE PRECISION      FLUX/0.0/
+      DOUBLE PRECISION      FLUX/0.0002/
        
       DOUBLE PRECISION, PARAMETER :: EMIN = -0.4995,
      +                               EMAX =  0.5
+c$$$  NE Length of Conductance,mean,error
       INTEGER, PARAMETER ::          NE   =  40
       
       INTEGER, PARAMETER :: MAXSIZE = 10000
@@ -37,7 +38,9 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
       DOUBLE PRECISION V(LIMX,LIMY), KREAL
 c      DOUBLE PRECISION POT /2.0/, POTA /0.2/, POTB /0.3/
 c      DOUBLE PRECISION HEIGHT /10.0/, WID /7.0/, GWID /0.01/
-      INTEGER, PARAMETER :: NOVAC = 15
+
+c$$$  NOVAC is number of renormalisations
+      INTEGER, PARAMETER :: NOVAC = 1
       DOUBLE PRECISION, PARAMETER :: U = 1000.0,
      +                               ALAT = 0.05,
      +                               BLAT = 0.05,
@@ -46,7 +49,7 @@ c      DOUBLE PRECISION HEIGHT /10.0/, WID /7.0/, GWID /0.01/
       DATA V/VSIZE*0.0/
 C     Note that V is different size to every other matrix
 c$$$  V - represents potentials of sites in real lattice
-c$$$
+
 C$$$  READS COMMAND LINE ARGUMENT AS LIMY
 c      CALL GETARG(1, VALUE)
 c      READ(UNIT=VALUE, FMT=*) LIMY
@@ -92,11 +95,12 @@ c$$$     comment it out -- AVS
          END DO
          KREAL = K
          CALL INCREMENTCOND(GMEAN, GERROR, G, KREAL, NE)
-         OPEN(UNIT=1, FILE="conductance-YY-0flux-0.05a0.05b1000U.dat")
+         OPEN(UNIT=1, FILE="YY_flux_02.dat")
 c$$$ Writes parameters to the file with the intention for
 c$$$ extending later.
-            WRITE (1,40) K, U, ALAT, BLAT, ' ', CURRENT, ' ', GAUGE,
-     +                  LIMX, LIMY, WRAPX, WRAPY, NE, EMIN, EMAX, FLUX
+c$$$  Commented out for convinced for plotting     
+c            WRITE (1,40) K, U, ALAT, BLAT, ' ', CURRENT, ' ', GAUGE,
+c     +                  LIMX, LIMY, WRAPX, WRAPY, NE, EMIN, EMAX, FLUX
          DO H = 0, NE - 1
             WRITE (1,60) (EMIN+((EMAX-EMIN)*H)/NE), GMEAN(H+1),
      +                   GERROR(H+1), CONDA(H+1)

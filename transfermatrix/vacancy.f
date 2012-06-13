@@ -1,5 +1,6 @@
 
-
+c$$$  Subroutine to generate vacancies with differant P(x) for a,b
+c$$$  sublattice
       SUBROUTINE GENVAC(V, LIMX, LIMY, U, ALAT, BLAT)
       IMPLICIT NONE
 
@@ -28,10 +29,10 @@
       RETURN
       END
 
-
+c     Function to print V (Potential lattice) 
       SUBROUTINE PRNTV(V, LIMX, LIMY)
       IMPLICIT NONE
-      
+          
       INTEGER LIMX, LIMY, I, J
       DOUBLE PRECISION V(LIMX,LIMY)
 
@@ -44,6 +45,7 @@
       RETURN
       END
 
+c     
       DOUBLE PRECISION FUNCTION ADDUPV(V, LIMX, LIMY)
       IMPLICIT NONE
 
