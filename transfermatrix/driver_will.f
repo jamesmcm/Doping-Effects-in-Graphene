@@ -14,33 +14,33 @@
       
 C     For X current,  LIMY MUST be even, LIMX MUST BE >=3
 C     FOR Y current,  LIMX should be even if WRAPX = 1
-      CHARACTER             CURRENT /'X'/,
+      CHARACTER             CURRENT /'Y'/,
      +                      GAUGE   /'Y'/
        
       INTEGER, PARAMETER :: LIMX  = 100,
-     +                      LIMY  = 173,
+     +                      LIMY  = 174,
      +                      WRAPX = 0,
      +                      WRAPY = 0,
      +                      VSIZE = LIMX*LIMY
       
       DOUBLE PRECISION      FLUX/0.0/
        
-      DOUBLE PRECISION, PARAMETER :: EMIN = -0.92,
-     +                               EMAX =  1.02
+      DOUBLE PRECISION, PARAMETER :: EMIN = -0.4995,
+     +                               EMAX =  0.5
       INTEGER, PARAMETER ::          NE   =  40
       
       INTEGER, PARAMETER :: MAXSIZE = 10000
       DOUBLE PRECISION TVALS(MAXSIZE)
       INTEGER NTVALS
-      DOUBLE PRECISION E, CONDA/-1.0/, G(NE), GMEAN(NE), GERROR(NE)
+      DOUBLE PRECISION E, CONDA(NE), G(NE), GMEAN(NE), GERROR(NE)
       INTEGER IE/0/, J, K, H
       DOUBLE PRECISION V(LIMX,LIMY), KREAL
 c      DOUBLE PRECISION POT /2.0/, POTA /0.2/, POTB /0.3/
 c      DOUBLE PRECISION HEIGHT /10.0/, WID /7.0/, GWID /0.01/
-      INTEGER, PARAMETER :: NOVAC = 100000
-      DOUBLE PRECISION, PARAMETER :: U = 100.0,
-     +                               ALAT = 0.0,
-     +                               BLAT = 0.0,
+      INTEGER, PARAMETER :: NOVAC = 15
+      DOUBLE PRECISION, PARAMETER :: U = 1000.0,
+     +                               ALAT = 0.05,
+     +                               BLAT = 0.05,
      +                               ZERO = 0.0
       
       DATA V/VSIZE*0.0/
@@ -74,13 +74,14 @@ c$$$ 310  FORMAT (100F10.6)
             E = EMIN + ( (EMAX - EMIN) * IE) / NE
 c            CALL FAKEGETTRANS(TVALS, NTVALS)
          
-            CONDA = GETTRANS(CURRENT, GAUGE,
-     +                        TVALS, NTVALS,
-     +                        LIMX, LIMY, V,
-     +                        E,    FLUX,
-     +                        WRAPX)
+            CONDA(IE + 1) = GETTRANS(CURRENT, GAUGE,
+     +                              TVALS, NTVALS,
+     +                              LIMX, LIMY, V,
+     +                              E,    FLUX,
+     +                              WRAPX)
 
-      G(IE + 1) = TVALS(1) * TVALS(1)
+            G(IE + 1) = CONDUCTANCE (TVALS, NTVALS)
+
 c$$$         WRITE(*,50) E, G, CONDA
 
 c$$$     This is gfortran function to flush the output
@@ -91,14 +92,14 @@ c$$$     comment it out -- AVS
          END DO
          KREAL = K
          CALL INCREMENTCOND(GMEAN, GERROR, G, KREAL, NE)
-         OPEN(UNIT = 1, FILE = "conductance.dat")
+         OPEN(UNIT=1, FILE="conductance-YY-0flux-0.05a0.05b1000U.dat")
 c$$$ Writes parameters to the file with the intention for
 c$$$ extending later.
             WRITE (1,40) K, U, ALAT, BLAT, ' ', CURRENT, ' ', GAUGE,
      +                  LIMX, LIMY, WRAPX, WRAPY, NE, EMIN, EMAX, FLUX
          DO H = 0, NE - 1
             WRITE (1,60) (EMIN+((EMAX-EMIN)*H)/NE), GMEAN(H+1),
-     +                   GERROR(H+1)
+     +                   GERROR(H+1), CONDA(H+1)
             CALL FLUSH()
          END DO
          CLOSE(1)
@@ -106,7 +107,7 @@ c$$$ extending later.
 
  40   FORMAT (I15, 3F15.5, 4A, 5I15, 3F15.5)
  50   FORMAT (F15.5,20ES20.5E3)
- 60   FORMAT (F15.5, 2ES20.5E3)
+ 60   FORMAT (F15.5, 3ES20.5E3)
       STOP
       END
 
