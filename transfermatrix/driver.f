@@ -14,11 +14,11 @@
       
 C     For X current,  LIMY MUST be even, LIMX MUST BE >=3
 C     FOR Y current,  LIMX should be even if WRAPX = 1
-      CHARACTER             CURRENT /'Y'/,
+      CHARACTER             CURRENT /'X'/,
      +                      GAUGE   /'Y'/
        
-      INTEGER, PARAMETER :: LIMX  = 10,
-     +                      LIMY  = 10,
+      INTEGER, PARAMETER :: LIMX  = 60,
+     +                      LIMY  = 60,
      +                      WRAPX = 0,
      +                      WRAPY = 0,
      +                      VSIZE = LIMX*LIMY
@@ -35,8 +35,8 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
       DOUBLE PRECISION E, CONDA/-1.0/, G
       INTEGER IE/0/, J, K
       DOUBLE PRECISION V(LIMX,LIMY)
-      DOUBLE PRECISION POT /0.5/, POTA /0.2/, POTB /0.3/
-      DOUBLE PRECISION YDIM /0.0/, XDIM /5.0/, GWID /0.01/
+      DOUBLE PRECISION POT /60.0/, POTA /0.2/, POTB /0.3/
+      DOUBLE PRECISION YDIM /0.0/, XDIM /34.0/, GWID /0.01/
       
       DATA V/VSIZE*0.0/
 C     Note that V is different size to every other matrix
@@ -71,8 +71,8 @@ C     Function to fill V here - for now just set to zeroes
      +                   E,    FLUX,
      +                   WRAPX)
          G    = CONDUCTANCE (TVALS, NTVALS)
-c$$$         WRITE(*,50) E, G, CONDA
-
+      WRITE(*,50) E, G, CONDA
+                
 c       WRITE(*,60) E, (TVALS(K), K=1, NTVALS)  
       
 c$$$   
@@ -85,8 +85,8 @@ c$$$     comment it out -- AVS
       END DO
 
  50   FORMAT (F15.5,20ES20.5E3)
-c$$$  Format 10F is dependant on NTVALS. 
- 60   FORMAT (F15.5,16F10.6)
-
+c$$$  Format (*)F is dependant on NTVALS. 
+ 60   FORMAT (35F10.6)
+     
       STOP
       END
