@@ -20,24 +20,22 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
       CHARACTER             CURRENT /'X'/,
      +                      GAUGE   /'Y'/
        
-<<<<<<< HEAD
-<<<<<<< HEAD
       INTEGER, PARAMETER :: LIMX  = 1000,
      +                      LIMY  = 1000,
      +                      WRAPX = 0,
      +                      WRAPY = 0,
      +                      TIMES = 1000
-=======
+
       INTEGER, PARAMETER :: LIMX  = 10,
      +                      LIMY  = 10,
-=======
+
       INTEGER, PARAMETER :: LIMX  = 60,
      +                      LIMY  = 60,
->>>>>>> potential
+
      +                      WRAPX = 0,
      +                      WRAPY = 0,
      +                      VSIZE = LIMX*LIMY
->>>>>>> upstream/potential
+
       
       DOUBLE PRECISION      FLUX/0.0/
        
@@ -49,7 +47,7 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
       DOUBLE PRECISION TVALS(MAXSIZE)
       INTEGER NTVALS
       DOUBLE PRECISION E, CONDA/-1.0/, G
-<<<<<<< HEAD
+
       INTEGER IE/0/
 
       DOUBLE PRECISION V(LIMX,LIMY), TOTALV(TIMES), MEANV, DEVV
@@ -58,7 +56,7 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
      +                               BLAT = 0.5
     
 
-=======
+
       INTEGER IE/0/, J, K
       DOUBLE PRECISION V(LIMX,LIMY)
       DOUBLE PRECISION POT /60.0/, POTA /0.2/, POTB /0.3/
@@ -68,7 +66,7 @@ C     FOR Y current,  LIMX should be even if WRAPX = 1
 C     Note that V is different size to every other matrix
 c$$$  V - represents potentials of sites in real lattice
 c$$$
->>>>>>> upstream/potential
+
 C$$$  READS COMMAND LINE ARGUMENT AS LIMY
 c      CALL GETARG(1, VALUE)
 c      READ(UNIT=VALUE, FMT=*) LIMY
@@ -84,7 +82,7 @@ c$$$  Generates the matrix of vacancy locations
       WRITE (*,*) LIMX * LIMY, ',', ALAT, BLAT, ',', MEANV, '+/-', DEVV
 c      WRITE (*,*) (TOTALV(IE), IE = 1, TIMES)
 
-<<<<<<< HEAD
+
 c      DO IE = 0, NE + 1
 c         E = EMIN + ( (EMAX - EMIN) * IE) / NE
 c         CONDA = GETTRANS(CURRENT, GAUGE,
@@ -94,7 +92,7 @@ c     +                   E,    FLUX,
 c     +                   WRAPX)
 c         G    = CONDUCTANCE (TVALS, NTVALS)
 c         WRITE(*,50) E, G, CONDA
-=======
+
 c$$$      CALL TONE(V, POT, LIMX, LIMY)
 c$$$      CALL TTWO(V, POT, (-1.0*POT), LIMX, LIMY)
 
@@ -119,14 +117,14 @@ C     Function to fill V here - for now just set to zeroes
      +                   E,    FLUX,
      +                   WRAPX)
          G    = CONDUCTANCE (TVALS, NTVALS)
-<<<<<<< HEAD
-c$$$         WRITE(*,50) E, G, CONDA
->>>>>>> upstream/potential
 
-=======
+c$$$         WRITE(*,50) E, G, CONDA
+
+
+
       WRITE(*,50) E, G, CONDA
                 
->>>>>>> potential
+
 c       WRITE(*,60) E, (TVALS(K), K=1, NTVALS)  
       
 c$$$   
