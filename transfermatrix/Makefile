@@ -1,5 +1,5 @@
 DRIVER   = driver.f
-CORESRC  = linalg.f tmatrix.f tmatrixx.f tmatrixy.f util.f trupdate.f
+CORESRC  = linalg.f tmatrix.f tmatrixx.f tmatrixy.f util.f trupdate.f vacancy.f potential.f
 CORESRC  += unitarity.f 
 PYWRAPPER = _tmatrix.c
 HELPERS  = 
@@ -40,10 +40,9 @@ $(TARGET): $(OBJ)
 
 %.o: %.c
 	gcc $(CFLAGS) -o $@ -c $< 
-	
+
 %.o: %.f
-	gfortran $(F77FLAGS) -o $@ -c $<
-	
-	
+	gfortran $(F77FLAGS) -c $< -o $@	
+
 clean::
 	-rm $(TARGET) *.o *.so

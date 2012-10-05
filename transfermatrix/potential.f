@@ -153,64 +153,64 @@ c      WRITE(*,310) (V(J, K), K=1, LIMY)
       RETURN
       END
 
-c$$$  Generates a random distribution of vacancies
+c$$$c$$$  Generates a random distribution of vacancies
+c$$$
+c$$$      SUBROUTINE GENVAC(V, LIMX, LIMY, U, ALAT, BLAT)
+c$$$      IMPLICIT NONE
+c$$$
+c$$$      INTEGER LIMX, LIMY, I, J
+c$$$      DOUBLE PRECISION V(LIMX,LIMY), U, ALAT, BLAT
+c$$$      REAL RANDOM
+c$$$      DOUBLE PRECISION, PARAMETER :: ZERO = 0.0
+c$$$
+c$$$      CALL DLASET('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
+c$$$
+c$$$      DO I = 1, LIMX
+c$$$         DO J = 1, LIMY
+c$$$            CALL RANDOM_NUMBER(RANDOM)
+c$$$            IF (MOD(I, 2) .EQ. MOD(J, 2)) THEN
+c$$$               IF (RANDOM .LT. ALAT) THEN
+c$$$                  V(I,J) = U
+c$$$               END IF
+c$$$            ELSE
+c$$$               IF (RANDOM .LT. BLAT) THEN
+c$$$                  V(I,J) = U
+c$$$               END IF
+c$$$            END IF
+c$$$         END DO
+c$$$      END DO
+c$$$
+c$$$      RETURN
+c$$$      END
 
-      SUBROUTINE GENVAC(V, LIMX, LIMY, U, ALAT, BLAT)
-      IMPLICIT NONE
 
-      INTEGER LIMX, LIMY, I, J
-      DOUBLE PRECISION V(LIMX,LIMY), U, ALAT, BLAT
-      REAL RANDOM
-      DOUBLE PRECISION, PARAMETER :: ZERO = 0.0
-
-      CALL DLASET('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
-
-      DO I = 1, LIMX
-         DO J = 1, LIMY
-            CALL RANDOM_NUMBER(RANDOM)
-            IF (MOD(I, 2) .EQ. MOD(J, 2)) THEN
-               IF (RANDOM .LT. ALAT) THEN
-                  V(I,J) = U
-               END IF
-            ELSE
-               IF (RANDOM .LT. BLAT) THEN
-                  V(I,J) = U
-               END IF
-            END IF
-         END DO
-      END DO
-
-      RETURN
-      END
-
-
-c$$$  Calcualtes the running mean and error for the conductance
-      SUBROUTINE INCREMENTCOND(MEANCOND, ERRCOND, NEWCOND, RNUM, NE)
-      IMPLICIT NONE
-
-      INTEGER NE, I
-      DOUBLE PRECISION MEANCOND(NE), ERRCOND(NE), NEWCOND(NE),
-     +                 SIGMA, RNUM
-c      INTEGER NUM
-
-      DO I = 1, NE
-         SIGMA = 0.0
-c         RNUM = NUM
-         SIGMA = ERRCOND(I) * SQRT(RNUM - 1.0)
-         SIGMA = SIGMA * SIGMA
-         SIGMA = SIGMA + (MEANCOND(I) * MEANCOND(I))
-         SIGMA = SIGMA * (RNUM - 1.0)
-         SIGMA = SIGMA + (NEWCOND(I) * NEWCOND(I))
-         SIGMA = SIGMA / RNUM
-
-         MEANCOND(I) = MEANCOND(I) * (RNUM - 1.0)
-         MEANCOND(I) = (MEANCOND(I) + NEWCOND(I)) / RNUM
-
-         SIGMA = SIGMA - (MEANCOND(I) * MEANCOND(I))
-         SIGMA = SQRT(SIGMA)
-         ERRCOND(I) = SIGMA / SQRT(RNUM)
-      END DO
-
-      RETURN
-      END
+c$$$c$$$  Calcualtes the running mean and error for the conductance
+c$$$      SUBROUTINE INCREMENTCOND(MEANCOND, ERRCOND, NEWCOND, RNUM, NE)
+c$$$      IMPLICIT NONE
+c$$$
+c$$$      INTEGER NE, I
+c$$$      DOUBLE PRECISION MEANCOND(NE), ERRCOND(NE), NEWCOND(NE),
+c$$$     +                 SIGMA, RNUM
+c$$$c      INTEGER NUM
+c$$$
+c$$$      DO I = 1, NE
+c$$$         SIGMA = 0.0
+c$$$c         RNUM = NUM
+c$$$         SIGMA = ERRCOND(I) * SQRT(RNUM - 1.0)
+c$$$         SIGMA = SIGMA * SIGMA
+c$$$         SIGMA = SIGMA + (MEANCOND(I) * MEANCOND(I))
+c$$$         SIGMA = SIGMA * (RNUM - 1.0)
+c$$$         SIGMA = SIGMA + (NEWCOND(I) * NEWCOND(I))
+c$$$         SIGMA = SIGMA / RNUM
+c$$$
+c$$$         MEANCOND(I) = MEANCOND(I) * (RNUM - 1.0)
+c$$$         MEANCOND(I) = (MEANCOND(I) + NEWCOND(I)) / RNUM
+c$$$
+c$$$         SIGMA = SIGMA - (MEANCOND(I) * MEANCOND(I))
+c$$$         SIGMA = SQRT(SIGMA)
+c$$$         ERRCOND(I) = SIGMA / SQRT(RNUM)
+c$$$      END DO
+c$$$
+c$$$      RETURN
+c$$$      END
 
