@@ -121,21 +121,19 @@ c$$$  Subroutine to stich together T and R values to simulate larger sample size
      +               TTILDE(NSIZE, NSIZE), TTILDE_TWO(NSIZE, NSIZE),
      +               RTILDE(NSIZE, NSIZE), RTILDE_TWO(NSIZE, NSIZE)
 
-      IF ST .EQ. 0 THEN
-         RETURN
-         END
-      END IF
+      IF (ST .GT. 0) THEN
 
-      CALL SQCOPY (T,      T_TWO,      NSIZE)
-      CALL SQCOPY (TTILDE, TTILDE_TWO, NSIZE)
-      CALL SQCOPY (R,      R_TWO,      NSIZE)
-      CALL SQCOPY (RTILDE, RTILDE_TWO, NSIZE)
+         CALL SQCOPY (T,      T_TWO,      NSIZE)
+         CALL SQCOPY (TTILDE, TTILDE_TWO, NSIZE)
+         CALL SQCOPY (R,      R_TWO,      NSIZE)
+         CALL SQCOPY (RTILDE, RTILDE_TWO, NSIZE)
       
-      DO I = 1, ST
-         CALL UPDATETANDR(T,      R,     TTILDE,     RTILDE, 
-     +                    T_TWO,  R_TWO, TTILDE_TWO, RTILDE_TWO, 
-     +                    NSIZE)
-      END DO
+         DO I = 1, ST
+            CALL UPDATETANDR(T,      R,     TTILDE,     RTILDE, 
+     +                       T_TWO,  R_TWO, TTILDE_TWO, RTILDE_TWO, 
+     +                       NSIZE)
+         END DO
+      END IF
 
       RETURN
       END

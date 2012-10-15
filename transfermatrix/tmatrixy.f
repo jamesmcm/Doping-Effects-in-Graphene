@@ -222,7 +222,7 @@ c           CALL CORRUNI (T, R, TTILDE, RTILDE, THR, LIMX)
       END DO
 
 c$$$  This bit stiches T vals together to make longer sample
-      CALL TRSTICH(0, T, R, TTILDE, RTILDE, NSIZE)
+      CALL TRSTICH(0, T, R, TTILDE, RTILDE, LIMX)
 
       CALL SQSVDVALS(T, TVALS, LIMX)
 
