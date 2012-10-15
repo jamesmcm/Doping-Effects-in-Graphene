@@ -220,6 +220,10 @@ c           however, the result at E = 0 is unreliable anyway.
 c             
 c           CALL CORRUNI (T, R, TTILDE, RTILDE, THR, LIMX) 
       END DO
+
+c$$$  This bit stiches T vals together to make longer sample
+      CALL TRSTICH(0, T, R, TTILDE, RTILDE, NSIZE)
+
       CALL SQSVDVALS(T, TVALS, LIMX)
 
 c$$$  CheckUni2 is slightly faster --- AVS

@@ -46,6 +46,10 @@ C     NSIZE = LIMY/2
      +                       TINC,  RINC, TTILDEINC, RTILDEINC, 
      +                       NSIZE)
       END DO
+
+c$$$  This bit stiches T vals together to make longer sample
+      CALL TRSTICH(0, T, R, TTILDE, RTILDE, NSIZE)
+
       CALL SQSVDVALS(T, TVALS, NSIZE)
 
       GETTRANSX = CHECKUNI2(T, R, TTILDE, RTILDE, NSIZE)

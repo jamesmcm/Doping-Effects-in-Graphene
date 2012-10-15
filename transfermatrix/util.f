@@ -110,3 +110,32 @@ c$$$
       CONDUCTANCE = DDOT (LIMX, TVALS, 1, TVALS, 1)
       RETURN
       END
+
+
+      SUBROUTINE TRSTICH(ST, T, R, TTILDE, RTILDE, NSIZE)
+      IMPLICIT NONE
+c$$$  Subroutine to stich together T and R values to simulate larger sample sizes
+      INTEGER ST, NSIZE, I
+      DOUBLE COMPLEX      T(NSIZE, NSIZE),      T_TWO(NSIZE, NSIZE),
+     +                    R(NSIZE, NSIZE),      R_TWO(NSIZE, NSIZE),
+     +               TTILDE(NSIZE, NSIZE), TTILDE_TWO(NSIZE, NSIZE),
+     +               RTILDE(NSIZE, NSIZE), RTILDE_TWO(NSIZE, NSIZE)
+
+      IF ST .EQ. 0 THEN
+         RETURN
+         END
+      END IF
+
+      CALL SQCOPY (T,      T_TWO,      NSIZE)
+      CALL SQCOPY (TTILDE, TTILDE_TWO, NSIZE)
+      CALL SQCOPY (R,      R_TWO,      NSIZE)
+      CALL SQCOPY (RTILDE, RTILDE_TWO, NSIZE)
+      
+      DO I = 1, ST
+         CALL UPDATETANDR(T,      R,     TTILDE,     RTILDE, 
+     +                    T_TWO,  R_TWO, TTILDE_TWO, RTILDE_TWO, 
+     +                    NSIZE)
+      END DO
+
+      RETURN
+      END
