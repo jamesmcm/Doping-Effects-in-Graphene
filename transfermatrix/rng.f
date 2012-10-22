@@ -37,6 +37,23 @@ c$$$gfortran -o program <allobjectfileshere.o>
 
       RETURN
       END
+
+      SUBROUTINE safeseed(seed)
+      IMPLICIT NONE
+      INTEGER seed
+      REAL ran2
+      REAL Z
+      
+      IF (SEED .EQ. 0) THEN
+         WRITE (*,*) "Warning: Seed was set to zero."
+      ELSE IF (SEED .GT. 0) THEN
+         SEED=-1*SEED
+      END IF
+      
+      Z=ran2(seed)
+         
+      RETURN
+      END
       
       REAL FUNCTION ran2(idum)
       IMPLICIT NONE

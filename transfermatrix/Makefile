@@ -1,8 +1,8 @@
 DRIVER   = driver.f
 CORESRC  = linalg.f tmatrix.f tmatrixx.f tmatrixy.f util.f trupdate.f vacancy.f potential.f
-CORESRC  += unitarity.f 
+CORESRC  += unitarity.f rng.f
 PYWRAPPER = _tmatrix.c
-HELPERS  = 
+HELPERS  = gettime.c
 
 OBJ = $(DRIVER:.f=.o) $(CORESRC:.f=.o) $(HELPERS:.c=.o)
 
@@ -10,12 +10,12 @@ TARGET = tmsim
 PY_TARGET = $(PYWRAPPER:.c=.so)
 PY_OBJ = $(CORESRC:.f=.o) $(PYWRAPPER:.c=.o)
 
-C_TARGET = c-example
-C_SRC = c-example.c 
+C_TARGET = c-example gettime
+C_SRC = c-example.c gettime.c
 C_OBJ = $(CORESRC:.f=.o) $(C_SRC:.c=.o) 
 
 INC = 
-LIB = -lm -lblas -llapack
+LIB = -lm -lblas -llapack -lgfortran
 
 LDFLAGS  = $(LIB)
 CFLAGS   = $(INC) -Wall -fPIC
