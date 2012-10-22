@@ -19,13 +19,13 @@ c$$$gfortran -o program <allobjectfileshere.o>
 
       REAL FUNCTION GETRAND()
       IMPLICIT NONE
-      INTEGER*4 num/19/
+      INTEGER*4 NUM/19/
       REAL ran2
-      GETRAND=ran2(num)
+      GETRAND=ran2(NUM)
       RETURN
       END
 
-      SUBROUTINE seedtime()
+      SUBROUTINE SEEDTIME()
       IMPLICIT NONE
       INTEGER TIME
       INTEGER gettime1
@@ -38,9 +38,9 @@ c$$$gfortran -o program <allobjectfileshere.o>
       RETURN
       END
 
-      SUBROUTINE safeseed(seed)
+      SUBROUTINE SAFESEED(SEED)
       IMPLICIT NONE
-      INTEGER seed
+      INTEGER SEED
       REAL ran2
       REAL Z
       
@@ -50,7 +50,7 @@ c$$$gfortran -o program <allobjectfileshere.o>
          SEED=-1*SEED
       END IF
       
-      Z=ran2(seed)
+      Z=ran2(SEED)
          
       RETURN
       END
