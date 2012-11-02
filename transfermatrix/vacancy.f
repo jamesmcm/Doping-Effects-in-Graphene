@@ -33,6 +33,54 @@ c$$$            CALL RANDOM_NUMBER(RANDOM)
       RETURN
       END
 
+C     Subroutine to apply fixed number of sites to A and B
+      SUBROUTINE GENVACFIX(V, LIMX, LIMY, U, ALAT, BLAT)
+      IMPLICIT NONE
+
+      INTEGER LIMX, LIMY
+      INTEGER SEED/-4/
+      DOUBLE PRECISION V(LIMX,LIMY), U, ALAT, BLAT
+      REAL GETRAND
+      REAL RANDOM
+      LOGICAL KEEPGOING
+      INTEGER NALAT, NBLAT, XC, YC
+      INTEGER CURALAT/0/, CURBLAT/0/
+      DOUBLE PRECISION, PARAMETER :: ZERO = 0.0
+
+C     Is this really true? May need to count sites carefully
+      NALAT=NINT(ALAT*LIMX*LIMY*0.5)
+      NBLAT=NINT(BLAT*LIMX*LIMY*0.5)
+      CALL DLASET('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
+      CALL SAFESEED(SEED)
+      DO WHILE (KEEPGOING .EQV. .TRUE.)
+
+         RANDOM=GETRAND()
+         XC=INT(RANDOM*LIMX)
+         YC=INT(RANDOM*LIMY)         
+         
+C     IF SUBLATTICE A
+         IF (V(XC,YC).EQ.ZERO) THEN
+            IF (MOD(XC,2).EQ. MOD(YC,2)) THEN
+               IF (CURALAT .LT. NALAT) THEN
+                  V(XC,YC) = U
+                  CURALAT=CURALAT+1
+               ENDIF
+            ELSE
+               IF (CURBLAT .LT. NBLAT) THEN
+                  V(XC,YC) = U
+                  CURBLAT=CURBLAT+1
+               ENDIF
+            ENDIF
+         ENDIF
+         
+         IF ((CURALAT.EQ.NALAT) .AND. (CURBLAT.EQ.NBLAT)) THEN
+            KEEPGOING = .FALSE.
+         ENDIF
+      ENDDO
+
+      RETURN
+      END
+
 c     Function to print V (Potential lattice) 
       SUBROUTINE PRNTV(V, LIMX, LIMY)
       IMPLICIT NONE
