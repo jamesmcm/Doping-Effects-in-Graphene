@@ -38,11 +38,11 @@ C     Subroutine to apply fixed number of sites to A and B
       IMPLICIT NONE
 
       INTEGER LIMX, LIMY
-      INTEGER SEED/-4/
+      INTEGER SEED/-8/
       DOUBLE PRECISION V(LIMX,LIMY), U, ALAT, BLAT
       REAL GETRAND
       REAL RANDOM
-      LOGICAL KEEPGOING
+      LOGICAL KEEPGOING/.TRUE./
       INTEGER NALAT, NBLAT, XC, YC
       INTEGER CURALAT/0/, CURBLAT/0/
       DOUBLE PRECISION, PARAMETER :: ZERO = 0.0
@@ -52,22 +52,27 @@ C     Is this really true? May need to count sites carefully
       NBLAT=NINT(BLAT*LIMX*LIMY*0.5)
       CALL DLASET('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
       CALL SAFESEED(SEED)
+c$$$      WRITE (*,*) NALAT, NBLAT
       DO WHILE (KEEPGOING .EQV. .TRUE.)
 
          RANDOM=GETRAND()
-         XC=INT(RANDOM*LIMX)
-         YC=INT(RANDOM*LIMY)         
+         XC=INT(RANDOM*((LIMX-1)+0.999999999))+1
+         RANDOM=GETRAND()
+         YC=INT(RANDOM*((LIMY-1)+0.999999999))+1
+
          
 C     IF SUBLATTICE A
          IF (V(XC,YC).EQ.ZERO) THEN
             IF (MOD(XC,2).EQ. MOD(YC,2)) THEN
                IF (CURALAT .LT. NALAT) THEN
                   V(XC,YC) = U
+c$$$                  WRITE (*,*) XC, YC
                   CURALAT=CURALAT+1
                ENDIF
             ELSE
                IF (CURBLAT .LT. NBLAT) THEN
                   V(XC,YC) = U
+c$$$                  WRITE (*,*) XC, YC
                   CURBLAT=CURBLAT+1
                ENDIF
             ENDIF
@@ -76,6 +81,7 @@ C     IF SUBLATTICE A
          IF ((CURALAT.EQ.NALAT) .AND. (CURBLAT.EQ.NBLAT)) THEN
             KEEPGOING = .FALSE.
          ENDIF
+c$$$         WRITE (*,*) CURALAT, CURBLAT, XC, YC
       ENDDO
 
       RETURN
