@@ -38,7 +38,7 @@ C     Subroutine to apply fixed number of sites to A and B
       IMPLICIT NONE
 
       INTEGER LIMX, LIMY
-      INTEGER SEED/-8/
+      INTEGER SEED/-10/
       DOUBLE PRECISION V(LIMX,LIMY), U, ALAT, BLAT
       REAL GETRAND
       REAL RANDOM
@@ -56,9 +56,9 @@ c$$$      WRITE (*,*) NALAT, NBLAT
       DO WHILE (KEEPGOING .EQV. .TRUE.)
 
          RANDOM=GETRAND()
-         XC=INT(RANDOM*((LIMX-1)+0.999999999))+1
+         XC=INT((RANDOM*LIMX)+1)
          RANDOM=GETRAND()
-         YC=INT(RANDOM*((LIMY-1)+0.999999999))+1
+         YC=INT((RANDOM*LIMY)+1)
 
          
 C     IF SUBLATTICE A
@@ -81,7 +81,7 @@ c$$$                  WRITE (*,*) XC, YC
          IF ((CURALAT.EQ.NALAT) .AND. (CURBLAT.EQ.NBLAT)) THEN
             KEEPGOING = .FALSE.
          ENDIF
-c$$$         WRITE (*,*) CURALAT, CURBLAT, XC, YC
+         WRITE (*,*) CURALAT, CURBLAT, XC, YC
       ENDDO
 
       RETURN
