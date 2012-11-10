@@ -21,15 +21,19 @@ c$$$            CALL RANDOM_NUMBER(RANDOM)
             IF (MOD(I, 2) .EQ. MOD(J, 2)) THEN
                IF (RANDOM .LT. ALAT) THEN
                   V(I,J) = U
+c$$$                  WRITE (*,350) I,J
+c$$$ 350              FORMAT (I4, I4, $)
                END IF
             ELSE
                IF (RANDOM .LT. BLAT) THEN
                   V(I,J) = U
+c$$$                  WRITE (*,360) I,J
+c$$$ 360              FORMAT (I4, I4, $)
                END IF
             END IF
          END DO
       END DO
-
+c$$$      WRITE (*,*) ""
       RETURN
       END
 
@@ -38,7 +42,6 @@ C     Subroutine to apply fixed number of sites to A and B
       IMPLICIT NONE
 
       INTEGER LIMX, LIMY
-      INTEGER SEED/-10/
       DOUBLE PRECISION V(LIMX,LIMY), U, ALAT, BLAT
       REAL GETRAND
       REAL RANDOM
@@ -47,12 +50,11 @@ C     Subroutine to apply fixed number of sites to A and B
       INTEGER CURALAT/0/, CURBLAT/0/
       DOUBLE PRECISION, PARAMETER :: ZERO = 0.0
 
+      KEEPGOING=.TRUE.
 C     Is this really true? May need to count sites carefully
       NALAT=NINT(ALAT*LIMX*LIMY*0.5)
       NBLAT=NINT(BLAT*LIMX*LIMY*0.5)
       CALL DLASET('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
-      CALL SAFESEED(SEED)
-c$$$      WRITE (*,*) NALAT, NBLAT
       DO WHILE (KEEPGOING .EQV. .TRUE.)
 
          RANDOM=GETRAND()
@@ -62,17 +64,19 @@ c$$$      WRITE (*,*) NALAT, NBLAT
 
          
 C     IF SUBLATTICE A
-         IF (V(XC,YC).EQ.ZERO) THEN
+         IF (V(XC,YC).NE.U) THEN
             IF (MOD(XC,2).EQ. MOD(YC,2)) THEN
                IF (CURALAT .LT. NALAT) THEN
                   V(XC,YC) = U
-c$$$                  WRITE (*,*) XC, YC
+c$$$                  WRITE (*,310) XC,YC
+c$$$ 310              FORMAT (I4, I4, $)
                   CURALAT=CURALAT+1
                ENDIF
             ELSE
                IF (CURBLAT .LT. NBLAT) THEN
                   V(XC,YC) = U
-c$$$                  WRITE (*,*) XC, YC
+c$$$                  WRITE (*,320) XC,YC
+c$$$ 320              FORMAT (I4, I4, $)
                   CURBLAT=CURBLAT+1
                ENDIF
             ENDIF
@@ -81,8 +85,8 @@ c$$$                  WRITE (*,*) XC, YC
          IF ((CURALAT.EQ.NALAT) .AND. (CURBLAT.EQ.NBLAT)) THEN
             KEEPGOING = .FALSE.
          ENDIF
-         WRITE (*,*) CURALAT, CURBLAT, XC, YC
       ENDDO
+c$$$      WRITE (*,*) ""
 
       RETURN
       END
