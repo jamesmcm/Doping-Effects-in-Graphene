@@ -5,7 +5,6 @@ c$$$  sublattice
       IMPLICIT NONE
 
       INTEGER LIMX, LIMY, I, J
-      INTEGER SEED/-4/
       DOUBLE PRECISION V(LIMX,LIMY), U, ALAT, BLAT
       REAL GETRAND
       REAL RANDOM
@@ -16,7 +15,6 @@ c$$$  sublattice
       DO I = 1, LIMX
          DO J = 1, LIMY
 c$$$            CALL RANDOM_NUMBER(RANDOM)
-            CALL SAFESEED(SEED)
             RANDOM=GETRAND()
             IF (MOD(I, 2) .EQ. MOD(J, 2)) THEN
                IF (RANDOM .LT. ALAT) THEN
