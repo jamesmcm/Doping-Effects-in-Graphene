@@ -56,7 +56,6 @@ C     Is this really true? May need to count sites carefully
       NBLAT=NINT(BLAT*LIMX*LIMY*0.5)
       CALL DLASET('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
       DO WHILE (KEEPGOING .EQV. .TRUE.)
-         WRITE (*,*) KEEPGOING
          RANDOM=GETRAND()
          XC=INT((RANDOM*LIMX)+1)
          RANDOM=GETRAND()
