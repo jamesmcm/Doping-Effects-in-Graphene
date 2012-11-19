@@ -44,17 +44,19 @@ C     Subroutine to apply fixed number of sites to A and B
       REAL GETRAND
       REAL RANDOM
       LOGICAL KEEPGOING/.TRUE./
-      INTEGER NALAT, NBLAT, XC, YC
+      INTEGER NALAT/0/, NBLAT/0/, XC, YC
       INTEGER CURALAT/0/, CURBLAT/0/
       DOUBLE PRECISION, PARAMETER :: ZERO = 0.0
 
       KEEPGOING=.TRUE.
+      CURALAT=0
+      CURBLAT=0
 C     Is this really true? May need to count sites carefully
       NALAT=NINT(ALAT*LIMX*LIMY*0.5)
       NBLAT=NINT(BLAT*LIMX*LIMY*0.5)
       CALL DLASET('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
       DO WHILE (KEEPGOING .EQV. .TRUE.)
-
+         WRITE (*,*) KEEPGOING
          RANDOM=GETRAND()
          XC=INT((RANDOM*LIMX)+1)
          RANDOM=GETRAND()
