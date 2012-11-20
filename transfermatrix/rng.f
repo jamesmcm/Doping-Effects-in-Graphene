@@ -17,11 +17,19 @@ c$$$gcc -c gettime.c
 c$$$gfortran -c rng.f
 c$$$gfortran -o program <allobjectfileshere.o>
 
-      REAL FUNCTION GETRAND()
+      REAL FUNCTION GETRAND(SEED)
       IMPLICIT NONE
-      INTEGER*4 NUM/19/
+      INTEGER*4 SEED
       REAL ran2
-      GETRAND=ran2(NUM)
+
+C     SEED must be the same as the seed. To get a new sequence recall safeseed with the new seed, then repeatedly call GETRAND with num of the new seed.
+      IF (SEED .EQ. 0) THEN
+         WRITE (*,*) "Warning: Seed was set to zero."
+      ELSE IF (SEED .GT. 0) THEN
+         SEED=-1*SEED
+      END IF
+   
+      GETRAND=ran2(SEED)
       RETURN
       END
 
@@ -82,7 +90,7 @@ c$$$gfortran -o program <allobjectfileshere.o>
       endif
  
       k=idum/IQ1
-      idum=(IA1*(idum-k*IQ1))-(k*IR1)
+      idum=IA1*(idum-k*IQ1)-k*IR1
       if (idum.lt.0) idum=idum+IM1
 
       k=idum2/IQ2
