@@ -1,10 +1,10 @@
 
 c$$$  Subroutine to generate vacancies with differant P(x) for a,b
 c$$$  sublattice
-      SUBROUTINE GENVAC(V, LIMX, LIMY, U, ALAT, BLAT)
+      SUBROUTINE GENVAC(V, LIMX, LIMY, U, ALAT, BLAT, SEED)
       IMPLICIT NONE
 
-      INTEGER LIMX, LIMY, I, J
+      INTEGER LIMX, LIMY, I, J, SEED
       DOUBLE PRECISION V(LIMX,LIMY), U, ALAT, BLAT
       REAL GETRAND
       REAL RANDOM
@@ -15,7 +15,7 @@ c$$$  sublattice
       DO I = 1, LIMX
          DO J = 1, LIMY
 c$$$            CALL RANDOM_NUMBER(RANDOM)
-            RANDOM=GETRAND()
+            RANDOM=GETRAND(SEED)
             IF (MOD(I, 2) .EQ. MOD(J, 2)) THEN
                IF (RANDOM .LT. ALAT) THEN
                   V(I,J) = U
@@ -36,7 +36,7 @@ c$$$      WRITE (*,*) ""
       END
 
 C     Subroutine to apply fixed number of sites to A and B
-      SUBROUTINE GENVACFIX(V, LIMX, LIMY, U, ALAT, BLAT)
+      SUBROUTINE GENVACFIX(V, LIMX, LIMY, U, ALAT, BLAT, SEED)
       IMPLICIT NONE
 
       INTEGER LIMX, LIMY
@@ -44,7 +44,7 @@ C     Subroutine to apply fixed number of sites to A and B
       REAL GETRAND
       REAL RANDOM
       LOGICAL KEEPGOING/.TRUE./
-      INTEGER NALAT/0/, NBLAT/0/, XC, YC
+      INTEGER NALAT/0/, NBLAT/0/, XC, YC, SEED
       INTEGER CURALAT/0/, CURBLAT/0/
       DOUBLE PRECISION, PARAMETER :: ZERO = 0.0
 
@@ -56,9 +56,9 @@ C     Is this really true? May need to count sites carefully
       NBLAT=NINT(BLAT*LIMX*LIMY*0.5)
       CALL DLASET('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
       DO WHILE (KEEPGOING .EQV. .TRUE.)
-         RANDOM=GETRAND()
+         RANDOM=GETRAND(SEED)
          XC=INT((RANDOM*LIMX)+1)
-         RANDOM=GETRAND()
+         RANDOM=GETRAND(SEED)
          YC=INT((RANDOM*LIMY)+1)
 
          
