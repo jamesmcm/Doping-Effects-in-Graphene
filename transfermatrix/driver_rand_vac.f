@@ -83,7 +83,7 @@ c$$$ 310  FORMAT (100F10.6)
       END DO
 
       SEED = INT_SEED
-      CALL SAFESEED(SEED
+      CALL SAFESEED(SEED)
 
       NTVALS = 1
       DO K = 1, NOVAC
