@@ -33,7 +33,8 @@ c$$$  NE Length of Conductance,mean,error
       INTEGER, PARAMETER :: MAXSIZE = 10000
       DOUBLE PRECISION TVALS(MAXSIZE)
       INTEGER NTVALS
-      DOUBLE PRECISION E, CONDA(NE), G(NE), GMEAN(NE), GERROR(NE)
+      DOUBLE PRECISION E, CONDA(NE), CONDA_TMP(NE), G(NE), GMEAN(NE),
+     +                 GERROR(NE)
       INTEGER IE/0/, J, K, H
       DOUBLE PRECISION V(LIMX,LIMY), KREAL
 c      DOUBLE PRECISION POT /2.0/, POTA /0.2/, POTB /0.3/
@@ -45,6 +46,7 @@ c$$$  NOVAC is number of renormalisations
      +                               ALAT = 0.015,
      +                               BLAT = 0.015,
      +                               ZERO = 0.0
+      INTEGER SEED, INT_SEED/1/
 
       DOUBLE PRECISION ELIST(NE)
 
@@ -76,21 +78,29 @@ c$$$ 310  FORMAT (100F10.6)
       DO K = 1, NE
          GMEAN(K) = 0.0
          GERROR(K) = 0.0
+         CONDA(K) = 0.0
+         CONDA_TMP(K) = 0.0
       END DO
+
+      SEED = INT_SEED
+      CALL SAFESEED(SEED
 
       NTVALS = 1
       DO K = 1, NOVAC
-         CALL GENVACFIX(V, LIMX, LIMY, U, ALAT, BLAT)
+         CALL GENVACFIX(V, LIMX, LIMY, U, ALAT, BLAT, SEED)
          DO IE = 0, NE - 1
 c            E = EMIN + ( (EMAX - EMIN) * IE) / NE
              E = ELIST(IE + 1)
 c            CALL FAKEGETTRANS(TVALS, NTVALS)
          
-            CONDA(IE + 1) = GETTRANS(CURRENT, GAUGE,
-     +                              TVALS, NTVALS,
-     +                              LIMX, LIMY, V,
-     +                              E,    FLUX,
-     +                              WRAPX)
+            CONDA_TMP(IE + 1) = GETTRANS(CURRENT, GAUGE,
+     +                                   TVALS, NTVALS,
+     +                                   LIMX, LIMY, V,
+     +                                   E,    FLUX,
+     +                                   WRAPX)
+            IF (CONDA_TMP(IE + 1) .GT. CONDA(IE + 1)) THEN
+               CONDA(IE + 1) = CONDA_TMP(IE + 1)
+            END IF
 
             G(IE + 1) = CONDUCTANCE (TVALS, NTVALS)
 
@@ -108,10 +118,17 @@ c$$$     comment it out -- AVS
 c$$$ Writes parameters to the file with the intention for
 c$$$ extending later.
 c$$$  Commented out for convinced for plotting     
-           WRITE (1,41) '#', K, U, ALAT, BLAT, ' ', CURRENT, ' ', GAUGE,
-c     +                   LIMX, LIMY, WRAPX, WRAPY, NE, EMIN, EMAX, FLUX,
-     +                   LIMX, LIMY, WRAPX, WRAPY, NE, ' ', 'Custom E',
-     +                   FLUX, ' ', '-10'
+         WRITE (1,100) '#', ' Randomisations:', K, ';'
+         WRITE (1,101) '#', ' X:', LIMX, ';  Y:', LIMY, ';  WrapX:',
+     +                      WRAPX, ';  WrapY:', WRAPY, ';'
+         WRITE (1,102) '#', ' nA:', ALAT, ';  nB:', BLAT, ';  U:', U,
+     +                      ';'
+         WRITE (1,103) '#', ' Current:', CURRENT, ';  Gauge:', GAUGE,
+     +                      ';  Flux:', FLUX, ';'
+         WRITE (1,100) '#', ' Data points:', NE, ';'
+         WRITE (1,100) '#', ' Seed:', INT_SEED, ';'
+         WRITE (1,104) '#'
+
          DO H = 0, NE - 1
             WRITE (1,60) ELIST(H+1), GMEAN(H+1),
      +                   GERROR(H+1), CONDA(H+1)
@@ -121,9 +138,16 @@ c     +                   LIMX, LIMY, WRAPX, WRAPY, NE, EMIN, EMAX, FLUX,
       END DO
 
  40   FORMAT (I15, 3F15.5, 4A, 5I15, 3F15.5)
- 41   FORMAT (A, I15, 3F15.5, 4A, 5I15, 2A, F15.5, 2A)
+ 41   FORMAT (A, I15, 3F15.5, 4A, 5I15, 2A, F15.5, I15)
  50   FORMAT (F15.5,20ES20.5E3)
  60   FORMAT (F15.5, 3ES20.5E3)
+
+ 100  FORMAT (2A, I15, A)
+ 101  FORMAT (2A, I15, A, I15, A, I15, A, I15, A)
+ 102  FORMAT (2A, F15.5, A, F15.5, A, F15.5, A)
+ 103  FORMAT (6A, F15.5, A)
+ 104  FORMAT (A)
+
       STOP
       END
 
