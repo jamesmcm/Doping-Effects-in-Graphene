@@ -8,6 +8,9 @@
 #define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
 #endif
 
+#define MAX_FILE_NAME 60
+#define MAX_SEED 20
+
 typedef struct header
 {
    int randomisations;
@@ -19,16 +22,16 @@ typedef struct header
    int wrap[2];
    int no_energy_vals;
    double flux;
-   double seed;
+   int no_seed;
+   int seed[MAX_SEED];
 }
 Header;
-
-#define MAX_FILE_NAME 60
 
 void *xmalloc(size_t n);
 Header *readfile(FILE *infile, int i, double *data[]);
 int readoneline(char line[], int maxbytes, FILE *stream);
 Header *readheader(FILE *infile);
+void readuntilchar(FILE *infile, int check);
 void readdata(FILE *infile, double **data, int vals);
 int checkdata(Header *head_a, double **data_a,
               Header *head_b, double **data_b);
@@ -58,15 +61,17 @@ int main(void)
    inputhead[0] = readfile(infile[0], 0, inputdataone);
    inputhead[1] = readfile(infile[1], 1, inputdatatwo);
 
-   exitcode=checkdata(inputhead[0], inputdataone, inputhead[1], inputdatatwo);
+   exitcode=checkdata(inputhead[0], inputdataone,
+                      inputhead[1], inputdatatwo);
    if (exitcode != 0)
    {
       printf("  ERROR\n"
-             "  Data files do not have matching parameters!\n Exit code: %i\n", exitcode);
+             "  Data files do not have matching parameters!\n"
+             "  Exit code: %i\n", exitcode);
       exit(0);
    }
 
-   for (i = 0; i < 3; ++i)
+   for (i = 0; i < 4; ++i)
    {
       outputdata[i] = xmalloc(inputhead[0]->no_energy_vals * 
                               sizeof(double));
@@ -90,7 +95,12 @@ int main(void)
    outputhead.wrap[1]              = inputhead[0]->wrap[1];
    outputhead.no_energy_vals       = inputhead[0]->no_energy_vals;
    outputhead.flux                 = inputhead[0]->flux;
-   outputhead.seed                 = inputhead[0]->seed;
+   outputhead.no_seed              = inputhead[0]->no_seed +
+                                     inputhead[1]->no_seed;
+   for (i = 0; i < MAX_SEED; ++i) outputhead.seed[i] =
+                                  inputhead[0]->seed[i];
+   for (i = inputhead[0]->no_seed; i < MAX_SEED; ++i)
+      outputhead.seed[i] = inputhead[1]->seed[inputhead[0]->no_seed -i];
 
    printnewfile(outputhead, outputdata, outfile);
 
@@ -135,6 +145,7 @@ Header *readfile(FILE *infile, int i, double *data[])
          data[j] = xmalloc(vals * sizeof(double));
       }
       readdata(infile, data, vals);
+      fclose(infile);
       return head;
    }
 }
@@ -160,26 +171,68 @@ int readoneline(char line[], int maxbytes, FILE *stream)
 
 Header *readheader(FILE *infile)
 {
-   int initial, randomisations, size[2], wrap[2], no_energy_vals;
-   char dummy[10], current, gauge;
-   double vac_potential, vac_concentration[2], flux, seed;
+   int cursor, randomisations, size[2], wrap[2],
+       no_energy_vals, i = 0, seed[MAX_SEED];
+   char current, gauge;
+   double vac_potential, vac_concentration[2], flux;
 
    Header *head = xmalloc(sizeof *head); 
 
-   initial = fgetc(infile);
+   cursor = fgetc(infile);
 
-   if (initial != '#')
+   if (cursor != '#')
    {
       printf("\n  Unexpected header, should start with \"#\"!"
              "\n  Exiting\n");
       exit(1);
    }
 
-   fscanf(infile, "%d %lf %lf %lf %c %c %d %d %d %d %d %s %s %lf %lf",
-          &randomisations, &vac_potential, &vac_concentration[0],
-          &vac_concentration[1], &current, &gauge, &size[0], &size[1],
-          &wrap[0], &wrap[1], &no_energy_vals, &dummy, &dummy, &flux,
-          &seed);
+   readuntilchar(infile, ':');
+   fscanf(infile, "%d", &randomisations);
+
+   readuntilchar(infile, ':');
+   fscanf(infile, "%d", &size[0]);
+
+   readuntilchar(infile, ':');
+   fscanf(infile, "%d", &size[1]);
+
+   readuntilchar(infile, ':');
+   fscanf(infile, "%d", &wrap[0]);
+
+   readuntilchar(infile, ':');
+   fscanf(infile, "%d", &wrap[1]);
+
+   readuntilchar(infile, ':');
+   fscanf(infile, "%lf", &vac_concentration[0]);
+
+   readuntilchar(infile, ':');
+   fscanf(infile, "%lf", &vac_concentration[1]);
+
+   readuntilchar(infile, ':');
+   fscanf(infile, "%lf", &vac_potential);
+
+   readuntilchar(infile, ':');
+   current = fgetc(infile);
+
+   readuntilchar(infile, ':');
+   gauge = fgetc(infile);
+
+   readuntilchar(infile, ':');
+   fscanf(infile, "%lf", &flux);
+
+   readuntilchar(infile, ':');
+   fscanf(infile, "%d", &no_energy_vals);
+
+   readuntilchar(infile, ':');
+   do
+   {
+      fscanf(infile, "%d", &seed[i]);
+      ++i;
+      cursor = fgetc(infile);
+   }
+   while (cursor != ';');
+
+   readuntilchar(infile, '#');
 
    head->randomisations       = randomisations;
    head->vac_potential        = vac_potential;
@@ -193,20 +246,28 @@ Header *readheader(FILE *infile)
    head->wrap[1]              = wrap[1];
    head->no_energy_vals       = no_energy_vals;
    head->flux                 = flux;
-   head->seed                 = seed;
+   head->no_seed              = i;
+   for (i = 0; i < MAX_SEED; ++i) head->seed[i] = seed[i];
 
    return head;
+}
+
+void readuntilchar(FILE *infile, int check)
+{
+   int cursor;
+
+   do cursor = fgetc(infile); while (cursor != check);
+
+   return;
 }
 
 void readdata(FILE *infile, double **data, int vals)
 {
    int i, j;
-   double dummy;
 
    for (j=0; j<vals; ++j)
    {
       for (i=0; i<4; ++i) fscanf(infile, "%lf", &data[i][j]);
-      //fscanf(infile, "%lf", &dummy);
    }
    return;
 }
@@ -214,16 +275,17 @@ void readdata(FILE *infile, double **data, int vals)
 int checkdata(Header *head_a, double **data_a,
               Header *head_b, double **data_b)
 {
-   int i, exitcode = 0;
+   int i, j, exitcode = 0;
 
    if (head_a->no_energy_vals == head_b->no_energy_vals)
    {
       for (i = 0; i < head_a->no_energy_vals; ++i)
       {
-	if (data_a[0][i] != data_b[0][i]) {exitcode = 2;}
+	      if (data_a[0][i] != data_b[0][i]) exitcode = 2;
       }
    }
    else exitcode = 1;
+
    if (head_a->vac_potential != head_b->vac_potential ||
        head_a->vac_concentration[0] != head_b->vac_concentration[0] ||
        head_a->vac_concentration[1] != head_b->vac_concentration[1] ||
@@ -232,9 +294,14 @@ int checkdata(Header *head_a, double **data_a,
        head_a->size[1] != head_b->size[1] ||
        head_a->wrap[0] != head_b->wrap[0] ||
        head_a->wrap[1] != head_b->wrap[1] ||
-       head_a->seed == head_b->seed ||
        head_a->flux != head_b->flux) exitcode = 3;
-   if (head_a->flux != 0 && head_a->gauge != head_b->gauge) exitcode = 4;
+   if (head_a->flux != 0 && head_a->gauge != head_b->gauge)
+      exitcode = 4;
+
+   for (i = 0; i < head_a->no_seed; ++i)
+      for (j = 0; j < head_b->no_seed; ++j)
+         if (head_a->seed[i] == head_b->seed[j]) exitcode = 5;
+
    return exitcode;
 }
 
@@ -308,17 +375,27 @@ void printnewfile(Header head, double **data, FILE *outfile)
    else printf("success!\n");
 
    fprintf(outfile,
-           "# %d %g %g %g %c %c %d %d %d %d %d Custom E %g %g\n",
-           head.randomisations, head.vac_potential,
-           head.vac_concentration[0], head.vac_concentration[1],
-           head.current, head.gauge, head.size[0], head.size[1],
-           head.wrap[0], head.wrap[1], head.no_energy_vals, head.flux,
-           head.seed);
+           "# Randomisations:\t%d;\n"
+           "# X:\t%d;\tY:\t%d;\tWrapX:\t%d;\tWrapY:\t%d;\n"
+           "# nA:\t%g;\tnB:\t%g;\tU:\t%g;\n"
+           "# Current:%c;\tGauge:%c;\tFlux:\t%g;\n"
+           "# Data points:\t%d;\n"
+           "# Seeds:\t%d",
+           head.randomisations, head.size[0], head.size[1],
+           head.wrap[0], head.wrap[1], head.vac_concentration[0],
+           head.vac_concentration[1], head.vac_potential,
+           head.current, head.gauge, head.flux,
+           head.no_energy_vals, head.seed[0]);
+   for (i = 1; i < head.no_seed; ++i) fprintf(outfile, ",\t%d",
+                                              head.seed[i]);
+   fprintf(outfile, ";\n#\n");
+
    for (j = 0; j < head.no_energy_vals; ++j)
    {
       for (i = 0; i < 4; ++i) fprintf(outfile, "\t\t\t%g", data[i][j]);
       fprintf(outfile, "\n");
    }
+   fclose(outfile);
    return;
 }
 
