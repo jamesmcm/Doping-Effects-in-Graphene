@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-
 #ifndef max
 #define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
 #endif
@@ -58,15 +57,17 @@ int main(void)
    inputhead[0] = readfile(infile[0], 0, inputdataone);
    inputhead[1] = readfile(infile[1], 1, inputdatatwo);
 
-   exitcode=checkdata(inputhead[0], inputdataone, inputhead[1], inputdatatwo);
+   exitcode=checkdata(inputhead[0], inputdataone,
+                      inputhead[1], inputdatatwo);
    if (exitcode != 0)
    {
       printf("  ERROR\n"
-             "  Data files do not have matching parameters!\n Exit code: %i\n", exitcode);
+             "  Data files do not have matching parameters!\n"
+             " Exit code: %i\n",exitcode);
       exit(0);
    }
 
-   for (i = 0; i < 3; ++i)
+   for (i = 0; i < 4; ++i)
    {
       outputdata[i] = xmalloc(inputhead[0]->no_energy_vals * 
                               sizeof(double));
@@ -135,6 +136,7 @@ Header *readfile(FILE *infile, int i, double *data[])
          data[j] = xmalloc(vals * sizeof(double));
       }
       readdata(infile, data, vals);
+      fclose(infile);
       return head;
    }
 }
@@ -206,7 +208,6 @@ void readdata(FILE *infile, double **data, int vals)
    for (j=0; j<vals; ++j)
    {
       for (i=0; i<4; ++i) fscanf(infile, "%lf", &data[i][j]);
-      //fscanf(infile, "%lf", &dummy);
    }
    return;
 }
@@ -234,7 +235,8 @@ int checkdata(Header *head_a, double **data_a,
        head_a->wrap[1] != head_b->wrap[1] ||
        head_a->seed == head_b->seed ||
        head_a->flux != head_b->flux) exitcode = 3;
-   if (head_a->flux != 0 && head_a->gauge != head_b->gauge) exitcode = 4;
+   if (head_a->flux != 0 && head_a->gauge != head_b->gauge)
+      exitcode = 4;
    return exitcode;
 }
 
@@ -250,8 +252,8 @@ void new_average(int no_energy_vals, double **data_a, int n_a,
       newdata[2][i] = newerror(data_a[1][i], data_a[2][i], n_a,
                                data_b[1][i], data_b[2][i], n_b);
       newdata[3][i] = max(data_a[3][i], data_b[3][i]);
-
    }
+   return;
 }
 
 double newmean(double mean_a, int n_a, double mean_b, int n_b)
@@ -319,6 +321,7 @@ void printnewfile(Header head, double **data, FILE *outfile)
       for (i = 0; i < 4; ++i) fprintf(outfile, "\t\t\t%g", data[i][j]);
       fprintf(outfile, "\n");
    }
+   fclose(outfile);
    return;
 }
 
