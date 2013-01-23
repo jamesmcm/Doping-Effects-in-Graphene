@@ -19,13 +19,13 @@ def notempty(x):
         return False
 
 def hashcount(s):
-    if s[0]=="#":
+    if len(s) > 0 and s[0]=="#":
         return 1
     else:
         return 0
 
 def fixheader(s):
-    s=s.split(" ")
+    s=s.split()
     l=[]
     l.append("# Randomisations:\t"+str(s[1])+";")
     l.append("# X:\t"+str(s[7])+";\tY:\t"+str(s[8])+";\tWrapX:\t"+str(s[9])+";\tWrapY:\t"+str(s[10])+";")
@@ -37,7 +37,12 @@ def fixheader(s):
     return l
 
 def splittab(s):
-    return s.split("\t")
+    tabsplit = s.split("\t")
+    
+    if len(tabsplit) == 1:
+        tabsplit = s.split()
+
+    return tabsplit
 
 def mergetabs(l):
     s=""
@@ -54,6 +59,7 @@ f.close()
 
 
 #Sort out headers
+print(sum(map(hashcount, linelist)))
 if (sum(map(hashcount, linelist))) == 1:
     #We have old style header, fix
     l1=fixheader(linelist[0])
