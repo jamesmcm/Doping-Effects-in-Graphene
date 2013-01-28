@@ -138,9 +138,9 @@ c
          STD(I) = STD(I) * STD(I)
          DEVV = DEVV + STD(I)
       END DO
-      DEVV = SQRT(DEVV / TIMES)
+      DEVV = DSQRT(DEVV / TIMES)
       RTIMES = TIMES
-      DEVV = DEVV / SQRT(RTIMES)
+      DEVV = DEVV / DSQRT(RTIMES)
       
       RETURN
       END
@@ -150,13 +150,13 @@ c
 
       INTEGER NE, I
       DOUBLE PRECISION MEANCOND(NE), ERRCOND(NE), NEWCOND(NE),
-     +                 SIGMA, RNUM
+     +                 SIGMA, RNUM, TESTDSQRT
 c      INTEGER NUM
 
       DO I = 1, NE
          SIGMA = 0.0
 c         RNUM = NUM
-         SIGMA = ERRCOND(I) * SQRT(RNUM - 1.0)
+         SIGMA = ERRCOND(I) * DSQRT(RNUM - 1.0)
          SIGMA = SIGMA * SIGMA
          SIGMA = SIGMA + (MEANCOND(I) * MEANCOND(I))
          SIGMA = SIGMA * (RNUM - 1.0)
@@ -167,10 +167,22 @@ c         RNUM = NUM
          MEANCOND(I) = (MEANCOND(I) + NEWCOND(I)) / RNUM
 
          SIGMA = SIGMA - (MEANCOND(I) * MEANCOND(I))
-         SIGMA = SQRT(SIGMA)
-         ERRCOND(I) = SIGMA / SQRT(RNUM)
+         
+         SIGMA = TESTDSQRT(SIGMA)
+         ERRCOND(I) = SIGMA / DSQRT(RNUM)
       END DO
 
+      RETURN
+      END
+
+      DOUBLE PRECISION FUNCTION TESTDSQRT(X)
+      IMPLICIT NONE
+      DOUBLE PRECISION X
+      IF (X .LT. 0) THEN
+         TESTDSQRT=0
+      ELSE
+        TESTDSQRT=DSQRT(X)
+      ENDIF
       RETURN
       END
 
