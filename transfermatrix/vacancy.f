@@ -55,6 +55,12 @@ C     Is this really true? May need to count sites carefully
       NALAT=NINT(ALAT*LIMX*LIMY*0.5)
       NBLAT=NINT(BLAT*LIMX*LIMY*0.5)
       CALL DLASET('ALL', LIMX, LIMY, ZERO, ZERO, V, LIMX)
+
+      IF ((CURALAT.EQ.NALAT) .AND. (CURBLAT.EQ.NBLAT)) THEN
+         KEEPGOING = .FALSE.
+      ENDIF
+
+
       DO WHILE (KEEPGOING .EQV. .TRUE.)
          RANDOM=GETRAND(SEED)
          XC=INT((RANDOM*LIMX)+1)
