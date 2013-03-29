@@ -9,7 +9,6 @@ c$$$  May need to move this
       DOUBLE PRECISION V(LIMX, LIMY)
 
 
-c$$$  HAMMERTIME! Program terminates here if LIMX is odd
       IF ((WRAPX .EQ. 1)) THEN
          IF ((MOD(LIMX,2) .NE. 0)) THEN
             WRITE (*,*) 'ERROR: LIMX must be even for physical results
@@ -26,8 +25,8 @@ C$$$ - WHAT MATTERS IS WHICH ROW IT IS CENTRED ON
 C$$$ THERE ARE 2 TRANSFER MATRICES TO GENERATE
 C$$$ THERE ARE 4 BLOCK SUBMATRICES TO FILL
 C$$$ MODD DOESN'T DEPEND ON XWRAPPING, MEVEN DOES.   '
-      CALL ZPOLAR(FLUX*POS*(1.0/SQRT(3.0)), ZPLUS)
-      CALL ZPOLAR(-FLUX*POS*(1.0/SQRT(3.0)), ZMINUS)
+      CALL ZPOLAR(FLUX*POS, ZPLUS)
+      CALL ZPOLAR(-FLUX*POS, ZMINUS)
       DO I = 1, LIMX
 C$$$ FILL TOP-RIGHT SUBMATRIX
          MULT(I, LIMX+I)=1
@@ -85,7 +84,6 @@ c$$$  Originally the first M matrix was set here
       DOUBLE PRECISION V(LIMX, LIMY)
 
 
-c$$$  HAMMERTIME! Program terminates here if LIMX is odd
       IF ((WRAPX .EQ. 1)) THEN
          IF ((MOD(LIMX,2) .NE. 0)) THEN
             WRITE (*,*) 'ERROR: LIMX must be even for physical results

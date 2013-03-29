@@ -203,10 +203,10 @@ C     Odd is defined for odd leftmost column, even for even leftmost column
 
       DO I = 1, NSIZE
 
-         CALL ZPOLAR ( FLUX * 2 * I*(1.0/SQRT(3.0)), TAU1(I))
+         CALL ZPOLAR ( FLUX * 2 * I, TAU1(I))
 c       The minus sign is due to the fact that tau1 is x->x+1 hopping,
 c       while tau_2 is x+2->x+1 hopping
-         CALL ZPOLAR (-FLUX * 2 * I*(1.0/SQRT(3.0)), TAU2(I))
+         CALL ZPOLAR (-FLUX * 2 * I, TAU2(I))
 
          IF (MOD(POS,2) .EQ. 0) THEN
             EV2(I)=E-V(POS, 2*I) 
